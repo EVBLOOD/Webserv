@@ -2065,6 +2065,50 @@
               "font": "script",
               "textAlign": "middle"
             }
+          },
+          "6e6ca5fa-ad85-4914-058d-25614684f424": {
+            "id": "6e6ca5fa-ad85-4914-058d-25614684f424",
+            "type": "text",
+            "name": "Text",
+            "parentId": "page",
+            "childIndex": 37,
+            "point": [
+              242.46,
+              658.21
+            ],
+            "rotation": 0,
+            "text": ":",
+            "style": {
+              "color": "white",
+              "size": "small",
+              "isFilled": false,
+              "dash": "draw",
+              "scale": 1,
+              "font": "script",
+              "textAlign": "middle"
+            }
+          },
+          "bde80462-528f-4cce-09cf-cc4fae336eb5": {
+            "id": "bde80462-528f-4cce-09cf-cc4fae336eb5",
+            "type": "text",
+            "name": "Text",
+            "parentId": "page",
+            "childIndex": 38,
+            "point": [
+              283.36,
+              659.41
+            ],
+            "rotation": 0,
+            "text": "lets present",
+            "style": {
+              "color": "white",
+              "size": "small",
+              "isFilled": false,
+              "dash": "draw",
+              "scale": 1,
+              "font": "script",
+              "textAlign": "middle"
+            }
           }
         },
         "bindings": {}
