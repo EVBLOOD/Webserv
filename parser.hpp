@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 22:07:55 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/08 22:34:01 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/08 22:43:41 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ parser::parser(const std::string &filename)
         exit (1);
         // else throw an error;
     }
+    // generate tokens! 
 }
 
 parser::~parser()
