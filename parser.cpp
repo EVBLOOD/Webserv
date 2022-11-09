@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 22:50:38 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 23:05:29 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ std::list<tokengen> parser::generate()
     while (getline(config, line))
     {
         i = 0;
-        while (line[i])
+        while (i >= 0 && line[i])
         {
             if (isspace(line[i]))
             {
@@ -73,6 +73,11 @@ std::list<tokengen> parser::generate()
                 lexer.push_back(tokengen(SEMICOLONS));
             else if (line[i] == ':')
                 lexer.push_back(tokengen(COLON));
+            else if (line[i] == '#')
+            {
+                lexer.push_back(tokengen(COMMENT));
+                i = -1;
+            }
             else
             {
                 start = i;
@@ -81,9 +86,11 @@ std::list<tokengen> parser::generate()
                 lexer.push_back(tokengen(WORD, line.substr(start, i - start)));
                 continue;
             }
-            if (line[i])
+            if (i >= 0 && line[i])
                 i++;
         }
+        if (i < 0 || !line[i])
+            lexer.push_back(tokengen(ENDOFLINE));
     }
     return lexer;
 }
