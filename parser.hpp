@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 22:07:55 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 18:05:16 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 18:08:38 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,6 @@ class parser
         
     public:
         parser(const std::string &filename);
-        std::list<tokengen> generate(std::ifstream config);
+        std::list<tokengen> generate();
         ~parser();
 };
