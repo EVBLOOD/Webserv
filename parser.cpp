@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 19:06:31 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 22:44:24 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ std::list<tokengen> parser::generate()
     std::string line;
     int i;
     int start;
-    int charscount;
     while (getline(config, line))
     {
         i = 0;
@@ -57,20 +56,15 @@ std::list<tokengen> parser::generate()
                 i++;
                 while (line[i] && line[i] != '"')
                     i++;
-                lexer.push_back(tokengen(QUOTES, line.substr(start, i + 1)));
+                lexer.push_back(tokengen(QUOTES, line.substr(start, i - start)));
             }
             else if (line[i] == '\'')
             {
-                charscount = 1;
                 start = i;
-                while (line[i + charscount])
-                {
-                    charscount++;
-                    if (line[i] == '\'')
-                        break;
-                }
-                i += charscount;
-                lexer.push_back(tokengen(QUOTES, line.substr(start, charscount)));
+                i++;
+                while (line[i] && line[i] != '\'')
+                    i++;
+                lexer.push_back(tokengen(QUOTES, line.substr(start, i - start)));
             }
             else if (line[i] == '{')
                 lexer.push_back(tokengen(OPENCURL));
@@ -83,9 +77,9 @@ std::list<tokengen> parser::generate()
             else
             {
                 start = i;
-                while (line[i] && isntspeacail(line[i]))
+                while (line[i] && isntspeacail(line[i]) == true)
                     i++;
-                lexer.push_back(tokengen(WORD, line.substr(start, i + 1)));
+                lexer.push_back(tokengen(WORD, line.substr(start, i - start)));
                 continue;
             }
             if (line[i])
