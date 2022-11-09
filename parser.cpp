@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 22:44:24 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 22:50:38 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,17 +54,16 @@ std::list<tokengen> parser::generate()
             {
                 start = i;
                 i++;
-                while (line[i] && line[i] != '"')
+                while (line[i] && (line[i] != '"' || start == i))
                     i++;
-                lexer.push_back(tokengen(QUOTES, line.substr(start, i - start)));
+                lexer.push_back(tokengen(QUOTES, line.substr(start, i - start + 1)));
             }
             else if (line[i] == '\'')
             {
                 start = i;
-                i++;
-                while (line[i] && line[i] != '\'')
+                while (line[i] && (line[i] != '\'' || start == i))
                     i++;
-                lexer.push_back(tokengen(QUOTES, line.substr(start, i - start)));
+                lexer.push_back(tokengen(QUOTES, line.substr(start, i - start + 1)));
             }
             else if (line[i] == '{')
                 lexer.push_back(tokengen(OPENCURL));
