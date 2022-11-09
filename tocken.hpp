@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 16:18:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 16:49:13 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:51:43 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,40 +25,40 @@ namespace ft
     };
     
     template <int T>
-    class tokengen
+    struct tokengen
     {
     };
     
     template <>
-    class tokengen<OPENCURL>
+    struct tokengen<OPENCURL>
     {
         int type;
         tokengen() : type(OPENCURL) {}
     };
     
     template <>
-    class tokengen<CLOSECURL>
+    struct tokengen<CLOSECURL>
     {
         int type;
         tokengen() : type(CLOSECURL) {}
     };
 
     template <>
-    class tokengen<SEMICOLONS>
+    struct tokengen<SEMICOLONS>
     {
         int type;
         tokengen() : type(SEMICOLONS) {}
     };
 
     template <>
-    class tokengen<WHITESPACE>
+    struct tokengen<WHITESPACE>
     {
         int type;
         tokengen() : type(WHITESPACE) {}
     };
     
     template <>
-    class tokengen<WORD>
+    struct tokengen<WORD>
     {
         int type;
         std::string word;
@@ -66,7 +66,7 @@ namespace ft
     };
 
     template <>
-    class tokengen<QUOTES>
+    struct tokengen<QUOTES>
     {
         int type;
         std::string word;
@@ -74,7 +74,7 @@ namespace ft
     };
     
     template <>
-    class tokengen<COLON>
+    struct tokengen<COLON>
     {
         int type;
         tokengen() : type(COLON) {}
