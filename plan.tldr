@@ -794,11 +794,11 @@
             "parentId": "page",
             "childIndex": 10,
             "point": [
-              506.7,
+              511.2,
               200.6
             ],
             "rotation": 0,
-            "text": "generate tockens",
+            "text": "generate tokens",
             "style": {
               "color": "black",
               "size": "small",
@@ -1402,7 +1402,7 @@
               188.6
             ],
             "rotation": 0,
-            "text": " ABS construction",
+            "text": " AST construction",
             "style": {
               "color": "black",
               "size": "small",
@@ -1831,11 +1831,11 @@
             "parentId": "page",
             "childIndex": 26,
             "point": [
-              239.54,
-              498.48
+              533.79,
+              432.18
             ],
             "rotation": 0,
-            "text": "' '",
+            "text": "'  '",
             "style": {
               "color": "white",
               "size": "small",
@@ -1919,8 +1919,8 @@
             "parentId": "page",
             "childIndex": 30,
             "point": [
-              320.28,
-              490.16
+              617.03,
+              423.86
             ],
             "rotation": 0,
             "text": "space",
@@ -1941,11 +1941,11 @@
             "parentId": "page",
             "childIndex": 31,
             "point": [
-              233.89,
-              531.28
+              242.11,
+              503.05
             ],
             "rotation": 0,
-            "text": "' / \"",
+            "text": "'  or \"",
             "style": {
               "color": "white",
               "size": "small",
@@ -1963,8 +1963,8 @@
             "parentId": "page",
             "childIndex": 32,
             "point": [
-              321.49,
-              532.48
+              337.71,
+              504.25
             ],
             "rotation": 0,
             "text": "Qts",
@@ -1985,8 +1985,8 @@
             "parentId": "page",
             "childIndex": 33,
             "point": [
-              241.46,
-              572.15
+              533.31,
+              388.79
             ],
             "rotation": 0,
             "text": "\\n",
@@ -2007,8 +2007,8 @@
             "parentId": "page",
             "childIndex": 34,
             "point": [
-              309.96,
-              572.15
+              580.95,
+              386.84
             ],
             "rotation": 0,
             "text": "new line",
@@ -2029,8 +2029,8 @@
             "parentId": "page",
             "childIndex": 35,
             "point": [
-              244.36,
-              610.55
+              246.94,
+              544.89
             ],
             "rotation": 0,
             "text": ";",
@@ -2051,8 +2051,8 @@
             "parentId": "page",
             "childIndex": 36,
             "point": [
-              298.76,
-              615.35
+              301.34,
+              549.69
             ],
             "rotation": 0,
             "text": "end of line",
@@ -2073,8 +2073,8 @@
             "parentId": "page",
             "childIndex": 37,
             "point": [
-              242.46,
-              658.21
+              245.04,
+              592.55
             ],
             "rotation": 0,
             "text": ":",
@@ -2095,8 +2095,8 @@
             "parentId": "page",
             "childIndex": 38,
             "point": [
-              283.36,
-              659.41
+              285.94,
+              593.75
             ],
             "rotation": 0,
             "text": "lets present",

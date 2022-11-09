@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 22:07:55 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/08 22:43:41 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 11:49:00 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <string>
 #include <fstream>
+#include <iostream>
 
 class parser
 {
