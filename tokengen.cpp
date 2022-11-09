@@ -1,31 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parser.hpp                                         :+:      :+:    :+:   */
+/*   tokengen.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/08 22:07:55 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 18:05:16 by sakllam          ###   ########.fr       */
+/*   Created: 2022/11/09 18:06:02 by sakllam           #+#    #+#             */
+/*   Updated: 2022/11/09 18:06:14 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
-
-#include <cstdio>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <list>
 #include "tokengen.hpp"
-#include <cctype>
-class parser
+
+tokengen::tokengen(int type, std::string content) : type(type), content(content)
 {
-    private:
-        std::ifstream config;
-        
-    public:
-        parser(const std::string &filename);
-        std::list<tokengen> generate(std::ifstream config);
-        ~parser();
-};
+}
+
+tokengen::tokengen(int type) : type(type)
+{
+    
+}

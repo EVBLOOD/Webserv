@@ -6,12 +6,11 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 16:18:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 17:09:32 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 18:06:20 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
-
 # include <string>
 
 enum Type {
@@ -33,11 +32,3 @@ struct tokengen
     tokengen(int type, std::string content);
 };
 
-tokengen::tokengen(int type, std::string content) : type(type), content(content)
-{
-}
-
-tokengen::tokengen(int type) : type(type)
-{
-    
-}
