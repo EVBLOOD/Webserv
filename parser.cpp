@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 23:05:29 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/09 23:07:24 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,10 @@ bool isntspeacail(char x)
 std::list<tokengen> parser::generate()
 {
     std::list<tokengen> lexer;
-    std::string line;
-    int i;
-    int start;
+    std::string         line;
+    int                 i;
+    int                 start;
+
     while (getline(config, line))
     {
         i = 0;
