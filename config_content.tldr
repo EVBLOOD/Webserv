@@ -16,8 +16,8 @@
             "parentId": "page",
             "childIndex": 1,
             "point": [
-              405.13,
-              522.62
+              121.69,
+              103.06
             ],
             "rotation": 0,
             "text": "everything inside the configuration file is a directive. Directives are of two types:",
@@ -38,8 +38,8 @@
             "parentId": "page",
             "childIndex": 2,
             "point": [
-              576.38,
-              563.94
+              292.94,
+              144.38
             ],
             "rotation": 0,
             "style": {
@@ -195,8 +195,8 @@
             "parentId": "page",
             "childIndex": 3,
             "point": [
-              564.53,
-              601.96
+              281.09,
+              182.4
             ],
             "rotation": 0,
             "style": {
@@ -262,8 +262,8 @@
             "parentId": "page",
             "childIndex": 4,
             "point": [
-              556.01,
-              691.58
+              272.57,
+              272.02
             ],
             "rotation": 0,
             "style": {
@@ -324,8 +324,8 @@
             "parentId": "page",
             "childIndex": 5,
             "point": [
-              556.25,
-              707.47
+              272.81,
+              287.91
             ],
             "rotation": 0,
             "style": {
@@ -396,8 +396,8 @@
             "parentId": "page",
             "childIndex": 6,
             "point": [
-              983.75,
-              617.41
+              700.31,
+              197.85
             ],
             "rotation": 0,
             "style": {
@@ -488,8 +488,8 @@
             "parentId": "page",
             "childIndex": 7,
             "point": [
-              1043.21,
-              667.47
+              759.77,
+              247.91
             ],
             "rotation": 0,
             "style": {
@@ -555,8 +555,8 @@
             "parentId": "page",
             "childIndex": 8,
             "point": [
-              1007.04,
-              695.56
+              723.6,
+              276
             ],
             "rotation": 0,
             "style": {
@@ -632,8 +632,8 @@
             "parentId": "page",
             "childIndex": 9,
             "point": [
-              391.73,
-              709.42
+              108.29,
+              289.86
             ],
             "rotation": 0,
             "text": "Simple Directives :",
@@ -654,8 +654,8 @@
             "parentId": "page",
             "childIndex": 10,
             "point": [
-              875.9,
-              708.57
+              592.46,
+              289.01
             ],
             "rotation": 0,
             "text": "Block Directives :",
@@ -676,8 +676,8 @@
             "parentId": "page",
             "childIndex": 11,
             "point": [
-              768.46,
-              727.43
+              485.02,
+              307.87
             ],
             "rotation": 0,
             "style": {
@@ -783,8 +783,8 @@
             "parentId": "page",
             "childIndex": 12,
             "point": [
-              343.39,
-              741.9
+              59.95,
+              322.34
             ],
             "rotation": 0,
             "text": "name -space- param -semicolons-",
@@ -805,8 +805,8 @@
             "parentId": "page",
             "childIndex": 13,
             "point": [
-              817.36,
-              773.39
+              533.92,
+              353.83
             ],
             "rotation": 0,
             "text": " name -space- -pair of curly braces-",
@@ -827,8 +827,8 @@
             "parentId": "page",
             "childIndex": 14,
             "point": [
-              808.16,
-              835.1
+              524.72,
+              415.54
             ],
             "rotation": 0,
             "text": "Context : ",
@@ -849,8 +849,8 @@
             "parentId": "page",
             "childIndex": 15,
             "point": [
-              828.42,
-              865.84
+              544.98,
+              446.28
             ],
             "rotation": 0,
             "text": "name of blocks that are able of containing other directives inside ",
@@ -871,8 +871,8 @@
             "parentId": "page",
             "childIndex": 16,
             "point": [
-              824.07,
-              891.42
+              540.63,
+              471.86
             ],
             "rotation": 0,
             "text": "there are 4 important contexts: ",
@@ -893,8 +893,8 @@
             "parentId": "page",
             "childIndex": 17,
             "point": [
-              913.47,
-              922.61
+              630.03,
+              503.05
             ],
             "rotation": 0,
             "text": "envents { }",
@@ -915,8 +915,8 @@
             "parentId": "page",
             "childIndex": 18,
             "point": [
-              910.53,
-              945.02
+              627.09,
+              525.46
             ],
             "rotation": 0,
             "style": {
@@ -952,8 +952,8 @@
             "parentId": "page",
             "childIndex": 19,
             "point": [
-              921.81,
-              1003.91
+              638.37,
+              584.35
             ],
             "rotation": 0,
             "text": "http { }",
@@ -974,8 +974,8 @@
             "parentId": "page",
             "childIndex": 20,
             "point": [
-              904.77,
-              1086.8
+              621.33,
+              667.24
             ],
             "rotation": 0,
             "text": "server { }",
@@ -996,8 +996,8 @@
             "parentId": "page",
             "childIndex": 21,
             "point": [
-              942.21,
-              955.41
+              658.77,
+              535.85
             ],
             "rotation": 0,
             "text": "- used to set global configs\n- only one in a file",
@@ -1018,8 +1018,8 @@
             "parentId": "page",
             "childIndex": 22,
             "point": [
-              916.29,
-              1025.8
+              632.85,
+              606.24
             ],
             "rotation": 0,
             "style": {
@@ -1050,8 +1050,8 @@
             "parentId": "page",
             "childIndex": 23,
             "point": [
-              878.38,
-              1046.37
+              594.94,
+              626.81
             ],
             "rotation": 0,
             "text": "- used to define how the server is going to handle HTTP/S requests\n- only one in a file",
@@ -1072,8 +1072,8 @@
             "parentId": "page",
             "childIndex": 24,
             "point": [
-              903.52,
-              1110.66
+              620.08,
+              691.1
             ],
             "rotation": 0,
             "style": {
@@ -1104,8 +1104,8 @@
             "parentId": "page",
             "childIndex": 25,
             "point": [
-              911.48,
-              1116.13
+              628.04,
+              696.57
             ],
             "rotation": 0,
             "text": "- nested inside http context\n- used for configing specifc virtual servers in a single host\n- can be more than one in a file\n- each is a virtaul host",
@@ -1126,8 +1126,8 @@
             "parentId": "page",
             "childIndex": 26,
             "point": [
-              911.96,
-              1183.34
+              628.52,
+              763.78
             ],
             "rotation": 0,
             "text": "main",
@@ -1148,8 +1148,8 @@
             "parentId": "page",
             "childIndex": 27,
             "point": [
-              904.83,
-              1208.14
+              621.39,
+              788.58
             ],
             "rotation": 0,
             "style": {
@@ -1180,8 +1180,8 @@
             "parentId": "page",
             "childIndex": 28,
             "point": [
-              960.34,
-              1214.04
+              676.9,
+              794.48
             ],
             "rotation": 0,
             "text": "- the config file itself\n- anything outside the previous contexts",
@@ -1202,8 +1202,8 @@
             "parentId": "page",
             "childIndex": 29,
             "point": [
-              810.14,
-              859.62
+              526.7,
+              440.06
             ],
             "rotation": 0,
             "text": "scopes in other programming languages",
@@ -1224,8 +1224,8 @@
             "parentId": "page",
             "childIndex": 30,
             "point": [
-              898.97,
-              1291.64
+              615.53,
+              872.08
             ],
             "rotation": 0,
             "text": "location",
@@ -1246,8 +1246,8 @@
             "parentId": "page",
             "childIndex": 31,
             "point": [
-              893.05,
-              1315.85
+              609.61,
+              896.29
             ],
             "rotation": 0,
             "style": {
@@ -1278,8 +1278,8 @@
             "parentId": "page",
             "childIndex": 32,
             "point": [
-              869.99,
-              1264.23
+              586.55,
+              844.67
             ],
             "rotation": 0,
             "text": "other contexts: ",
@@ -1300,8 +1300,8 @@
             "parentId": "page",
             "childIndex": 33,
             "point": [
-              953.74,
-              1323.97
+              670.3,
+              904.41
             ],
             "rotation": 0,
             "text": "- nested inside server context\n- can be more than one in a server context\n- routing spicifcation",
@@ -1322,8 +1322,8 @@
             "parentId": "page",
             "childIndex": 34,
             "point": [
-              1006.08,
-              1294.66
+              722.64,
+              875.1
             ],
             "rotation": 0,
             "text": "name =equal operator / telda = -path- -pair of curly braces-",
@@ -1344,8 +1344,8 @@
             "parentId": "page",
             "childIndex": 35,
             "point": [
-              986.37,
-              1310.89
+              702.93,
+              891.33
             ],
             "rotation": 0,
             "bend": 0,
@@ -1400,8 +1400,8 @@
             "parentId": "page",
             "childIndex": 36,
             "point": [
-              1145.93,
-              490.17
+              862.49,
+              70.61
             ],
             "rotation": 0,
             "text": " note: what's bettween (-) is an oblegation while what's in (=) is optional",
@@ -1422,8 +1422,8 @@
             "parentId": "page",
             "childIndex": 37,
             "point": [
-              1148.04,
-              1263.54
+              864.6,
+              843.98
             ],
             "rotation": 0,
             "bend": 0.20294273465166698,
@@ -1478,8 +1478,8 @@
             "parentId": "page",
             "childIndex": 38,
             "point": [
-              1612.85,
-              1278.56
+              1329.41,
+              859
             ],
             "rotation": 0,
             "text": "or regix in the second case",
@@ -1500,8 +1500,8 @@
             "parentId": "page",
             "childIndex": 39,
             "point": [
-              1463.79,
-              1267.11
+              1180.35,
+              847.55
             ],
             "rotation": 0,
             "text": "to tell that you are searching for the exact matching",
@@ -1522,8 +1522,8 @@
             "parentId": "page",
             "childIndex": 40,
             "point": [
-              1516.24,
-              1302.73
+              1232.8,
+              883.17
             ],
             "rotation": 0,
             "text": "Exact\t=\nPreferential Prefix\t^~\nREGEX\t~ or ~*\nPrefix\tNone",
@@ -1544,8 +1544,8 @@
             "parentId": "page",
             "childIndex": 41,
             "point": [
-              1509.94,
-              1296.88
+              1226.5,
+              877.32
             ],
             "size": [
               122.08,
@@ -1572,8 +1572,8 @@
             "parentId": "page",
             "childIndex": 42,
             "point": [
-              424.96,
-              933.05
+              141.51999999999998,
+              513.49
             ],
             "rotation": 0,
             "text": "Variables : ",
@@ -1594,8 +1594,8 @@
             "parentId": "page",
             "childIndex": 43,
             "point": [
-              165.98,
-              908.13
+              -117.46,
+              488.57
             ],
             "rotation": 0,
             "style": {
@@ -1701,8 +1701,8 @@
             "parentId": "page",
             "childIndex": 44,
             "point": [
-              281.79,
-              970.62
+              -1.65,
+              551.06
             ],
             "rotation": 0,
             "text": "word<set> -space- varname -space- varvalue -semicolons-",
@@ -1723,8 +1723,8 @@
             "parentId": "page",
             "childIndex": 45,
             "point": [
-              620.32,
-              1015.33
+              336.88,
+              595.77
             ],
             "rotation": 0,
             "text": "String\nInteger\nBoolean",
@@ -1745,8 +1745,8 @@
             "parentId": "page",
             "childIndex": 46,
             "point": [
-              613.94,
-              1011.34
+              330.5,
+              591.78
             ],
             "size": [
               99.67,
@@ -1773,8 +1773,8 @@
             "parentId": "page",
             "childIndex": 47,
             "point": [
-              321.8,
-              1043.52
+              38.36,
+              623.96
             ],
             "rotation": 0,
             "text": "types ----------------->",
@@ -1795,8 +1795,8 @@
             "parentId": "page",
             "childIndex": 48,
             "point": [
-              402.22,
-              998.79
+              118.78,
+              579.23
             ],
             "rotation": 0,
             "text": "there are embedded var withing the modules",
@@ -1817,8 +1817,8 @@
             "parentId": "page",
             "childIndex": 49,
             "point": [
-              397.63,
-              796.26
+              136.31,
+              780.46
             ],
             "rotation": 0,
             "text": " ",
@@ -1839,8 +1839,8 @@
             "parentId": "page",
             "childIndex": 50,
             "point": [
-              284.34,
-              1268.23
+              5.4,
+              710.43
             ],
             "rotation": 0,
             "style": {
@@ -2066,8 +2066,8 @@
             "parentId": "page",
             "childIndex": 51,
             "point": [
-              393.64,
-              1143.39
+              110.2,
+              723.83
             ],
             "rotation": 0,
             "text": "Comments :",
@@ -2088,8 +2088,8 @@
             "parentId": "page",
             "childIndex": 52,
             "point": [
-              394.24,
-              1178.19
+              110.8,
+              758.63
             ],
             "rotation": 0,
             "text": "starts with #",
