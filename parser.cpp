@@ -6,11 +6,14 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 23:07:24 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:44:56 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
+#include "tokengen.hpp"
+#include <iterator>
+#include <list>
 
 
 parser::parser(const std::string &filename)
@@ -95,6 +98,20 @@ std::list<tokengen> parser::generate()
     }
     return lexer;
 }
+
+
+// std::list<tokengen> genarate_helper(std::list<tokengen> first)
+// {
+//     std::list<tokengen> last;
+//     std::list<tokengen>::iterator begin = first.begin();
+//     std::list<tokengen>::iterator end = first.end();
+    
+//     while (begin != end)
+//     {
+//         if 
+//         begin++;
+//     }
+// }
 
 parser::~parser()
 {
