@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/10 17:44:56 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/10 23:57:57 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,21 @@
 #include "tokengen.hpp"
 #include <iterator>
 #include <list>
+#include "server.hpp"
 
+#define A "server" // if no server no run
+#define B "location" // in no location no place to go
+#define C "listen" // if no listen no feedback
+#define D "root" // if no root I'll be checking "/var/www/html"
+#define E "client_max_body_size" // if no size one is the size
+#define F "error_page" // if no error default I'll use mine
+#define G "autoindex" // if no autoindex then yes
+#define H "index" // you wanna travel dicide a place
+#define I "allow_methods" // if not the everything
+#define J "return" // you need to change path?
+#define K "fastcgi_pass" // why speaking english if u only know arabic
+#define L "upload_enable" // let's download not apload default == nope!
+#define M "upload_store" // place to put your stuff in
 
 parser::parser(const std::string &filename)
 {
@@ -46,6 +60,8 @@ std::list<tokengen> parser::generate()
     while (getline(config, line))
     {
         i = 0;
+        // while (isspace(line[i]))
+        //     i++;
         while (i >= 0 && line[i])
         {
             if (isspace(line[i]))
@@ -98,7 +114,47 @@ std::list<tokengen> parser::generate()
     }
     return lexer;
 }
-
+// enum Type {
+//     OPENCURL,
+//     CLOSECURL,
+//     SEMICOLONS,
+//     WHITESPACE,
+//     WORD,
+//     QUOTES,
+//     COLON,
+//     ENDOFLINE,
+//     COMMENT
+// };
+std::vector<server> lexer_to_data(std::list<tokengen> lexer)
+{
+    std::vector<server> data;
+    std::list<tokengen>::iterator begin = lexer.begin();
+    std::list<tokengen>::iterator end = lexer.end();
+    // server newone;
+    while (begin != end && (begin->type == WHITESPACE || begin->type == COMMENT || begin->type == ENDOFLINE))
+        begin++;
+    while (begin != end)
+    {
+        if (begin->type == WORD && begin->content == A)
+        {
+            while (begin != end && (begin->type == WHITESPACE || begin->type == COMMENT || begin->type == ENDOFLINE))
+                begin++;
+            if (begin == end || begin->type != OPENCURL)
+                exit (1); // you mad bro?
+            begin++;
+            while (begin != end && (begin->type == WHITESPACE || begin->type == COMMENT || begin->type == ENDOFLINE))
+                begin++;
+            if (begin == end)
+                exit (0); // lets go
+            // so far that's great;
+            
+        }
+        if (begin != end)
+            begin++;
+    }
+    if (data.size() == 0)
+        exit (1); // throw an error bro no data here 
+}
 
 // std::list<tokengen> genarate_helper(std::list<tokengen> first)
 // {
