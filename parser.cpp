@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/11 22:02:30 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/11 22:03:43 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,11 +135,25 @@ enum KEYEGN{
   context_location,
   simpledir
 };
+
+// #define A "server" // if no server no run
+// #define B "location" // in no location no place to go
+// #define C "listen" // if no listen no feedback
+// #define D "root" // if no root I'll be checking "/var/www/html"
+// #define E "client_max_body_size" // if no size one is the size
+// #define F "error_page" // if no error default I'll use mine
+// #define G "autoindex" // if no autoindex then yes
+// #define H "index" // you wanna travel dicide a place
+// #define I "allow_methods" // if not the everything
+// #define J "return" // you need to change path?
+// #define K "fastcgi_pass" // why speaking english if u only know arabic
+// #define L "upload_enable" // let's download not apload default == nope!
+// #define M "upload_store" // place to put your stuff in
+
 template <int>
 void separating(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
 {
 }
-
 template <>
 void separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
 {
