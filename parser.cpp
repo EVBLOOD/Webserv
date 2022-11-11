@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/11 18:43:55 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/11 22:02:30 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,11 +115,13 @@ std::list<tokengen> parser::generate()
     }
     return lexer;
 }
-std::list<tokengen>::iterator CURLWAIT(std::list<tokengen>::iterator x, std::list<tokengen>::iterator end)
+std::list<tokengen>::iterator CURLWAIT(std::list<tokengen>::iterator x, std::list<tokengen>::iterator end, bool loc = false)
 {
     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
         x++;
-    if (x == end || x->type != OPENCURL)
+    if (loc)
+        return (x);
+    if (x == end ||x->type != OPENCURL)
         exit (1); // you mad bro?
     x++;
     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
@@ -141,10 +143,20 @@ void separating(std::list<tokengen>::iterator &begin, std::list<tokengen>::itera
 template <>
 void separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
 {
-    CURLWAIT(begin, end);
+    begin = CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL)
     {
-        
+        // so now I should find this shit how?
+        // if (location)
+            // call location shit
+        // else if (names)
+            // call the other function
+        // else if (names)
+        // else if (names)
+        // else if (names)
+        // else if (names)
+        // else if (names)
+        // else if (names)
         begin++;
     }
     if (begin == end)
@@ -154,12 +166,16 @@ void separating<context_server>(std::list<tokengen>::iterator &begin, std::list<
 template <>
 void separating<context_location>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
 {
-    CURLWAIT(begin, end);
+    begin = CURLWAIT(begin, end, true);
+    if (begin == end || begin->type != WORD)
+        exit (1); // ikhan osf
+    // add an object location to this world
+    begin = CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL)
     {
         separating<simpledir>(begin, end);
         if (begin == end)
-            exit (); // bruh are u seruios
+            exit (1); // bruh are u srs?
         begin++;
     }
     if (begin == end)
@@ -179,7 +195,7 @@ void separating<context_location>(std::list<tokengen>::iterator &begin, std::lis
 //  QUOTES
 // ------------------------------
 template <>
-void separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, int) // I may need somewhere to store this data!
+void separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end) // I may need somewhere to store this data!
 {
     bool multi = true;
     // (add this begin to your class and check if it's multuple)
@@ -239,7 +255,7 @@ std::vector<server> lexer_to_data(std::list<tokengen> lexer)
     }
     if (data.size() == 0)
         exit (1); // throw an error bro no data here 
-    return NULL;
+    return data;
 }
 
 // std::list<tokengen> genarate_helper(std::list<tokengen> first)
