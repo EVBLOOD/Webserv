@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/10 23:57:57 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/11 18:43:55 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "tokengen.hpp"
 #include <iterator>
 #include <list>
+#include <vector>
 #include "server.hpp"
 
 #define A "server" // if no server no run
@@ -114,17 +115,92 @@ std::list<tokengen> parser::generate()
     }
     return lexer;
 }
-// enum Type {
-//     OPENCURL,
-//     CLOSECURL,
-//     SEMICOLONS,
-//     WHITESPACE,
-//     WORD,
-//     QUOTES,
-//     COLON,
-//     ENDOFLINE,
-//     COMMENT
-// };
+std::list<tokengen>::iterator CURLWAIT(std::list<tokengen>::iterator x, std::list<tokengen>::iterator end)
+{
+    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+        x++;
+    if (x == end || x->type != OPENCURL)
+        exit (1); // you mad bro?
+    x++;
+    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+        x++;
+    if (x == end)
+        exit (0); // lets go
+    return (x);
+}
+enum KEYEGN{
+  context_server,
+  context_location,
+  simpledir
+};
+template <int>
+void separating(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
+{
+}
+
+template <>
+void separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
+{
+    CURLWAIT(begin, end);
+    while (begin != end && begin->type != CLOSECURL)
+    {
+        
+        begin++;
+    }
+    if (begin == end)
+        exit(0); // no end bro?
+}
+
+template <>
+void separating<context_location>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end)
+{
+    CURLWAIT(begin, end);
+    while (begin != end && begin->type != CLOSECURL)
+    {
+        separating<simpledir>(begin, end);
+        if (begin == end)
+            exit (); // bruh are u seruios
+        begin++;
+    }
+    if (begin == end)
+        exit(0); // no end bro?
+}
+
+// ------------------------------
+//  SEMICOLONS
+//  OPENCURL
+//  CLOSECURL
+//  WHITESPACE
+//  COLON
+//  ENDOFLINE
+//  COMMENT
+// ------------------------------
+//  WORD
+//  QUOTES
+// ------------------------------
+template <>
+void separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, int) // I may need somewhere to store this data!
+{
+    bool multi = true;
+    // (add this begin to your class and check if it's multuple)
+    bool one = false;
+    if (begin == end)
+        exit (1); // yoou mad bro?
+    while (begin != end && begin->type != SEMICOLONS)
+    {
+        while (begin != end && begin->type == WHITESPACE)
+            begin++;
+        if (begin == end || begin->type != WORD || begin->type != QUOTES)
+            exit (1); // hehe
+        if (multi == false && one)
+            exit (0); // bro you mad again?
+        // add this one to it's proper place
+        // if () //else if () // else if () // else if () // or just throw an error! 
+        one = true;
+        begin++;
+    }
+}
+
 std::vector<server> lexer_to_data(std::list<tokengen> lexer)
 {
     std::vector<server> data;
@@ -147,13 +223,23 @@ std::vector<server> lexer_to_data(std::list<tokengen> lexer)
             if (begin == end)
                 exit (0); // lets go
             // so far that's great;
-            
+            while (begin != end && begin->type != CLOSECURL)
+            {
+                if (begin->type == WORD && begin->content == B)
+                {
+                    
+                }
+            }
+            if (begin == end)
+                exit (0); // no closed curl
+               
         }
         if (begin != end)
             begin++;
     }
     if (data.size() == 0)
         exit (1); // throw an error bro no data here 
+    return NULL;
 }
 
 // std::list<tokengen> genarate_helper(std::list<tokengen> first)
