@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:12:22 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/12 16:08:58 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/12 22:50:34 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,19 +34,19 @@ class server
         server();
         ~server();
         template<int>
-            void setters(std::string x, ...);
+            void setters(std::list<tokengen>::iterator big, std::list<tokengen> end);
         template<>
-            void setters<setport>(std::string x, ...);
+            void setters<setport>(std::list<tokengen>::iterator big, std::list<tokengen> end);
         template<>
-            void setters<setservername>(std::string x, ...);
+            void setters<setservername>(std::list<tokengen>::iterator big, std::list<tokengen> end);
         template<>
-            void setters<setmap>(std::string x, ...);
+            void setters<setmap>(std::list<tokengen>::iterator big, std::list<tokengen> end);
         template<>
-            void setters<setroot>(std::string x, ...);
+            void setters<setroot>(std::list<tokengen>::iterator big, std::list<tokengen> end);
         template<>
-            void setters<setlocation>(std::string x, ...);
+            void setters<setlocation>(std::list<tokengen>::iterator big, std::list<tokengen> end);
         template<>
-            void setters<setclient_max_body_size>(std::string x, ...);
+            void setters<setclient_max_body_size>(std::list<tokengen>::iterator big, std::list<tokengen> end);
         // void setport(std::string x);
         // void setservername(std::string x);
         // void setmap(std::string x, std::string y);
@@ -54,6 +54,115 @@ class server
         // void setlocation(std::string x, location y);
         // void setclient_max_body_size(std::string x);
 };
+
+template<int>
+    void server::setters(std::list<tokengen>::iterator big, std::list<tokengen> end)
+{
+    std::cerr << "always dreaming";
+}
+template<>
+    void server::setters<setport>(std::list<tokengen>::iterator big, std::list<tokengen> end)
+{
+    std::string tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 1);
+    else
+        tmp = big->content;
+    int ports;
+    // iostream x = tmp;
+    // if not working check if it will
+    port.push_back(ports);
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1); // alo alo alo
+}
+
+template<>
+    void server::setters<setservername>(std::list<tokengen>::iterator big, std::list<tokengen> end)
+{
+    std::string tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 1);
+    else
+        tmp = big->content;
+    server_name.push_back(tmp);
+    CURLWAIT(big, end, true);
+    if (big != end && big->type != SEMICOLONS)
+        setters<setservername>(big, end);
+}
+template<>
+    void server::setters<setmap>(std::list<tokengen>::iterator big, std::list<tokengen> end)
+{
+        std::string tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 1);
+    else
+        tmp = big->content;
+    int status;
+    // iostream x = tmp;
+    // status = x;
+    // and check for errors!
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 1);
+    else
+        tmp = big->content;
+    error_page.insert(std::make_pair(status, tmp));
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1); // alo alo
+}
+template<>
+    void server::setters<setroot>(std::list<tokengen>::iterator big, std::list<tokengen> end)
+{
+    std::string tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 1);
+    else
+        tmp = big->content;
+    root = tmp;
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1); // alo alo
+}
+// template<>
+//     void setters<setlocation>(std::list<tokengen>::iterator big, std::list<tokengen> end); // I not yet sure how I'll be using this one
+template<>
+    void server::setters<setclient_max_body_size>(std::list<tokengen>::iterator big, std::list<tokengen> end)
+{
+    std::string tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 1);
+    else
+        tmp = big->content;
+    client_max_body_size.push_back(tmp);
+    CURLWAIT(big, end, true);
+    if (big != end && big->type != SEMICOLONS)
+        setters<setclient_max_body_size>(big, end);
+}
+
 
 server::server()
 {
