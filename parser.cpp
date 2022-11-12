@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/12 22:04:06 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/12 22:08:57 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,7 +191,7 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
     {
         while (begin != end && begin->type == WHITESPACE)
             begin++;
-        if (begin == end || begin->type != WORD || begin->type != QUOTES)
+        if (begin == end ||( begin->type != WORD && begin->type != QUOTES)) // check and change
             exit (1); // hehe
         // if (server)
         // {
