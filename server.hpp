@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:12:22 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/12 22:50:34 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/12 22:53:44 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,14 @@ class server
         // void setservername(std::string x);
         // void setmap(std::string x, std::string y);
         // void setroot(std::string x);
-        // void setlocation(std::string x, location y);
+        void setlocation(std::string x, location y);
         // void setclient_max_body_size(std::string x);
 };
+
+void server::setlocation(std::string x, location y)
+{
+    locations.insert(std::make_pair(x, y)); // don't forget the path in the other side plz
+}
 
 template<int>
     void server::setters(std::list<tokengen>::iterator big, std::list<tokengen> end)
