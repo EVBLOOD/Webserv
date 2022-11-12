@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:58:39 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/12 19:17:45 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/12 22:05:06 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "tokengen.hpp"
+
 enum func{
     setport,
     setservername,
@@ -45,21 +47,21 @@ class location
         location();
         ~location();
         template<int>
-            void set(std::string x);
-        template<>
-        void set<setallow_methods>(std::string x);
-        template<>
-            void set<setfastcgi_pass>(std::string x);
-        template<>
-            void set<setindex>(std::string x);
-        template<>
-            void set<setreturn>(std::string x);
-        template<>
-            void set<setautoindex>(std::string x);
-        template<>
-            void set<setupload_enable>(std::string x);
-        template<>
-            void set<setupload_store>(std::string x);
+            void set(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        // void set<setallow_methods>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        //     void set<setfastcgi_pass>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        //     void set<setindex>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        //     void set<setreturn>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        //     void set<setautoindex>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        //     void set<setupload_enable>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
+        // template<>
+        //     void set<setupload_store>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
         void setallow_methods(std::string x);
         void setfastcgi_pass(std::string x);
         void setindex(std::string x);
@@ -70,47 +72,47 @@ class location
 };
 
 template<int>
-    void location::set(std::string x)
+    void location::set(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
     std::cout << "what a funny joke\n";
 }
 template<>
-    void location::set<setallow_methods>(std::string x)
+    void location::set<setallow_methods>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
-    if (x == "GET" || x == "POST"  || x == "DELETE")
-    {
-        allow_methods.push_back(x);
-        return;
-    }
+    // if (x == "GET" || x == "POST"  || x == "DELETE")
+    // {
+    //     allow_methods.push_back(x);
+    //     return;
+    // }
     exit (1); // allo 
 }
 template<>
-    void location::set<setfastcgi_pass>(std::string x)
+    void location::set<setfastcgi_pass>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
-    fastcgi_pass = x;
+    // fastcgi_pass = x;
 }
 template<>
-    void location::set<setindex>(std::string x)
+    void location::set<setindex>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
-    index.push_back(x);
+    // index.push_back(x);
 }
 template<>
-    void location::set<setreturn>(std::string x)
+    void location::set<setreturn>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
     // ret_rn.insert()
 }
 template<>
-    void location::set<setautoindex>(std::string x)
+    void location::set<setautoindex>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
     
 }
 template<>
-    void location::set<setupload_enable>(std::string x)
+    void location::set<setupload_enable>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
     
 }
 template<>
-    void location::set<setupload_store>(std::string x)
+    void location::set<setupload_store>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
 {
     
 }
