@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:58:39 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 13:34:21 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 15:52:23 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ enum func{
     setupload_enable,
     setupload_store
 };
-
+typedef enum func func;
 class location
 {
     private:

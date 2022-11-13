@@ -6,11 +6,12 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 13:28:36 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 17:06:15 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
+#include "location.hpp"
 #include "tokengen.hpp"
 #include <iterator>
 #include <list>
@@ -55,10 +56,12 @@ parser::parser(const std::string &filename)
         // else throw an error;
     }
 }
+
 bool isntspeacail(char x)
 {
     return (x != '{' && x != '}' && x != ';' && x != ':' && x != '\'' && x != '"'  && isspace(x) == false);   
 }
+
 std::list<tokengen> parser::generate()
 {
     std::list<tokengen> lexer;
@@ -69,8 +72,6 @@ std::list<tokengen> parser::generate()
     while (getline(config, line))
     {
         i = 0;
-        // while (isspace(line[i]))
-        //     i++;
         while (i >= 0 && line[i])
         {
             if (isspace(line[i]))
@@ -123,6 +124,7 @@ std::list<tokengen> parser::generate()
     }
     return lexer;
 }
+
 void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
 {
     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
@@ -174,13 +176,10 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server)
 }
 
 
-template <int>
-void parser::separating(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server)
-{
-}
 template <>
 void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server) // I may need somewhere to store this data!
 {
+    // function_server fun[] = {tmpserv.setters<0>, }
     // bool multi = true;
     // (add this begin to your class and check if it's multuple)
     // bool one = false;
@@ -205,6 +204,10 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
         {
             if (cond[i].second == tmp)
             {
+                tmpserv.execute(i, begin, end);
+                servers.push_back(tmpserv);
+                // tmpserv.setters<int>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+                // tmpserv.setters<i>(begin, end);
                 // if (server)
                 // setter<i> to the correspondent class
             }

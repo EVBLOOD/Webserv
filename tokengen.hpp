@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 16:18:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 23:01:45 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 14:19:47 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ enum Type {
     ENDOFLINE,
     COMMENT
 };
-
 
 struct tokengen
 {

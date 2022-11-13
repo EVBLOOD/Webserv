@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:12:22 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 13:33:22 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 17:04:57 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <vector>
 #include <map>
 #include "location.hpp"
+#include "tokengen.hpp"
 #include <list>
 
 class server
@@ -32,10 +33,7 @@ class server
         server();
         ~server();
         template<int>
-            void setters(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
-        // void setservername(std::string x);
-        // void setmap(std::string x, std::string y);
-        // void setroot(std::string x);
+            void setters(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
         void setlocation(std::string x, location y);
-        // void setclient_max_body_size(std::string x);
+        void execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
 };

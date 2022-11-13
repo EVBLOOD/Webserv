@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 22:07:55 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/12 18:47:23 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 15:04:15 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class parser
         std::ifstream config;
         std::vector<server> servers;
         location tmp;
+        server tmpserv;
     public:
         parser(const std::string &filename);
         std::list<tokengen> generate();
