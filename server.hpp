@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:12:22 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 19:09:57 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 22:59:31 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class server
         unsigned long long client_max_body_size;
         
     public:
+        server(const server &sv)
         server();
         ~server();
         server &operator=(const server &server);

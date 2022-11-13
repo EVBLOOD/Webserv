@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 19:10:17 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 23:00:29 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,30 +139,17 @@ void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &e
     if (x == end)
         exit (0); // lets go
 }
-// #define A "server" // if no server no run
-// #define B "location" // in no location no place to go
-// #define C "listen" // if no listen no feedback
-// #define D "root" // if no root I'll be checking "/var/www/html"
-// #define E "client_max_body_size" // if no size one is the size
-// #define F "error_page" // if no error default I'll use mine
-// #define G "autoindex" // if no autoindex then yes
-// #define H "index" // you wanna travel dicide a place
-// #define I "allow_methods" // if not the everything
-// #define J "return" // you need to change path?
-// #define K "fastcgi_pass" // why speaking english if u only know arabic
-// #define L "upload_enable" // let's download not apload default == nope!
-// #define M "upload_store" // place to put your stuff in
-// #define N "server_name" // place to put your stuff in
 
 std::vector<std::pair<bool, std::string> > generatestring(bool server)
 {
     std::vector<std::pair<bool, std::string> > x;
+    x.reserve(13)
     x.push_back(std::make_pair(true, C));
     x.push_back(std::make_pair(true, N));
     x.push_back(std::make_pair(true, F));
     x.push_back(std::make_pair(false, D));
     x.push_back(std::make_pair(false, E));
-    // location
+    x.push_back(std::make_pair(false, "location"));
     if (server)
         return x;
     x.push_back(std::make_pair(true, I));
@@ -179,10 +166,6 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server)
 template <>
 void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server) // I may need somewhere to store this data!
 {
-    // function_server fun[] = {tmpserv.setters<0>, }
-    // bool multi = true;
-    // (add this begin to your class and check if it's multuple)
-    // bool one = false;
     std::string tmp;
     if (begin == end)
         exit (1); // yoou mad bro?
@@ -192,8 +175,6 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
             begin++;
         if (begin == end ||( begin->type != WORD && begin->type != QUOTES)) // check and change
             exit (1); // hehe
-        // if (server)
-        // {
         std::vector<std::pair<bool, std::string> > cond =  generatestring(server);
         if (begin->type != QUOTES)
             tmp = begin->content.substr(1, begin->content.length() - 2);
@@ -204,29 +185,27 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
         {
             if (cond[i].second == tmp)
             {
-                tmpserv.execute(i, begin, end);
-                servers.push_back(tmpserv);
-                // tmpserv.setters<int>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-                // tmpserv.setters<i>(begin, end);
-                // if (server)
-                // setter<i> to the correspondent class
+                if (server)
+                    tmpserv.execute(i, begin, end);
+                else
+                    tmploc.execute(i, begin, end);
             }
         }
-        // if (multi == false && one)
-        //     exit (0); // bro you mad again?
-        // add this one to it's proper place
-        // if () //else if () // else if () // else if () // or just throw an error! 
-        // one = true;
         begin++;
     }
 }
 template <>
 void parser::separating<context_location>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server)
 {
+    std::string name;
+    tmploc = location();
     CURLWAIT(begin, end, true);
     if (begin == end || begin->type != WORD)
-        exit (1); // ikhan osf
-    // add an object location to this world
+        exit (1);
+     if (begin->type != QUOTES)
+            name = begin->content.substr(1, begin->content.length() - 2);
+        else
+            name = begin->content;
     CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL)
     {
@@ -237,6 +216,7 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
     }
     if (begin == end)
         exit(0); // no end bro?
+    tmpserv.setlocation(name, tmploc);
 }
 
 template <>
@@ -250,18 +230,15 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
     {
         CURLWAIT(begin, end, true);
         // so now I should find this shit how?
-        // if (begin->type == WORD && begin->content == "location")
-            // call location shit
-        // else
-            // call the other function
-        // if (begin != end)
-        //     begin++;
+        if (begin->type == WORD && begin->content == "location")
+            separating<context_location>(begin, end, serv);
+        else
+            separating<simpledir>(begin, end, serv);
     }
     if (begin == end)
         exit(0); // no end bro?
+    servers.pop_back(tmpserv);
 }
-
-server &operator=(const server &server);
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
 {
@@ -273,35 +250,7 @@ std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
     if (begin == end || begin->type != WORD || begin->content != A)
         exit (1); // bro this is an error!
     while (begin != end)
-    {
         separating<context_server>(begin, end);
-        // the server was found now I need additionall stuff
-        // if (begin->type == WORD && begin->content == A)
-        // {
-        //     while (begin != end && (begin->type == WHITESPACE || begin->type == COMMENT || begin->type == ENDOFLINE))
-        //         begin++;
-        //     if (begin == end || begin->type != OPENCURL)
-        //         exit (1); // you mad bro?
-        //     begin++;
-        //     while (begin != end && (begin->type == WHITESPACE || begin->type == COMMENT || begin->type == ENDOFLINE))
-        //         begin++;
-        //     if (begin == end)
-        //         exit (0); // lets go
-        //     // so far that's great;
-        //     while (begin != end && begin->type != CLOSECURL)
-        //     {
-        //         if (begin->type == WORD && begin->content == B)
-        //         {
-                    
-        //         }
-        //     }
-        //     if (begin == end)
-        //         exit (0); // no closed curl
-               
-        // }
-        // if (begin != end)
-        //     begin++;
-    }
     if (data.size() == 0)
         exit (1); // throw an error bro no data here 
     return data;

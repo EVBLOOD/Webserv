@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 13:34:25 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 22:57:52 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,6 +180,13 @@ template<>
     if (big == end || big->type != SEMICOLONS)
         exit (1); // alo alo
 }
+
+void location::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    function_location funs[] = {&location::set<6>, &location::set<7>, &location::set<8>, &location::set<9>, &location::set<10>, &location::set<11>, &location::set<12>};
+    (this->*funs[i])(big, end);
+}
+
 location::location()
 {
     
@@ -188,4 +195,25 @@ location::location()
 location::~location()
 {
     
+}
+
+location::location(const location &lc)
+{
+    *this = ls;
+}
+
+location &location::operator=(const location &lc)
+{
+    if (this != &lc)
+    {
+        std::cerr << "wait what??? \n";
+        exit (1);
+    }
+    index = lc.index;
+    ret_rn = lc.ret_rn;
+    autoindex = lc.autoindex;
+    allow_methods = lc.allow_methods;
+    fastcgi_pass = lc.fastcgi_pass;
+    upload_enable = lc.upload_enable;
+    upload_store = lc.upload_store;
 }

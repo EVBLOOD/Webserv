@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:58:39 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 15:52:23 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 22:58:16 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ enum func{
     setupload_enable,
     setupload_store
 };
-typedef enum func func;
+
 class location
 {
     private:
@@ -47,10 +47,13 @@ class location
         bool upload_enable;
         std::string upload_store;
     public:
+        location(const location &lc)
         location();
         ~location();
+        location &operator=(const location &lc);
         template<int>
             void set(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end); // turn this to refrence
+        void execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
         // template<>
         // void set<setallow_methods>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
         // template<>

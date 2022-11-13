@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 17:04:13 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 22:59:05 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,4 +194,25 @@ void server::execute(int i,std::list<tokengen>::iterator &big, std::list<tokenge
 {
     function_server funs[] = {&server::setters<0>, &server::setters<1>, &server::setters<2>, &server::setters<3>, &server::setters<4>};
     (this->*funs[i])(big, end);
+}
+
+server::server(const server &sv)
+{
+    *this = sv;
+}
+
+server &server::operator=(const server &sv)
+{
+    if (this == &sv)
+    {
+        std::cerr << "this was unexpected!";
+        exit (1);
+    }
+    port = sv.port;
+    server_name = sv.server_name;
+    error_page = sv.error_page;
+    root = sv.root;
+    locations = sv.locations;
+    client_max_body_size= sv.client_max_body_size;
+    return *this;
 }

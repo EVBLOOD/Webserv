@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 22:07:55 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 15:04:15 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 22:45:04 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class parser
     private:
         std::ifstream config;
         std::vector<server> servers;
-        location tmp;
+        location tmploc;
         server tmpserv;
     public:
         parser(const std::string &filename);
