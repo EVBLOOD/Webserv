@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 17:06:15 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 19:10:17 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,8 +240,9 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
 }
 
 template <>
-void parser::separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server)
+void parser::separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool serv)
 {
+    tmpserv = server();
     CURLWAIT(begin, end);
     if (begin == end || begin->type != WORD || begin->content != A)
         exit (1); // bro this is an error!
@@ -260,7 +261,7 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
         exit(0); // no end bro?
 }
 
-
+server &operator=(const server &server);
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
 {

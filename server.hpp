@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:12:22 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 17:04:57 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/13 19:09:57 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class server
     public:
         server();
         ~server();
+        server &operator=(const server &server);
         template<int>
             void setters(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
         void setlocation(std::string x, location y);
