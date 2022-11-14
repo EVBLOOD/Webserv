@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 23:17:36 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 23:27:45 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,6 @@ template<>
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
-    big++;
     int ports;
     for (int i = 0; tmp[i]; i++)
         if (isdigit(tmp[i]) == false) // TODO: check this
@@ -81,6 +80,7 @@ template<>
     x << tmp;
     x >> ports;
     port.push_back(ports);
+    big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
         exit (1);
@@ -100,6 +100,7 @@ template<>
     else
         tmp = big->content;
     server_name.push_back(tmp);
+    big++;
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
         setters<setservername>(big, end);
@@ -128,6 +129,7 @@ template<>
             exit (1);
     x << tmp;
     x >> status;
+    big++;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1);
@@ -136,6 +138,7 @@ template<>
     else
         tmp = big->content;
     error_page.insert(std::make_pair(status, tmp));
+    big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
         exit (1);
@@ -155,6 +158,7 @@ template<>
     else
         tmp = big->content;
     root = tmp;
+    big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
         exit (1);
@@ -182,6 +186,7 @@ template<>
     x << tmp;
     x >> size; // TODO: maybe I'll make it count by Mb
     client_max_body_size = size; // TODO: read about this one and find out the real lims
+    big++;
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
        exit (1);

@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 23:14:51 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 23:25:06 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,7 +190,7 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
     }
     if (begin == end || i == size)
         exit (1);
-    begin++;
+    // begin++;
     CURLWAIT(begin, end, true);
 }
 template <>
