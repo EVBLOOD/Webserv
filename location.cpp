@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 23:03:32 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 23:13:31 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,7 +203,7 @@ location::location(const location &lc)
 
 location &location::operator=(const location &lc)
 {
-    if (this != &lc)
+    if (this == &lc)
     {
         std::cerr << "wait what??? \n";
         exit (1);

@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 23:06:28 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 23:14:51 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,6 +191,7 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
     if (begin == end || i == size)
         exit (1);
     begin++;
+    CURLWAIT(begin, end, true);
 }
 template <>
 void parser::separating<context_location>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server)
@@ -211,6 +212,7 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
     if (begin == end)
         exit(0); // not closed
     begin++;
+    CURLWAIT(begin, end, true);
     tmpserv.setlocation(name, tmploc);
 }
 
@@ -232,7 +234,7 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
             separating<simpledir>(begin, end, serv);
     }
     if (begin == end)
-        exit(0); // curl end
+        exit(0);
     begin++;
     CURLWAIT(begin, end, true);
     servers.push_back(tmpserv);
@@ -244,7 +246,6 @@ std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
     std::list<tokengen>::iterator end = lexer.end();
     while (begin != end)
         separating<context_server>(begin, end);
-    std::cout << "done\n";
     if (servers.size() == 0)
         exit (1);
     return servers;
