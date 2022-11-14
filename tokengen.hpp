@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 16:18:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 14:19:47 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:54:35 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ enum Type {
     WHITESPACE,
     WORD,
     QUOTES,
-    COLON,
     ENDOFLINE,
     COMMENT
 };

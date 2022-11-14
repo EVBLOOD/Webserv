@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:39:08 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:57:21 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ parser::parser(const std::string &filename)
 
 bool isntspeacail(char x)
 {
-    return (x != '{' && x != '}' && x != ';' && x != ':' && x != '\'' && x != '"'  && isspace(x) == false);   
+    return (x != '{' && x != '}' && x != ';' && x != '\'' && x != '"'  && isspace(x) == false);   
 }
 
 std::list<tokengen> parser::generate()
@@ -101,8 +101,6 @@ std::list<tokengen> parser::generate()
                 lexer.push_back(tokengen(CLOSECURL));
             else if (line[i] == ';')
                 lexer.push_back(tokengen(SEMICOLONS));
-            else if (line[i] == ':')
-                lexer.push_back(tokengen(COLON));
             else if (line[i] == '#')
             {
                 lexer.push_back(tokengen(COMMENT));
@@ -222,26 +220,31 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
 template <>
 void parser::separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool serv)
 {
+    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     tmpserv = server();
     CURLWAIT(begin, end);
     if (begin == end || begin->type != WORD || begin->content != A)
         exit (1); // bro this is an error!
     while (begin != end && begin->type != CLOSECURL)
     {
+        puts("--------------------------------------- context server begin ---------------------------------------");
         CURLWAIT(begin, end, true);
         // so now I should find this shit how?
         if (begin->type == WORD && begin->content == "location")
             separating<context_location>(begin, end, serv);
         else
             separating<simpledir>(begin, end, serv);
+        puts("--------------------------------------- context server end ---------------------------------------");
     }
     if (begin == end)
         exit(0); // no end bro?
     servers.push_back(tmpserv);
+    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
 }
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
 {
+    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     std::vector<server> data;
     std::list<tokengen>::iterator begin = lexer.begin();
     std::list<tokengen>::iterator end = lexer.end();
@@ -253,6 +256,7 @@ std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
         separating<context_server>(begin, end);
     if (data.size() == 0)
         exit (1); // throw an error bro no data here 
+    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     return data;
 }
 
