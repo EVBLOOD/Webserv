@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:57:21 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 19:07:05 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,32 +165,31 @@ template <>
 void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server) // I may need somewhere to store this data!
 {
     std::string tmp;
-    if (begin == end)
-        exit (1); // yoou mad bro?
-    while (begin != end && begin->type != SEMICOLONS)
+    int i;
+
+    CURLWAIT(begin, end, true);
+    if (begin == end || (begin->type != WORD && begin->type != QUOTES))
+        exit (1);
+    std::vector<std::pair<bool, std::string> > cond =  generatestring(server);
+    size_t size = cond.size(); // I can optimize this one
+    if (begin->type == QUOTES)
+        tmp = begin->content.substr(1, begin->content.length() - 2);
+    else
+        tmp = begin->content;
+    for (i = 0; i < size; i++)
     {
-        while (begin != end && begin->type == WHITESPACE)
-            begin++;
-        if (begin == end ||( begin->type != WORD && begin->type != QUOTES)) // check and change
-            exit (1); // hehe
-        std::vector<std::pair<bool, std::string> > cond =  generatestring(server);
-        if (begin->type != QUOTES)
-            tmp = begin->content.substr(1, begin->content.length() - 2);
-        else
-            tmp = begin->content;
-        size_t size = cond.size();
-        for (int i = 0; i < size; i++)
+        if (cond[i].second == tmp)
         {
-            if (cond[i].second == tmp)
-            {
-                if (server)
-                    tmpserv.execute(i, begin, end);
-                else
-                    tmploc.execute(i, begin, end);
-            }
+            if (server)
+                tmpserv.execute(i, begin, end);
+            else
+                tmploc.execute(i, begin, end);
+            break ;
         }
-        begin++;
     }
+    if (begin == end || i == size)
+        exit (1);
+    begin++;
 }
 template <>
 void parser::separating<context_location>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server)
@@ -198,92 +197,60 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
     std::string name;
     tmploc = location();
     CURLWAIT(begin, end, true);
-    if (begin == end || begin->type != WORD)
+    if (begin == end || (begin->type != WORD && begin->type != QUOTES))
         exit (1);
-    if (begin->type != QUOTES)
+    if (begin->type == QUOTES)
         name = begin->content.substr(1, begin->content.length() - 2);
     else
         name = begin->content;
+    begin++;
     CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL)
-    {
         separating<simpledir>(begin, end, false);
-        if (begin == end)
-            exit (1); // bruh are u srs?
-        begin++;
-    }
     if (begin == end)
-        exit(0); // no end bro?
+        exit(0); // not closed
+    begin++;
     tmpserv.setlocation(name, tmploc);
 }
 
 template <>
 void parser::separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool serv)
 {
-    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     tmpserv = server();
+    CURLWAIT(begin, end, true);
+    if (begin == end || (begin->type != WORD && begin->content != A))
+        exit (1);
+    begin++;
     CURLWAIT(begin, end);
-    if (begin == end || begin->type != WORD || begin->content != A)
-        exit (1); // bro this is an error!
     while (begin != end && begin->type != CLOSECURL)
     {
-        puts("--------------------------------------- context server begin ---------------------------------------");
         CURLWAIT(begin, end, true);
-        // so now I should find this shit how?
         if (begin->type == WORD && begin->content == "location")
             separating<context_location>(begin, end, serv);
-        else
+        else if (begin->type == WORD)
+        {
+    std::cout << "mamtaf9ch \n";
+            
             separating<simpledir>(begin, end, serv);
-        puts("--------------------------------------- context server end ---------------------------------------");
+        }
     }
     if (begin == end)
-        exit(0); // no end bro?
+        exit(0); // curl end
+    begin++;
     servers.push_back(tmpserv);
-    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
 }
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
 {
-    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     std::vector<server> data;
     std::list<tokengen>::iterator begin = lexer.begin();
     std::list<tokengen>::iterator end = lexer.end();
-    // server newone;
-    CURLWAIT(begin, end, true);
-    if (begin == end || begin->type != WORD || begin->content != A)
-        exit (1); // bro this is an error!
     while (begin != end)
         separating<context_server>(begin, end);
     if (data.size() == 0)
-        exit (1); // throw an error bro no data here 
-    puts(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+        exit (1);
     return data;
 }
-
-// ------------------------------
-//  SEMICOLONS
-//  OPENCURL
-//  CLOSECURL
-//  WHITESPACE
-//  COLON
-//  ENDOFLINE
-//  COMMENT
-// ------------------------------
-//  WORD
-//  QUOTES
-// ------------------------------
-// std::list<tokengen> genarate_helper(std::list<tokengen> first)
-// {
-//     std::list<tokengen> last;
-//     std::list<tokengen>::iterator begin = first.begin();
-//     std::list<tokengen>::iterator end = first.end();
-    
-//     while (begin != end)
-//     {
-//         if 
-//         begin++;
-//     }
-// }
 
 parser::~parser()
 {

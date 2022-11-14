@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:52:52 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 19:08:58 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,17 @@
 
 void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc)
 {
-    puts("--------------------------------------- CURLWAIT begin ---------------------------------------");
     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
         x++;
-    puts("--------------------------------------- CURLWAIT end ---------------------------------------");
     if (loc)
         return ;
-    if (x == end ||x->type != OPENCURL)
+    if (x == end || x->type != OPENCURL)
         exit (1); // you mad bro?
     x++;
     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
         x++;
     if (x == end)
         exit (0); // lets go
-    puts("--------------------------------------- CURLWAIT end ---------------------------------------");
 }
 
 // template<int>

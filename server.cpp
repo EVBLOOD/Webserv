@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:39:30 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 18:58:37 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,20 +69,22 @@ template<>
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
+    big++;
     int ports;
     for (int i = 0; tmp[i]; i++)
-        if (std::isdigit(tmp[i]) == false)
-            exit (1); // bruuuuh 
+        if (isdigit(tmp[i]) == false) // TODO: check this
+            exit (1);
     std::stringstream x;
     x << tmp;
     x >> ports;
     port.push_back(ports);
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1); // alo alo alo
+        exit (1);
+    big++; // TODO: check if it's the end in the other side;
 }
 
 template<>
@@ -93,46 +95,51 @@ template<>
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
-    if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+    if (big->type == QUOTES) // TODO: check if the double quotes are double
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     server_name.push_back(tmp);
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
         setters<setservername>(big, end);
+    if (big == end)
+        exit (1); // TODO: check in the other side!
+    big++;
 }
 
 template<>
     void server::setters<setmap>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
-        std::string tmp;
+    std::string tmp;
+    int status;
+    std::stringstream x;
+
     big++;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit (1);
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
-        if (std::isdigit(tmp[i]) == false)
-            exit (1); // bruuuuh 
-    int status;
-    std::stringstream x;
+        if (isdigit(tmp[i]) == false) // TODO: for the port the number is limited and status
+            exit (1);
     x << tmp;
     x >> status;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit (1);
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     error_page.insert(std::make_pair(status, tmp));
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1); // alo alo
+        exit (1);
+    big++;
 }
 
 template<>
@@ -142,40 +149,43 @@ template<>
     big++;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit (1);
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     root = tmp;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1); // alo alo
+        exit (1);
+    big++;
 }
 
 template<>
     void server::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
+    unsigned long long size;
+    std::stringstream x;
+    
     big++;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit (1);
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
-    unsigned long long size;
     for (int i = 0; tmp[i]; i++)
-        if (std::isdigit(tmp[i]) == false)
-            exit (1); // bruuuuh 
-    std::stringstream x;
+        if (isdigit(tmp[i]) == false)
+            exit (1);
     x << tmp;
-    x >> size;
-    client_max_body_size = size;
+    x >> size; // TODO: maybe I'll make it count by Mb
+    client_max_body_size = size; // TODO: read about this one and find out the real lims
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
-        setters<setclient_max_body_size>(big, end);
+       exit (1);
+    big++;
 }
 
 
