@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 19:07:05 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 23:06:28 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,13 +74,14 @@ std::list<tokengen> parser::generate()
         i = 0;
         while (i >= 0 && line[i])
         {
-            if (isspace(line[i]))
+            if (std::isspace(line[i]))
             {
                 lexer.push_back(tokengen(WHITESPACE));
-                while (isspace(line[i]))
+                while (std::isspace(line[i]))
                     i++;
+                continue;
             }
-            if (line[i] == '"')
+            else if (line[i] == '"')
             {
                 start = i;
                 i++;
@@ -228,28 +229,25 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
         if (begin->type == WORD && begin->content == "location")
             separating<context_location>(begin, end, serv);
         else if (begin->type == WORD)
-        {
-    std::cout << "mamtaf9ch \n";
-            
             separating<simpledir>(begin, end, serv);
-        }
     }
     if (begin == end)
         exit(0); // curl end
     begin++;
+    CURLWAIT(begin, end, true);
     servers.push_back(tmpserv);
 }
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
 {
-    std::vector<server> data;
     std::list<tokengen>::iterator begin = lexer.begin();
     std::list<tokengen>::iterator end = lexer.end();
     while (begin != end)
         separating<context_server>(begin, end);
-    if (data.size() == 0)
+    std::cout << "done\n";
+    if (servers.size() == 0)
         exit (1);
-    return data;
+    return servers;
 }
 
 parser::~parser()

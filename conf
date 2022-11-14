@@ -27,8 +27,6 @@
 #         fastcgi_pass wordpress:9000;
 #             }
 # }
+server    {
 
-server
-{
- 
 }
