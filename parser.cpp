@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 23:00:29 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:26:13 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,7 @@ void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &e
 std::vector<std::pair<bool, std::string> > generatestring(bool server)
 {
     std::vector<std::pair<bool, std::string> > x;
-    x.reserve(13)
+    x.reserve(13);
     x.push_back(std::make_pair(true, C));
     x.push_back(std::make_pair(true, N));
     x.push_back(std::make_pair(true, F));
@@ -202,10 +202,10 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
     CURLWAIT(begin, end, true);
     if (begin == end || begin->type != WORD)
         exit (1);
-     if (begin->type != QUOTES)
-            name = begin->content.substr(1, begin->content.length() - 2);
-        else
-            name = begin->content;
+    if (begin->type != QUOTES)
+        name = begin->content.substr(1, begin->content.length() - 2);
+    else
+        name = begin->content;
     CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL)
     {
@@ -237,7 +237,7 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
     }
     if (begin == end)
         exit(0); // no end bro?
-    servers.pop_back(tmpserv);
+    servers.push_back(tmpserv);
 }
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)

@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:58:39 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 22:58:16 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:25:06 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class location
         bool upload_enable;
         std::string upload_store;
     public:
-        location(const location &lc)
+        location(const location &lc);
         location();
         ~location();
         location &operator=(const location &lc);
