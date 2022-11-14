@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:29 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/09 23:01:34 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:40:27 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,4 +26,6 @@ int main()
         std::cout << type[begin->type] << " " << begin->content << "\n"; 
         begin++;
     }
+    std::vector<server> xx = file.lexer_to_data(x);
+    std::cout << "DONE   " << "\n";
 }

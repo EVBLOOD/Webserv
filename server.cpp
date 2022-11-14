@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 22:59:05 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:39:30 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,20 +19,20 @@ void server::setlocation(std::string x, location y)
 
 
 
-void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
-{
-    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-        x++;
-    if (loc)
-        return ;
-    if (x == end ||x->type != OPENCURL)
-        exit (1); // you mad bro?
-    x++;
-    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-        x++;
-    if (x == end)
-        exit (0); // lets go
-}
+// void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
+// {
+//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+//         x++;
+//     if (loc)
+//         return ;
+//     if (x == end ||x->type != OPENCURL)
+//         exit (1); // you mad bro?
+//     x++;
+//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+//         x++;
+//     if (x == end)
+//         exit (0); // lets go
+// }
 
 
     // std::vector<std::pair<bool, std::string> > x;

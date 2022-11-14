@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:26:13 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:39:08 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,20 +125,20 @@ std::list<tokengen> parser::generate()
     return lexer;
 }
 
-void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
-{
-    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-        x++;
-    if (loc)
-        return ;
-    if (x == end ||x->type != OPENCURL)
-        exit (1); // you mad bro?
-    x++;
-    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-        x++;
-    if (x == end)
-        exit (0); // lets go
-}
+// void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
+// {
+//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+//         x++;
+//     if (loc)
+//         return ;
+//     if (x == end ||x->type != OPENCURL)
+//         exit (1); // you mad bro?
+//     x++;
+//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+//         x++;
+//     if (x == end)
+//         exit (0); // lets go
+// }
 
 std::vector<std::pair<bool, std::string> > generatestring(bool server)
 {

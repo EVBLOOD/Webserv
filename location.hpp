@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:58:39 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:25:06 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:39:18 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ class location
         ~location();
         location &operator=(const location &lc);
         template<int>
-            void set(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end); // turn this to refrence
+            void set(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end); // turn this to refrence
         void execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
         // template<>
         // void set<setallow_methods>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end);
@@ -77,3 +77,4 @@ class location
         // void setupload_store(std::string x);
 };
 
+void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false);

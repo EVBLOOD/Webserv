@@ -6,14 +6,13 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/13 22:57:52 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/14 12:39:41 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "location.hpp"
 
-
-void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
+void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc)
 {
     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
         x++;
@@ -35,7 +34,7 @@ void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &e
 // }
 
 template<>
-    void location::set<setallow_methods>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setallow_methods>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -55,7 +54,7 @@ template<>
         this->set<setallow_methods>(big, end);
 }
 template<>
-    void location::set<setfastcgi_pass>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setfastcgi_pass>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -72,7 +71,7 @@ template<>
         exit (1); // alo alo alo
 }
 template<>
-    void location::set<setindex>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -89,7 +88,7 @@ template<>
         set<setindex>(big, end);
 }
 template<>
-    void location::set<setreturn>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setreturn>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -120,7 +119,7 @@ template<>
         exit (1); // alo alo
 }
 template<>
-    void location::set<setautoindex>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setautoindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -142,7 +141,7 @@ template<>
         exit (1); // alo alo
 }
 template<>
-    void location::set<setupload_enable>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setupload_enable>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -164,7 +163,7 @@ template<>
         exit (1); // alo alo
 }
 template<>
-    void location::set<setupload_store>(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
+    void location::set<setupload_store>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
     big++;
@@ -180,7 +179,7 @@ template<>
     if (big == end || big->type != SEMICOLONS)
         exit (1); // alo alo
 }
-
+typedef void (location::*function_location)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
 void location::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     function_location funs[] = {&location::set<6>, &location::set<7>, &location::set<8>, &location::set<9>, &location::set<10>, &location::set<11>, &location::set<12>};
@@ -199,7 +198,7 @@ location::~location()
 
 location::location(const location &lc)
 {
-    *this = ls;
+    *this = lc;
 }
 
 location &location::operator=(const location &lc)
@@ -216,4 +215,5 @@ location &location::operator=(const location &lc)
     fastcgi_pass = lc.fastcgi_pass;
     upload_enable = lc.upload_enable;
     upload_store = lc.upload_store;
+    return *this;
 }
