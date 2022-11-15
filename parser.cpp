@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 23:25:06 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:39:29 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,14 +165,15 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server)
 template <>
 void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server) // I may need somewhere to store this data!
 {
+    std::cout << "simpledir\n";
     std::string tmp;
     int i;
 
     CURLWAIT(begin, end, true);
     if (begin == end || (begin->type != WORD && begin->type != QUOTES))
         exit (1);
-    std::vector<std::pair<bool, std::string> > cond =  generatestring(server);
-    size_t size = cond.size(); // I can optimize this one
+    std::vector<std::pair<bool, std::string> > cond =  generatestring(server); // TODO : add it as a pointer (size) !
+    size_t size = cond.size();
     if (begin->type == QUOTES)
         tmp = begin->content.substr(1, begin->content.length() - 2);
     else
@@ -184,7 +185,12 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
             if (server)
                 tmpserv.execute(i, begin, end);
             else
+            {
+                std::cout << "--------- start ---------\n";
                 tmploc.execute(i, begin, end);
+                std::cout << "---------  end  ---------\n";
+                
+            }
             break ;
         }
     }
@@ -196,8 +202,10 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
 template <>
 void parser::separating<context_location>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server)
 {
-    std::string name;
+    std::cout << "context location\n";
     tmploc = location();
+    std::string name;
+    begin++;
     CURLWAIT(begin, end, true);
     if (begin == end || (begin->type != WORD && begin->type != QUOTES))
         exit (1);
@@ -219,6 +227,7 @@ void parser::separating<context_location>(std::list<tokengen>::iterator &begin, 
 template <>
 void parser::separating<context_server>(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool serv)
 {
+    std::cout << "context server \n";
     tmpserv = server();
     CURLWAIT(begin, end, true);
     if (begin == end || (begin->type != WORD && begin->content != A))
@@ -232,6 +241,11 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
             separating<context_location>(begin, end, serv);
         else if (begin->type == WORD)
             separating<simpledir>(begin, end, serv);
+        else
+        {
+            std::cout << "well if it's here then shit\n";
+            exit (1);
+        }
     }
     if (begin == end)
         exit(0);
@@ -242,6 +256,7 @@ void parser::separating<context_server>(std::list<tokengen>::iterator &begin, st
 
 std::vector<server> parser::lexer_to_data(std::list<tokengen> lexer)
 {
+    std::cout << "lexer+to+data()\n";
     std::list<tokengen>::iterator begin = lexer.begin();
     std::list<tokengen>::iterator end = lexer.end();
     while (begin != end)
