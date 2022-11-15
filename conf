@@ -66,24 +66,24 @@
 # }
 
 
-# server    {
+server    {
 
-# }
-
-
-# server    {
-
-# }
+}
 
 
-# server    {
+server    {
 
-# }
+}
 
 
-# server    {
+server    {
 
-# }
+}
+
+
+server    {
+
+}
 
 
 
@@ -92,8 +92,6 @@ server
 	listen          80;
 	listen          80;
 	listen          80;
-	# listen          80;
-	# listen          80;
 
 	host 0.0.0.0;
 
@@ -142,5 +140,4 @@ server
 		upload_enable on;
 		upload_store /upload;
 	}
-
 }
