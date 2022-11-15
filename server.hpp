@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:12:22 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:24:49 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:43:13 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ class server
 {
     private:
         // std::vector<std::string> index;
-        std::vector<int> port;
+        std::string         host;
+        std::vector<int>    port;
         std::vector<std::string> server_name;
         std::map<int, std::string> error_page;
         std::string                 root;

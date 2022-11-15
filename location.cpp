@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 17:30:59 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 17:54:19 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,14 +75,13 @@ template<>
 template<>
     void location::set<setindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
-    // std::cout << "jokes?\n";
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit (1);
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     allow_methods.push_back(tmp);
@@ -196,12 +195,15 @@ template<>
         exit (1);
     big++;
 }
+
+
 typedef void (location::*function_location)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
 void location::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
-    function_location funs[] = {&location::set<6>, &location::set<7>, &location::set<8>, &location::set<9>, &location::set<10>, &location::set<11>, &location::set<12>};
-    std::cout << 12 - i ;
-    (this->*funs[12 - i])(big, end);
+    function_location funs[] = {&location::set<setallow_methods>, &location::set<setfastcgi_pass>, &location::set<setindex>, &location::set<setreturn>,
+        &location::set<setautoindex>, &location::set<setupload_enable>, &location::set<setupload_store>};
+    std::cout << i  << "\n";
+    (this->*funs[i])(big, end);
 }
 
 location::location()

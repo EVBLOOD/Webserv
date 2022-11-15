@@ -99,7 +99,7 @@ server
 
 	server_name     example.com;
 
-	# client_max_body_size    1024;
+	client_max_body_size    1024;
 
 	error_page 403 /errors/403.html;
 	error_page 404 /errors/404.html;
@@ -110,11 +110,11 @@ server
 
 	location /
 	{
-		autoindex off;
 
 		index index.html;
 
-		# allow_methods [GET,POST,DELETE];
+		autoindex off;
+		allow_methods GET POST DELETE;
 	}
 
 	location /return
@@ -122,25 +122,25 @@ server
 		return 301 /;
 	}
 
-	# location #*.php
-	# {
-	# 	# allow_methods [GET,POST];
+	location *.php
+	{
+		allow_methods GET POST;
 
-	# 	fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
-	# }
+		fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
+	}
 
-	# location #*.py
-	# {
-	# 	# allow_methods [GET,POST];
+	location *.py
+	{
+		allow_methods GET POST;
 
-	# 	fastcgi_pass /usr/bin/python;
-	# }
+		fastcgi_pass /usr/bin/python;
+	}
 
-	# location #/upload
-	# {
-	# 	# allow_methods [POST, GET];
-	# 	upload_enable on;
-	# 	upload_store /upload;
-	# }
+	location /upload
+	{
+		allow_methods POST GET;
+		upload_enable on;
+		upload_store /upload;
+	}
 
 }

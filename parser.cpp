@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 17:37:10 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:09:23 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,21 +128,21 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server)
 {
     std::vector<std::pair<bool, std::string> > x;
     x.reserve(13);
-    x.push_back(std::make_pair(true, C));
-    x.push_back(std::make_pair(true, N));
-    x.push_back(std::make_pair(true, F));
-    x.push_back(std::make_pair(false, D));
-    x.push_back(std::make_pair(false, E));
-    x.push_back(std::make_pair(false, "location"));
+    x.push_back(std::make_pair(true, C)); // 0
+    x.push_back(std::make_pair(true, N)); // 1
+    x.push_back(std::make_pair(true, F)); // 2
+    x.push_back(std::make_pair(false, D)); // 3
+    x.push_back(std::make_pair(false, E)); // 4
+    x.push_back(std::make_pair(false, "location")); // 5
     if (server)
         return x;
-    x.push_back(std::make_pair(true, I));
-    x.push_back(std::make_pair(false, K));
-    x.push_back(std::make_pair(false, H)); // 7 13 - 7 = 5
-    x.push_back(std::make_pair(false, J));
-    x.push_back(std::make_pair(false, G));
-    x.push_back(std::make_pair(false, L));
-    x.push_back(std::make_pair(false, M));
+    x.push_back(std::make_pair(true, I)); // 6 -- 0 allow_methods
+    x.push_back(std::make_pair(false, K)); // 7 -- 1 fastcgi
+    x.push_back(std::make_pair(false, H)); // 8 -- 2 index
+    x.push_back(std::make_pair(false, J)); // 9 -- 3 retrun
+    x.push_back(std::make_pair(false, G)); // 10 -- 4 auto_index
+    x.push_back(std::make_pair(false, L)); // 11 -- 5 unable_update
+    x.push_back(std::make_pair(false, M)); // 12  -- 6 upload_storel
     return (x);
 }
 
@@ -176,7 +176,7 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
             {
                 begin++;
                 std::cout << "--------- start ---------\n";
-                tmploc.execute(i, begin, end);
+                tmploc.execute(i - 6, begin, end);
                 std::cout << "---------  end  ---------\n";
                 
             }
