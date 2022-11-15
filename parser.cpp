@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 15:39:29 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 17:37:10 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,21 +124,6 @@ std::list<tokengen> parser::generate()
     return lexer;
 }
 
-// void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
-// {
-//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-//         x++;
-//     if (loc)
-//         return ;
-//     if (x == end ||x->type != OPENCURL)
-//         exit (1); // you mad bro?
-//     x++;
-//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-//         x++;
-//     if (x == end)
-//         exit (0); // lets go
-// }
-
 std::vector<std::pair<bool, std::string> > generatestring(bool server)
 {
     std::vector<std::pair<bool, std::string> > x;
@@ -153,7 +138,7 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server)
         return x;
     x.push_back(std::make_pair(true, I));
     x.push_back(std::make_pair(false, K));
-    x.push_back(std::make_pair(false, H));
+    x.push_back(std::make_pair(false, H)); // 7 13 - 7 = 5
     x.push_back(std::make_pair(false, J));
     x.push_back(std::make_pair(false, G));
     x.push_back(std::make_pair(false, L));
@@ -183,9 +168,13 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator &begin, std::li
         if (cond[i].second == tmp)
         {
             if (server)
+            {
+                begin++;
                 tmpserv.execute(i, begin, end);
+            }
             else
             {
+                begin++;
                 std::cout << "--------- start ---------\n";
                 tmploc.execute(i, begin, end);
                 std::cout << "---------  end  ---------\n";

@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 23:27:45 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 16:51:19 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,54 +17,11 @@ void server::setlocation(std::string x, location y)
     locations.insert(std::make_pair(x, y)); // don't forget the path in the other side plz
 }
 
-
-
-// void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc = false)
-// {
-//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-//         x++;
-//     if (loc)
-//         return ;
-//     if (x == end ||x->type != OPENCURL)
-//         exit (1); // you mad bro?
-//     x++;
-//     while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
-//         x++;
-//     if (x == end)
-//         exit (0); // lets go
-// }
-
-
-    // std::vector<std::pair<bool, std::string> > x;
-    // x.push_back(std::make_pair(true, C));
-    // x.push_back(std::make_pair(true, N));
-    // x.push_back(std::make_pair(true, F));
-    // x.push_back(std::make_pair(false, D));
-    // x.push_back(std::make_pair(false, E));
-    // // location
-    // if (server)
-    //     return x;
-    // x.push_back(std::make_pair(true, I));
-    // x.push_back(std::make_pair(false, K));
-    // x.push_back(std::make_pair(false, H));
-    // x.push_back(std::make_pair(false, J));
-    // x.push_back(std::make_pair(false, G));
-    // x.push_back(std::make_pair(false, L));
-    // x.push_back(std::make_pair(false, M));
-// typedef void (location::*function_location)(void);
-
-// template<int>
-//     void server::setters(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-// {
-//     std::cout << "jokes" << "\n";
-//     exit (1);
-// }
-
 template<>
     void server::setters<setport>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
@@ -91,7 +48,7 @@ template<>
     void server::setters<setservername>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
@@ -116,7 +73,7 @@ template<>
     int status;
     std::stringstream x;
 
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1);
@@ -149,7 +106,7 @@ template<>
     void server::setters<setroot>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1);
@@ -172,7 +129,7 @@ template<>
     unsigned long long size;
     std::stringstream x;
     
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1);

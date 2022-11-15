@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 16:47:30 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 17:30:59 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ template<>
     void location::set<setallow_methods>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1);
@@ -57,7 +57,7 @@ template<>
     void location::set<setfastcgi_pass>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1);
@@ -75,8 +75,9 @@ template<>
 template<>
     void location::set<setindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
+    // std::cout << "jokes?\n";
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
@@ -98,8 +99,8 @@ template<>
     void location::set<setreturn>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    std::cout << big->content << "\n";
-    big++;
+
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
@@ -133,12 +134,11 @@ template<>
     void location::set<setautoindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
     if (big->type == QUOTES)
-        tmp = big->content.substr(1, big->content.length() - 1);
+        tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     if (tmp == "on")
@@ -157,7 +157,7 @@ template<>
     void location::set<setupload_enable>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
@@ -181,7 +181,7 @@ template<>
     void location::set<setupload_store>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     std::string tmp;
-    big++;
+
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
         exit (1); // alo alo
@@ -200,6 +200,7 @@ typedef void (location::*function_location)(std::list<tokengen>::iterator &big, 
 void location::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
     function_location funs[] = {&location::set<6>, &location::set<7>, &location::set<8>, &location::set<9>, &location::set<10>, &location::set<11>, &location::set<12>};
+    std::cout << 12 - i ;
     (this->*funs[12 - i])(big, end);
 }
 

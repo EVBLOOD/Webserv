@@ -112,7 +112,7 @@ server
 	{
 		autoindex off;
 
-		# index index.html;
+		index index.html;
 
 		# allow_methods [GET,POST,DELETE];
 	}
