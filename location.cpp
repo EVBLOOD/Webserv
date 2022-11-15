@@ -6,11 +6,12 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 16:42:56 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 16:47:30 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "location.hpp"
+#include "tokengen.hpp"
 
 void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc)
 {
@@ -26,12 +27,6 @@ void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &e
     if (x == end)
         exit (1);
 }
-
-// template<int>
-//     void location::set(std::list<tokengen>::iterator big, std::list<tokengen>::iterator end)
-// {
-//     std::cout << "what a funny joke\n";
-// }
 
 template<>
     void location::set<setallow_methods>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
@@ -55,7 +50,8 @@ template<>
         this->set<setallow_methods>(big, end);
     if (big == end)
         exit (0);
-    big++;
+    if (big->type == SEMICOLONS)
+        big++;
 }
 template<>
     void location::set<setfastcgi_pass>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
@@ -95,7 +91,8 @@ template<>
         set<setindex>(big, end);
     if (big == end)
         exit (0);
-    big++;
+    if (big->type == SEMICOLONS)
+        big++;
 }
 template<>
     void location::set<setreturn>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)

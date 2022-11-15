@@ -110,7 +110,7 @@ server
 
 	location /
 	{
-		# autoindex off;
+		autoindex off;
 
 		# index index.html;
 
