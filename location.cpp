@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 17:54:19 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:45:43 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,6 @@ template<>
         exit (1);
     big++;
 }
-
 
 typedef void (location::*function_location)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
 void location::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)

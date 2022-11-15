@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 18:09:23 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:45:03 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server)
     x.push_back(std::make_pair(true, F)); // 2
     x.push_back(std::make_pair(false, D)); // 3
     x.push_back(std::make_pair(false, E)); // 4
-    x.push_back(std::make_pair(false, "location")); // 5
+    x.push_back(std::make_pair(false, "host")); // 5
     if (server)
         return x;
     x.push_back(std::make_pair(true, I)); // 6 -- 0 allow_methods

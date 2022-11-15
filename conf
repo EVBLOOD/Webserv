@@ -95,7 +95,7 @@ server
 	# listen          80;
 	# listen          80;
 
-	# host 0.0.0.0;
+	host 0.0.0.0;
 
 	server_name     example.com;
 

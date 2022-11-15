@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 22:58:39 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/14 12:39:18 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:44:50 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum func{
     setmap,
     setroot,
     setclient_max_body_size,
-    setlocation,
+    sethost,
     setallow_methods,
     setfastcgi_pass,
     setindex,

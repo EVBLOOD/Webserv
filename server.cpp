@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 16:51:19 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:48:33 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,26 @@ template<>
 }
 
 
+template<>
+    void server::setters<sethost>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
+
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1);
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    root = tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1);
+    big++;
+}
+
 server::server()
 {
 }
@@ -164,7 +184,7 @@ typedef void (server::*function_server)(std::list<tokengen>::iterator &big, std:
 
 void server::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
 {
-    function_server funs[] = {&server::setters<0>, &server::setters<1>, &server::setters<2>, &server::setters<3>, &server::setters<4>};
+    function_server funs[] = {&server::setters<0>, &server::setters<1>, &server::setters<2>, &server::setters<3>, &server::setters<4>, &server::setters<sethost>};
     (this->*funs[i])(big, end);
 }
 
