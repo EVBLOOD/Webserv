@@ -20,6 +20,7 @@ struct Body {
 };
 
 class HttpRequest {
+   public:
     std::string raw;
     std::string method;
     std::string location;

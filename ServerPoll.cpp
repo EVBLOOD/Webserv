@@ -16,22 +16,16 @@ void ServerPoll::run_servers() {
     for (size_t i = 0; i < num_of_servers; ++i) {
         servers[i].init_socket();
         fds[i].fd = servers[i].get_socket_fd();
-        std::cout << "fd " << servers[i].get_socket_fd() << '\n';
         fds[i].events = POLLIN;
     }
-    std::cout << "pool init\n";
     do {
-        std::cout << (nfds_t)servers.size() << "  " << (nfds_t)num_of_servers
-                  << " start" << std::endl;
         rc = poll(fds, (nfds_t)num_of_servers, -1);
-        std::cout << "end" << std::endl;
         if (rc < 0) {
             perror("poll failed");
             break;
         }
         std::cout << "pool success" << std::endl;
         for (size_t i = 0; i < num_of_servers; ++i) {
-            std::cout << "here";
             if (fds[i].revents == POLLIN) {
                 memset((void*)buffer, 0, BUFFER_SIZE);
                 int client_sockfd = servers[i].accept_connection();
@@ -48,6 +42,8 @@ void ServerPoll::run_servers() {
                     continue;
                 }
 
+                std::cout << "[REQUEST]\n";
+                HttpRequest request = HttpRequest(std::string(buffer));
                 std::cout << buffer << '\n';
                 // ***************
                 // std::string resp = Response(200, 1.1, "OK",
@@ -56,13 +52,30 @@ void ServerPoll::run_servers() {
                 //                                  world</1>\r\n"
                 //                                  "<ul><li>13</li>\r\n"
                 //                                  "<li>37</li></ul>\r\n"));
-                std::vector<std::string> body_content;
-                body_content.push_back("<h1>hello, world</1>");
-                body_content.push_back("<ul><li>13</li>");
-                body_content.push_back("<li>37</li></ul>");
-                std::string resp = Server::Response(
-                    301, 1.1, "Moved Permanently\r\nLocation: /test",
-                    Body("text/html", body_content));
+                //
+                std::string resp;
+                if (request.location == "/") {
+                    std::vector<std::string> body_content;
+                    body_content.push_back("<h1>hello, world</1>");
+                    resp = Server::Response(200, 1.1, "OK\r\nLocation: /",
+                                            Body("text/html", body_content));
+                } else if (request.location == "/oussama") {
+                    std::vector<std::string> body_content;
+                    body_content.push_back("<h1>this is webserv</1>");
+                    resp =
+                        Server::Response(200, 1.1, "OK\r\nLocation: /oussama",
+                                         Body("text/html", body_content));
+                } else if (request.location == "/error") {
+                    std::vector<std::string> body_content;
+                    body_content.push_back("<h1>404</1>");
+                    resp =
+                        Server::Response(404, 1.1, "Not Found\r\nLocation: /",
+                                         Body("text/html", body_content));
+                } else if (request.location == "/saad") {
+                    resp = Server::Response(
+                        301, 1.1, "Moved Permanently\r\nLocation: /oussama",
+                        Body());
+                }
                 ssize_t bytes_write =
                     write(client_sockfd, resp.c_str(), resp.size());
                 if (bytes_write < 0) {
