@@ -4,13 +4,14 @@
 #include "socket_header.hpp"
 
 std::string Server::Response(int status,
-                             float version,
+                             std::string version,
                              std::string action,
                              Body body) {
-    std::string header1 = "HTTP/" + std::to_string(version) + " " +
+    std::string header1 = "HTTP/" + version + " " +
                           std::to_string(status) + " " + action + "\r\n";
     std::string header2 = "Server: webserver-c\r\n";
-    std::string header3 = "Content-type: " + body.content_type + "\r\n\r\n";
+    std::string header3 = "Connection : close\r\n";
+    std::string header4 = "Content-type: " + body.content_type + "\r\n\r\n";
     std::string body_content;
     for (size_t i = 0; i < body.content.size(); ++i) {
         body_content += (body.content[i] + "\r\n");
@@ -21,8 +22,8 @@ std::string Server::Response(int status,
     //   "<h1>hello, world</1>\r\n"
     //   "<ul><li>13</li>\r\n"
     //   "<li>37</li></ul>\r\n";
-    std::cout << "[DEBUG]\n" << header1 + header2 + header3 + body_content;
-    return header1 + header2 + header3 + body_content;
+    std::cout << "[DEBUG]\n" << header1 + header2 + header3 + header4 + body_content;
+    return header1 + header2 + header3 +  header4 + body_content;
 };
 // void Post(Route& route, int status, float version, std::string body) {
 //     std::string head =

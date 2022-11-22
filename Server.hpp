@@ -26,7 +26,7 @@ class Server {
     int accept_connection();
 
     static std::string Response(int status,
-                                float version,
+                                std::string version,
                                 std::string action,
                                 Body body);
     ~Server();

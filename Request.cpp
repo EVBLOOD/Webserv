@@ -15,14 +15,18 @@ std::vector<std::string> HttpRequest::split(std::string str, std::string del) {
 
 std::string HttpRequest::trim(std::string str, std::string del) {
     size_t i = 0;
-    while (i < str.length() && (del.find(str[i]) != std::string::npos)) {
+    while (i < str.length() - 1 && (del.find(str[i]) != std::string::npos)) {
         ++i;
     }
     size_t j = str.length() - 1;
-    while (j && (del.find(str[i]) != std::string::npos)) {
+    while (j && i != j && (del.find(str[j]) != std::string::npos)) {
         --j;
     }
-    str = str.substr(i, j + 1);
+    if (i == j)
+        return "";
+    if (j == str.length() - 1)
+        return  str.substr(i, j + 1);
+    str = str.substr(i, j);
     return str;
 }
 
@@ -35,6 +39,10 @@ char resp[] =
     "<li>37</li></ul>\r\n";
 
 HttpRequest::HttpRequest(std::string request) : body() {
+    assert(trim(" abc ", " ") == "abc");
+    assert(trim("\nabc\n", "\n") =="abc");
+    assert(trim("\rabc\r", "\r") == "abc");
+    assert(trim("\rabc\n", "\r\n")  == "abc");
     raw = request;
     std::vector<std::string> splited = split(request, "\n");
 
@@ -52,7 +60,7 @@ HttpRequest::HttpRequest(std::string request) : body() {
     }
 
     for (size_t j = i; j < splited.size(); ++j) {
-        std::string trimed = trim(splited[j], "\n\r");
+        std::string trimed = trim(splited[j], "\n\r ");
         if (!trimed.empty())
             body.content.push_back(trimed);
     }
@@ -63,7 +71,7 @@ void HttpRequest::dump() {
     std::cout << method << " " << location << " " << version << "\n";
     for (std::map<std::string, std::string>::iterator iter = headers.begin();
          iter != headers.end(); ++iter) {
-        std::cout << iter->first << " : " << iter->second << '\n';
+        std::cout << "["<< iter->first <<"]"<< " : [" << iter->second << "]"<<'\n';
     }
     for (std::vector<std::string>::iterator iter = body.content.begin();
          iter != body.content.end(); ++iter) {
