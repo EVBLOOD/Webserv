@@ -105,48 +105,48 @@ void ServerPoll::run_servers() {
 
             }
 
-            std::cerr << "[ERROR] " << strerror(errno) << std::endl;
-            errno = 0;
-            std::cerr << "[DEBUG] index : " << i << " and revent " << _fds[i].revents << std::endl;
-            switch (_fds[i].revents) {
-                case POLLERR:
-                    std::cerr << "POLLERR\n";
-                    break;
-                case POLLHUP:
-                    std::cerr << "POLLHUP\n";
-                    remove_client(i);
-                    std::cout << "close connection with client " << i << "\n";
-                    break;
-                case POLLIN:
-                    std::cerr << "POLLIN\n";
-                    break;
-                case POLLNVAL:
-                    std::cerr << "POLLNVAL\n";
-                    break;
-                case POLLOUT:
-                    std::cerr << "POLLOU\n";
-                    break;
-                case POLLPRI:
-                    std::cerr << "POLLPRI\n";
-                    break;
-                case POLLRDBAND:
-                    std::cerr << "POLLRDBAND\n";
-                    break;
-                case POLLRDNORM:
-                    std::cerr << "POLLRDNOR\n";
-                    break;
-                case POLLWRBAND:
-                    std::cerr << "POLLWRBAND\n";
-                    break;
-//                case POLLWRNORM:
-//                    std::cerr << "POLLWRNORM\n";
+//            std::cerr << "[ERROR] " << strerror(errno) << std::endl;
+//            errno = 0;
+//            std::cerr << "[DEBUG] index : " << i << " and revent " << _fds[i].revents << std::endl;
+//            switch (_fds[i].revents) {
+//                case POLLERR:
+//                    std::cerr << "POLLERR\n";
 //                    break;
-                case 0:
-                    continue;
-                default:
-                    std::cerr << "UNREACHABLE\n";
-                    remove_client(i);
-            }
+//                case POLLHUP:
+//                    std::cerr << "POLLHUP\n";
+//                    remove_client(i);
+//                    std::cout << "close connection with client " << i << "\n";
+//                    break;
+//                case POLLIN:
+//                    std::cerr << "POLLIN\n";
+//                    break;
+//                case POLLNVAL:
+//                    std::cerr << "POLLNVAL\n";
+//                    break;
+//                case POLLOUT:
+//                    std::cerr << "POLLOU\n";
+//                    break;
+//                case POLLPRI:
+//                    std::cerr << "POLLPRI\n";
+//                    break;
+//                case POLLRDBAND:
+//                    std::cerr << "POLLRDBAND\n";
+//                    break;
+//                case POLLRDNORM:
+//                    std::cerr << "POLLRDNOR\n";
+//                    break;
+//                case POLLWRBAND:
+//                    std::cerr << "POLLWRBAND\n";
+//                    break;
+////                case POLLWRNORM:
+////                    std::cerr << "POLLWRNORM\n";
+////                    break;
+//                case 0:
+//                    continue;
+//                default:
+//                    std::cerr << "UNREACHABLE\n";
+//                    remove_client(i);
+//            }
         }
         // ***************
     } while (true);

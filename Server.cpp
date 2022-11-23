@@ -1,89 +1,210 @@
-#include "Server.hpp"
-#include "Request.hpp"
-#include "Route.hpp"
-#include "socket_header.hpp"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
+/*   Updated: 2022/11/15 18:48:33 by sakllam          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-// void Post(Route& route, int status, float version, std::string body) {
-//     std::string head =
-//         "POST" + " " + route.get_location() assert(route.is_allowed_post());
-// };
+#include "server.hpp"
 
-// class HttpRequest {};
-// class HttpRespose {};
+void server::setlocation(std::string x, location y)
+{
+    locations.insert(std::make_pair(x, y)); // don't forget the path in the other side plz
+}
 
-Server::Server()
-        : _port(htons(0)),
-          _host(htons(INADDR_ANY)),
-          _socket_fd(-1),
-          _host_addrlen(sizeof(struct sockaddr_in)),
-          _backlog(SOMAXCONN) {}
+template<>
+    void server::setters<setport>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
 
-Server &Server::init_socket() {
-    std::cout << "starting the server\n";
-    _socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    int ports;
+    for (int i = 0; tmp[i]; i++)
+        if (isdigit(tmp[i]) == false) // TODO: check this
+            exit (1);
+    std::stringstream x;
+    x << tmp;
+    x >> ports;
+    port.push_back(ports);
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1);
+    big++; // TODO: check if it's the end in the other side;
+}
 
-    if (_socket_fd == -1) {
-        std::cerr << "socket function failed : " << strerror(errno) << std::endl;
-        exit(1);
+template<>
+    void server::setters<setservername>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
+
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1); // alo alo
+    if (big->type == QUOTES) // TODO: check if the double quotes are double
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    server_name.push_back(tmp);
+    big++;
+    CURLWAIT(big, end, true);
+    if (big != end && big->type != SEMICOLONS)
+        setters<setservername>(big, end);
+    if (big == end)
+        exit (1); // TODO: check in the other side!
+    big++;
+}
+
+template<>
+    void server::setters<setmap>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
+    int status;
+    std::stringstream x;
+
+
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1);
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    for (int i = 0; tmp[i]; i++)
+        if (isdigit(tmp[i]) == false) // TODO: for the port the number is limited and status
+            exit (1);
+    x << tmp;
+    x >> status;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1);
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    error_page.insert(std::make_pair(status, tmp));
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1);
+    big++;
+}
+
+template<>
+    void server::setters<setroot>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
+
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1);
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    root = tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1);
+    big++;
+}
+
+template<>
+    void server::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
+    unsigned long long size;
+    std::stringstream x;
+    
+
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1);
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    for (int i = 0; tmp[i]; i++)
+        if (isdigit(tmp[i]) == false)
+            exit (1);
+    x << tmp;
+    x >> size; // TODO: maybe I'll make it count by Mb
+    client_max_body_size = size; // TODO: read about this one and find out the real lims
+    big++;
+    CURLWAIT(big, end, true);
+    if (big != end && big->type != SEMICOLONS)
+       exit (1);
+    big++;
+}
+
+
+template<>
+    void server::setters<sethost>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    std::string tmp;
+
+    CURLWAIT(big, end, true);
+    if (big == end || (big->type != WORD && big->type != QUOTES))
+        exit (1);
+    if (big->type == QUOTES)
+        tmp = big->content.substr(1, big->content.length() - 2);
+    else
+        tmp = big->content;
+    root = tmp;
+    big++;
+    CURLWAIT(big, end, true);
+    if (big == end || big->type != SEMICOLONS)
+        exit (1);
+    big++;
+}
+
+server::server()
+{
+}
+
+server::~server()
+{
+}
+
+
+typedef void (server::*function_server)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
+
+void server::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
+{
+    function_server funs[] = {&server::setters<0>, &server::setters<1>, &server::setters<2>, &server::setters<3>, &server::setters<4>, &server::setters<sethost>};
+    (this->*funs[i])(big, end);
+}
+
+server::server(const server &sv)
+{
+    *this = sv;
+}
+
+server &server::operator=(const server &sv)
+{
+    if (this == &sv)
+    {
+        std::cerr << "this was unexpected!";
+        exit (1);
     }
-    std::cout << "socket created successfully\n";
-
-    int enable = 1;
-
-    if (setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable,
-                   sizeof(enable)) == -1) {
-        std::cerr << "Setsockopt failed" << strerror(errno) << std::endl;
-        exit(2);
-    }
-
-    // ***************
-
-    _host_addr.sin_family = AF_INET;
-    _host_addr.sin_port = _port;
-    _host_addr.sin_addr.s_addr = _host;
-
-    if (bind(_socket_fd, (struct sockaddr *) &_host_addr, _host_addrlen) == -1) {
-        std::cerr << "bind function failed : " << strerror(errno) << std::endl;
-        exit(3);
-    }
-    std::cout << "socket was successfully binded to an address\n";
-    // ***************
-    if (listen(_socket_fd, _backlog) == -1) {
-        std::cerr << "listen function failed : " << strerror(errno) << std::endl;
-        exit(4);
-    }
-    std::cout << "server is listening for connections\n";
-    // ***************
+    port = sv.port;
+    server_name = sv.server_name;
+    error_page = sv.error_page;
+    root = sv.root;
+    locations = sv.locations;
+    client_max_body_size= sv.client_max_body_size;
     return *this;
-}
-
-int Server::get_socket_fd() const {
-    return _socket_fd;
-}
-
-int Server::accept_connection() {
-    int client_sockfd =
-            accept(_socket_fd, (struct sockaddr *) &_host_addr, &_host_addrlen);
-    if (client_sockfd == -1) {
-        std::cerr << "accept function failed : " << strerror(errno) << '\n';
-        return -1;
-    }
-    std::cout << "connection is accepted\n";
-    return client_sockfd;
-}
-
-Server::~Server() {
-    close(_socket_fd);
-}
-
-in_port_t Server::getPort() const {
-    return _port;
-}
-
-in_addr_t Server::getHost() const {
-    return _host;
-}
-
-int Server::getBacklog() const {
-    return _backlog;
 }
