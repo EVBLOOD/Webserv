@@ -1,5 +1,12 @@
 #pragma once
+
 #include "socket_header.hpp"
+#include "tools.h"
+
+#include <vector>
+#include <string>
+
+using namespace tools;
 
 // char resp[] =
 //     "HTTP/1.0 200 OK\r\n"
@@ -9,28 +16,33 @@
 //     "<ul><li>13</li>\r\n"
 //     "<li>37</li></ul>\r\n";
 
-enum Method { GET, POST, PUT, DELETE };
-
-struct Body {
-    std::string content_type;
-    std::vector<std::string> content;
-    Body(std::string content_type, std::vector<std::string> content)
-        : content_type(content_type), content(content){};
-    Body() : content_type(), content(){};
-};
+//enum Method {
+//    GET, POST, PUT, DELETE
+//};
 
 class HttpRequest {
-   public:
-    std::string raw;
-    std::string method;
-    std::string location;
-    std::string version;
-    Body body;
-    std::map<std::string, std::string> headers;
+public:
+    std::string _raw;
+    std::string _method;
+    std::string _location;
+    std::string _version;
+    std::map<std::string, std::string> _headers;
+    std::vector<std::string> _body;
 
-   public:
-    static std::vector<std::string> split(std::string str, std::string del);
-    static std::string trim(std::string str, std::string del);
-    HttpRequest(std::string request);
+public:
+    explicit HttpRequest(std::string request);
+
+    std::string getMethod();
+
+    std::string getLocation();
+
+    std::string getVersion();
+
+    std::string getHeaderValue(std::string key);
+
+    std::vector<std::string> getBody();
+
+    std::string getRawData();
+
     void dump();
 };

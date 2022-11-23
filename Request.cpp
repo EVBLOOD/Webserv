@@ -1,82 +1,85 @@
 #include "Request.hpp"
 
-std::vector<std::string> HttpRequest::split(std::string str, std::string del) {
-    std::vector<std::string> res;
-    size_t pos = 0;
-    while ((pos = str.find(del)) != std::string::npos) {
-        res.push_back(str.substr(0, pos));
-        str = str.substr(pos + del.size(), str.size());
-    }
-    if (str.empty())
-        return res;
-    res.push_back(str);
-    return res;
-}
+//char resp[] =
+//        "HTTP/1.0 200 OK\r\n"
+//        "Server: webserver-c\r\n"
+//        "Content-type: text/html\r\n\r\n"
+//        "<h1>hello, world</1>\r\n"
+//        "<ul><li>13</li>\r\n"
+//        "<li>37</li></ul>\r\n";
 
-std::string HttpRequest::trim(std::string str, std::string del) {
-    size_t i = 0;
-    while (i < str.length() - 1 && (del.find(str[i]) != std::string::npos)) {
-        ++i;
-    }
-    size_t j = str.length() - 1;
-    while (j && i != j && (del.find(str[j]) != std::string::npos)) {
-        --j;
-    }
-    if (i == j)
-        return "";
-    if (j == str.length() - 1)
-        return  str.substr(i, j + 1);
-    str = str.substr(i, j);
-    return str;
-}
 
-char resp[] =
-    "HTTP/1.0 200 OK\r\n"
-    "Server: webserver-c\r\n"
-    "Content-type: text/html\r\n\r\n"
-    "<h1>hello, world</1>\r\n"
-    "<ul><li>13</li>\r\n"
-    "<li>37</li></ul>\r\n";
+//std::string _raw;
+//std::string _method;
+//std::string _location;
+//std::string _version;
+//std::map<std::string, std::string> _headers;
+//std::vector<std::string> _body;
 
-HttpRequest::HttpRequest(std::string request) : body() {
+
+HttpRequest::HttpRequest(std::string request) : _raw(), _method(), _location(), _version(), _headers(), _body() {
     assert(trim(" abc ", " ") == "abc");
-    assert(trim("\nabc\n", "\n") =="abc");
+    assert(trim("\nabc\n", "\n") == "abc");
     assert(trim("\rabc\r", "\r") == "abc");
-    assert(trim("\rabc\n", "\r\n")  == "abc");
-    raw = request;
+    assert(trim("\rabc\n", "\r\n") == "abc");
+    _raw = request;
     std::vector<std::string> splited = split(request, "\n");
 
     std::vector<std::string> first_line = split(splited[0], " ");
-    method = first_line[0];
-    location = first_line[1];
-    version = first_line[2];
+    assert(first_line.size() == 3);
+    _method = first_line[0];
+    _location = first_line[1];
+    _version = first_line[2];
     splited.erase(splited.begin());
     size_t i = 0;
     for (i = 0; i < splited.size() && splited[i] != "\r"; ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
         std::string key = trim(tmp[0], "\n\r ");
         std::string value = trim(tmp[1], "\n\r ");
-        headers[key] = value;
+        _headers[key] = value;
     }
 
     for (size_t j = i; j < splited.size(); ++j) {
         std::string trimed = trim(splited[j], "\n\r ");
         if (!trimed.empty())
-            body.content.push_back(trimed);
+            _body.push_back(trimed);
     }
-    body.content_type = headers["Content-type"];
 }
 
 void HttpRequest::dump() {
-    std::cout << method << " " << location << " " << version << "\n";
-    for (std::map<std::string, std::string>::iterator iter = headers.begin();
-         iter != headers.end(); ++iter) {
-        std::cout << "["<< iter->first <<"]"<< " : [" << iter->second << "]"<<'\n';
+    std::cout << _method << " " << _location << " " << _version << "\n";
+    for (std::map<std::string, std::string>::iterator iter = _headers.begin();
+         iter != _headers.end(); ++iter) {
+        std::cout << "[" << iter->first << "]" << " : [" << iter->second << "]" << '\n';
     }
-    for (std::vector<std::string>::iterator iter = body.content.begin();
-         iter != body.content.end(); ++iter) {
+    for (std::vector<std::string>::iterator iter = _body.begin();
+         iter != _body.end(); ++iter) {
         std::cout << *iter << "\n";
     }
+}
+
+std::string HttpRequest::getRawData() {
+    return _raw;
+}
+
+std::vector<std::string> HttpRequest::getBody() {
+    return _body;
+}
+
+std::string HttpRequest::getHeaderValue(std::string key) {
+    return _headers[key];
+}
+
+std::string HttpRequest::getVersion() {
+    return _version;
+}
+
+std::string HttpRequest::getLocation() {
+    return _location;
+}
+
+std::string HttpRequest::getMethod() {
+    return _method;
 }
 
 // int main() {
