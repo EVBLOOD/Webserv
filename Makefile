@@ -117,24 +117,48 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named Webserv
+# Target rules for targets named Webserver
 
 # Build rule for target.
-Webserv: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Webserv
-.PHONY : Webserv
+Webserver: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Webserver
+.PHONY : Webserver
 
 # fast build rule for target.
-Webserv/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/build
-.PHONY : Webserv/fast
+Webserver/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/build
+.PHONY : Webserver/fast
+
+HttpResponse.o: HttpResponse.cpp.o
+.PHONY : HttpResponse.o
+
+# target to build an object file
+HttpResponse.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/HttpResponse.cpp.o
+.PHONY : HttpResponse.cpp.o
+
+HttpResponse.i: HttpResponse.cpp.i
+.PHONY : HttpResponse.i
+
+# target to preprocess a source file
+HttpResponse.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/HttpResponse.cpp.i
+.PHONY : HttpResponse.cpp.i
+
+HttpResponse.s: HttpResponse.cpp.s
+.PHONY : HttpResponse.s
+
+# target to generate assembly for a file
+HttpResponse.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/HttpResponse.cpp.s
+.PHONY : HttpResponse.cpp.s
 
 Request.o: Request.cpp.o
 .PHONY : Request.o
 
 # target to build an object file
 Request.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Request.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Request.cpp.o
 .PHONY : Request.cpp.o
 
 Request.i: Request.cpp.i
@@ -142,7 +166,7 @@ Request.i: Request.cpp.i
 
 # target to preprocess a source file
 Request.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Request.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Request.cpp.i
 .PHONY : Request.cpp.i
 
 Request.s: Request.cpp.s
@@ -150,7 +174,7 @@ Request.s: Request.cpp.s
 
 # target to generate assembly for a file
 Request.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Request.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Request.cpp.s
 .PHONY : Request.cpp.s
 
 Route.o: Route.cpp.o
@@ -158,7 +182,7 @@ Route.o: Route.cpp.o
 
 # target to build an object file
 Route.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Route.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Route.cpp.o
 .PHONY : Route.cpp.o
 
 Route.i: Route.cpp.i
@@ -166,7 +190,7 @@ Route.i: Route.cpp.i
 
 # target to preprocess a source file
 Route.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Route.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Route.cpp.i
 .PHONY : Route.cpp.i
 
 Route.s: Route.cpp.s
@@ -174,7 +198,7 @@ Route.s: Route.cpp.s
 
 # target to generate assembly for a file
 Route.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Route.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Route.cpp.s
 .PHONY : Route.cpp.s
 
 RouterBuilder.o: RouterBuilder.cpp.o
@@ -182,7 +206,7 @@ RouterBuilder.o: RouterBuilder.cpp.o
 
 # target to build an object file
 RouterBuilder.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/RouterBuilder.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/RouterBuilder.cpp.o
 .PHONY : RouterBuilder.cpp.o
 
 RouterBuilder.i: RouterBuilder.cpp.i
@@ -190,7 +214,7 @@ RouterBuilder.i: RouterBuilder.cpp.i
 
 # target to preprocess a source file
 RouterBuilder.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/RouterBuilder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/RouterBuilder.cpp.i
 .PHONY : RouterBuilder.cpp.i
 
 RouterBuilder.s: RouterBuilder.cpp.s
@@ -198,7 +222,7 @@ RouterBuilder.s: RouterBuilder.cpp.s
 
 # target to generate assembly for a file
 RouterBuilder.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/RouterBuilder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/RouterBuilder.cpp.s
 .PHONY : RouterBuilder.cpp.s
 
 Server.o: Server.cpp.o
@@ -206,7 +230,7 @@ Server.o: Server.cpp.o
 
 # target to build an object file
 Server.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Server.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Server.cpp.o
 .PHONY : Server.cpp.o
 
 Server.i: Server.cpp.i
@@ -214,7 +238,7 @@ Server.i: Server.cpp.i
 
 # target to preprocess a source file
 Server.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Server.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Server.cpp.i
 .PHONY : Server.cpp.i
 
 Server.s: Server.cpp.s
@@ -222,7 +246,7 @@ Server.s: Server.cpp.s
 
 # target to generate assembly for a file
 Server.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/Server.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/Server.cpp.s
 .PHONY : Server.cpp.s
 
 ServerBuilder.o: ServerBuilder.cpp.o
@@ -230,7 +254,7 @@ ServerBuilder.o: ServerBuilder.cpp.o
 
 # target to build an object file
 ServerBuilder.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/ServerBuilder.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/ServerBuilder.cpp.o
 .PHONY : ServerBuilder.cpp.o
 
 ServerBuilder.i: ServerBuilder.cpp.i
@@ -238,7 +262,7 @@ ServerBuilder.i: ServerBuilder.cpp.i
 
 # target to preprocess a source file
 ServerBuilder.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/ServerBuilder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/ServerBuilder.cpp.i
 .PHONY : ServerBuilder.cpp.i
 
 ServerBuilder.s: ServerBuilder.cpp.s
@@ -246,7 +270,7 @@ ServerBuilder.s: ServerBuilder.cpp.s
 
 # target to generate assembly for a file
 ServerBuilder.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/ServerBuilder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/ServerBuilder.cpp.s
 .PHONY : ServerBuilder.cpp.s
 
 ServerPoll.o: ServerPoll.cpp.o
@@ -254,7 +278,7 @@ ServerPoll.o: ServerPoll.cpp.o
 
 # target to build an object file
 ServerPoll.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/ServerPoll.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/ServerPoll.cpp.o
 .PHONY : ServerPoll.cpp.o
 
 ServerPoll.i: ServerPoll.cpp.i
@@ -262,7 +286,7 @@ ServerPoll.i: ServerPoll.cpp.i
 
 # target to preprocess a source file
 ServerPoll.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/ServerPoll.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/ServerPoll.cpp.i
 .PHONY : ServerPoll.cpp.i
 
 ServerPoll.s: ServerPoll.cpp.s
@@ -270,7 +294,7 @@ ServerPoll.s: ServerPoll.cpp.s
 
 # target to generate assembly for a file
 ServerPoll.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/ServerPoll.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/ServerPoll.cpp.s
 .PHONY : ServerPoll.cpp.s
 
 main.o: main.cpp.o
@@ -278,7 +302,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -286,7 +310,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -294,8 +318,32 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserv.dir/build.make CMakeFiles/Webserv.dir/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/main.cpp.s
 .PHONY : main.cpp.s
+
+tools.o: tools.cpp.o
+.PHONY : tools.o
+
+# target to build an object file
+tools.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/tools.cpp.o
+.PHONY : tools.cpp.o
+
+tools.i: tools.cpp.i
+.PHONY : tools.i
+
+# target to preprocess a source file
+tools.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/tools.cpp.i
+.PHONY : tools.cpp.i
+
+tools.s: tools.cpp.s
+.PHONY : tools.s
+
+# target to generate assembly for a file
+tools.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/tools.cpp.s
+.PHONY : tools.cpp.s
 
 # Help Target
 help:
@@ -305,7 +353,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... Webserv"
+	@echo "... Webserver"
+	@echo "... HttpResponse.o"
+	@echo "... HttpResponse.i"
+	@echo "... HttpResponse.s"
 	@echo "... Request.o"
 	@echo "... Request.i"
 	@echo "... Request.s"
@@ -327,6 +378,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... tools.o"
+	@echo "... tools.i"
+	@echo "... tools.s"
 .PHONY : help
 
 

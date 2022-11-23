@@ -1,7 +1,7 @@
-#include "tools.h"
+#include "tools.hpp"
 
-std::vector<std::string> tools::split(std::string str, std::string del) {
-    std::vector<std::string> res;
+std::vector <std::string> tools::split(std::string str, std::string del) {
+    std::vector <std::string> res;
     size_t pos = 0;
     while ((pos = str.find(del)) != std::string::npos) {
         res.push_back(str.substr(0, pos));

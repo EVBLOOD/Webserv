@@ -2,7 +2,7 @@
 // Created by Oussama Rahmouni on 11/23/22.
 //
 
-#include "HttpResponse.h"
+#include "HttpResponse.hpp"
 
 HttpResponse::HttpResponse(int status,
                            std::string version,

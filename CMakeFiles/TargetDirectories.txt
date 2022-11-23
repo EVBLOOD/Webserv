@@ -1,0 +1,3 @@
+/Users/orahmoun/Webserv/CMakeFiles/Webserver.dir
+/Users/orahmoun/Webserv/CMakeFiles/edit_cache.dir
+/Users/orahmoun/Webserv/CMakeFiles/rebuild_cache.dir

@@ -1,5 +1,7 @@
-#include "HttpResponse.h"
+#include "HttpResponse.hpp"
 #include "Request.hpp"
+#include "ServerBuilder.hpp"
+#include "Server.hpp"
 #include <assert.h>
 #include <iostream>
 
@@ -35,14 +37,25 @@ int main() {
                 .add_to_body("<li>37</li></ul>")
                 .build();
         assert(test.build() == resp);
-        std::cout << "RESPONSE\n";
-        test.dump();
-        std::cout << "END RESPONSE\n";
+//        std::cout << "RESPONSE\n";
+//        test.dump();
+//        std::cout << "END RESPONSE\n";
     }
     {
         HttpRequest request(req);
-        std::cout << "REQUEST\n";
-        request.dump();
-        std::cout << "END REQUEST\n";
+//        std::cout << "REQUEST\n";
+//        request.dump();
+//        std::cout << "END REQUEST\n";
     }
+    {
+        Server test = ServerBuilder().set_backlog(100).set_host("127.0.0.1").set_port(8080).build();
+        assert(test.getHost() == htonl(0x7f000001));
+        assert(test.getPort() == htons(8080));
+        assert(test.getBacklog() == 100);
+    }
+    std::cout << "Response test 👍" << '\n';
+    std::cout << "Request test 👍" << '\n';
+    std::cout << "ServerBuilder test 👍" << '\n';
+    std::cout << " --- parsing host test 👍" << '\n';
+    std::cout << " --- parsing port test 👍" << '\n';
 }

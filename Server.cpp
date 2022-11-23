@@ -23,7 +23,7 @@ Server &Server::init_socket() {
     _socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (_socket_fd == -1) {
-        std::cerr << "socket function failed : " << strerror(errno) << '\n';
+        std::cerr << "socket function failed : " << strerror(errno) << std::endl;
         exit(1);
     }
     std::cout << "socket created successfully\n";
@@ -33,7 +33,7 @@ Server &Server::init_socket() {
     if (setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable,
                    sizeof(enable)) == -1) {
         std::cerr << "Setsockopt failed" << strerror(errno) << std::endl;
-        exit(-1);
+        exit(2);
     }
 
     // ***************
@@ -43,21 +43,21 @@ Server &Server::init_socket() {
     _host_addr.sin_addr.s_addr = _host;
 
     if (bind(_socket_fd, (struct sockaddr *) &_host_addr, _host_addrlen) == -1) {
-        std::cerr << "bind function failed : " << strerror(errno) << '\n';
-        exit(1);
+        std::cerr << "bind function failed : " << strerror(errno) << std::endl;
+        exit(3);
     }
     std::cout << "socket was successfully binded to an address\n";
     // ***************
     if (listen(_socket_fd, _backlog) == -1) {
-        std::cerr << "listen function failed : " << strerror(errno) << '\n';
-        exit(1);
+        std::cerr << "listen function failed : " << strerror(errno) << std::endl;
+        exit(4);
     }
     std::cout << "server is listening for connections\n";
     // ***************
     return *this;
 }
 
-int Server::get_socket_fd() {
+int Server::get_socket_fd() const {
     return _socket_fd;
 }
 
@@ -74,4 +74,16 @@ int Server::accept_connection() {
 
 Server::~Server() {
     close(_socket_fd);
+}
+
+in_port_t Server::getPort() const {
+    return _port;
+}
+
+in_addr_t Server::getHost() const {
+    return _host;
+}
+
+int Server::getBacklog() const {
+    return _backlog;
 }

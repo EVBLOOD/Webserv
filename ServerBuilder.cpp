@@ -12,10 +12,15 @@ ServerBuilder &ServerBuilder::set_host(in_addr_t host) {
     return *this;
 }
 
-ServerBuilder &ServerBuilder::set_host(std::string host) {
-    std::string splited = split(host, ".");
-    char bytes[4];
-    in_addr_t after;
+ServerBuilder &ServerBuilder::set_host(const std::string &host) {
+    std::vector<std::string> splited = split(host, ".");
+    unsigned char bytes[4];
+    bytes[0] = std::stoi(splited[0]);
+    bytes[1] = std::stoi(splited[1]);
+    bytes[2] = std::stoi(splited[2]);
+    bytes[3] = std::stoi(splited[3]);
+    in_addr_t after = *(in_addr_t *) bytes;
+    _host = after;
     return *this;
 }
 

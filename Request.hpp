@@ -1,7 +1,7 @@
 #pragma once
 
 #include "socket_header.hpp"
-#include "tools.h"
+#include "tools.hpp"
 
 #include <vector>
 #include <string>
@@ -26,8 +26,8 @@ public:
     std::string _method;
     std::string _location;
     std::string _version;
-    std::map<std::string, std::string> _headers;
-    std::vector<std::string> _body;
+    std::map <std::string, std::string> _headers;
+    std::vector <std::string> _body;
 
 public:
     explicit HttpRequest(std::string request);
@@ -40,7 +40,7 @@ public:
 
     std::string getHeaderValue(std::string key);
 
-    std::vector<std::string> getBody();
+    std::vector <std::string> getBody();
 
     std::string getRawData();
 

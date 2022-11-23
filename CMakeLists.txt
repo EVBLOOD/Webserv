@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.23)
-project(Webserv)
+project(Webserver)
 
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 
-add_executable(Webserv
+add_executable(Webserver
         main.cpp
         Request.cpp
         Request.hpp
@@ -19,4 +19,6 @@ add_executable(Webserv
         ServerBuilder.hpp
         ServerPoll.cpp
         ServerPoll.hpp
-        socket_header.hpp HttpResponse.cpp HttpResponse.h)
+        tools.cpp
+        tools.hpp
+        socket_header.hpp HttpResponse.cpp HttpResponse.hpp)

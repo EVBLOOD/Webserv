@@ -1,56 +1,79 @@
 #include "ServerPoll.hpp"
 
-ServerPoll::ServerPoll() : servers(), num_of_servers(0) {
-    memset((void*)fds, 0, 200);
+ServerPoll::ServerPoll() : _servers(), _num_of_servers(0), _num_of_clients(0) {
+    memset((void *) _fds, 0, 200);
 }
 
-void ServerPoll::add_server(Server server) {
-    servers.push_back(server);
-    num_of_servers = servers.size();
+void ServerPoll::add_server(const Server &server) {
+    _servers.push_back(server);
+    _num_of_servers = _servers.size();
 }
+
+HttpResponse test_response(HttpRequest request) {
+    std::cerr << "[DEBUG] test_response\n";
+    if (request.getLocation() == "/") {
+        HttpResponse resp = HttpResponse(200, "1.1", "OK\r\nLocation: /");
+        resp.add_header("Content-Type", "text/html")
+                .add_to_body("<h1>hello, world</1>");
+        return resp;
+    } else if (request.getLocation() == "/oussama") {
+        HttpResponse resp = HttpResponse(200, "1.1", "OK\r\nLocation: /");
+        resp.add_header("Content-Type", "text/html")
+                .add_to_body("<h1>this is a webserver</1>");
+        return resp;
+    } else if (request.getLocation() == "/saad") {
+        HttpResponse resp = HttpResponse(
+                301, "1.1", "Moved Permanently\r\nLocation: /oussama");
+        resp.add_header("Location", "/oussama");
+        return resp;
+    }
+
+    HttpResponse resp = HttpResponse(404, "1.1", "Not Found\r\nLocation: /");
+    resp.add_header("Content-Type", "text/html")
+            .add_to_body("<h1>404</1>");
+    return resp;
+}
+
 
 void ServerPoll::run_servers() {
     int rc;
     char buffer[BUFFER_SIZE];
 
-    for (size_t i = 0; i < num_of_servers; ++i) {
-        servers[i].init_socket();
-        fds[i].fd = servers[i].get_socket_fd();
-        fds[i].events = POLLIN;
+    for (size_t i = 0; i < _num_of_servers; ++i) {
+        _servers[i].init_socket();
+        _fds[i].fd = _servers[i].get_socket_fd();
+        _fds[i].events = POLLIN;
     }
 
-    int num_of_clients = 0;
     do {
-        rc = poll(fds, (nfds_t)(num_of_servers + num_of_clients), -1);
+        rc = poll(_fds, (nfds_t)(_num_of_servers + _num_of_clients), -1);
         std::cout << "[DEBUG POLL] " << rc << "\n";
         if (rc < 0) {
             perror("poll failed");
             break;
         }
         std::cout << "pool success" << std::endl;
-        for (size_t i = 0; i < num_of_servers + num_of_clients; ++i) {
-            if (fds[i].revents == POLLIN) {
-
-               if (i < num_of_servers) {
-                   int client_sockfd = servers[i].accept_connection();
-                   if (client_sockfd == -1) {
-                       std::cerr << "accept function failed : " << strerror(errno)
-                                 << '\n';
-                       continue;
-                   }
-                   std::cout << "connection is accepted\n";
-                   fds[num_of_servers + num_of_clients].fd = client_sockfd;
-                   fds[num_of_servers + num_of_clients].events = POLLIN;
-                   ++num_of_clients;
-                   continue;
-               }
+        for (size_t i = 0; i < _num_of_servers + _num_of_clients; ++i) {
+            if (_fds[i].revents == POLLIN) {
+                std::cout << "[DEBUG] POLLIN event in the server " << i << std::endl;
+                if (i < _num_of_servers) {
+                    int client_socket_fd = _servers[i].accept_connection();
+                    if (client_socket_fd == -1) {
+                        std::cerr << "accept function failed : " << strerror(errno)
+                                  << '\n';
+                        continue;
+                    }
+                    std::cout << "connection is accepted\n";
+                    add_client(client_socket_fd, _servers[i]);
+                    continue;
+                }
 
 
-                memset((void*)buffer, 0, BUFFER_SIZE);
-                ssize_t bytes_read = read(fds[i].fd, buffer, BUFFER_SIZE);
+                std::cout << "[DEBUG] POLLIN event in the client " << i << std::endl;
+                memset((void *) buffer, 0, BUFFER_SIZE);
+                ssize_t bytes_read = read(_fds[i].fd, buffer, BUFFER_SIZE);
                 if (bytes_read <= 0) {
-                    close(fds[i].fd);
-                    fds[i] = fds[num_of_servers + --num_of_clients];
+                    remove_client(i);
                     if (bytes_read < 0)
                         std::cerr << "read error : " << strerror(errno) << '\n';
                     continue;
@@ -58,60 +81,101 @@ void ServerPoll::run_servers() {
 
                 std::cout << "[REQUEST from client " << i << "]\n";
                 HttpRequest request = HttpRequest(std::string(buffer));
-                std::cout << buffer << '\n';
-                // ***************
-                // std::string resp = Response(200, 1.1, "OK",
-                //                             Body("text/html",
-                //                                  "<h1>hello,
-                //                                  world</1>\r\n"
-                //                                  "<ul><li>13</li>\r\n"
-                //                                  "<li>37</li></ul>\r\n"));
-                //
-                std::string resp;
-                if (request.location == "/") {
-                    std::vector<std::string> body_content;
-                    body_content.push_back("<h1>hello, world</1>");
-                    resp = Server::Response(200, "1.1", "OK\r\nLocation: /",
-                                            Body("text/html", body_content));
-                } else if (request.location == "/oussama") {
-                    std::vector<std::string> body_content;
-                    body_content.push_back("<h1>this is webserv</1>");
-                    resp =
-                        Server::Response(200, "1.1", "OK\r\nLocation: /oussama",
-                                         Body("text/html", body_content));
-                } else if (request.location == "/error") {
-                    std::vector<std::string> body_content;
-                    body_content.push_back("<h1>404</1>");
-                    resp =
-                        Server::Response(404, "1.1", "Not Found\r\nLocation: /",
-                                         Body("text/html", body_content));
-                } else if (request.location == "/saad") {
-                    resp = Server::Response(
-                        301, "1.1", "Moved Permanently\r\nLocation: /oussama",
-                        Body());
-                }
+                std::cout << "[DEBUG] raw buffer data start :\n[" << buffer << "]\n"
+                          << "[DEBUG] raw buffer data ends" << std::endl;
+
+                HttpResponse resp = test_response(request);
+
                 ssize_t bytes_write =
-                    write(fds[i].fd, resp.c_str(), resp.size());
+                        write(_fds[i].fd, resp.build().c_str(), resp.build().size());
                 if (bytes_write < 0) {
                     std::cerr << "write error : " << strerror(errno) << '\n';
                     continue;
                 }
+                write(_fds[i].fd, "\0", 1);
 
                 std::cout << "[DEBUG REQUEST DUMB]\n";
                 request.dump();
                 std::cout << "[END REQUEST DUMB]\n";
-                if (true || request.headers["Connection"] == "close") {
-                    close(fds[i].fd);
-                    if (i != num_of_servers)
-                        fds[i] = fds[num_of_servers + --num_of_clients];
-                    else
-                        num_of_clients = 0;
-                    std::cout << "close connection with client " << i << "\n";
-                } if (request.headers["Connection"] == "keep-alive") {
+                if (true || request.getHeaderValue("Connection") == "close") {
+                    remove_client(i);
+                } else if (request.getHeaderValue("Connection") == "keep-alive") {
                     std::cout << "client " << i << " want to be kept alive\n";
                 }
+
+            }
+
+            std::cerr << "[ERROR] " << strerror(errno) << std::endl;
+            errno = 0;
+            std::cerr << "[DEBUG] index : " << i << " and revent " << _fds[i].revents << std::endl;
+            switch (_fds[i].revents) {
+                case POLLERR:
+                    std::cerr << "POLLERR\n";
+                    break;
+                case POLLHUP:
+                    std::cerr << "POLLHUP\n";
+                    remove_client(i);
+                    std::cout << "close connection with client " << i << "\n";
+                    break;
+                case POLLIN:
+                    std::cerr << "POLLIN\n";
+                    break;
+                case POLLNVAL:
+                    std::cerr << "POLLNVAL\n";
+                    break;
+                case POLLOUT:
+                    std::cerr << "POLLOU\n";
+                    break;
+                case POLLPRI:
+                    std::cerr << "POLLPRI\n";
+                    break;
+                case POLLRDBAND:
+                    std::cerr << "POLLRDBAND\n";
+                    break;
+                case POLLRDNORM:
+                    std::cerr << "POLLRDNOR\n";
+                    break;
+                case POLLWRBAND:
+                    std::cerr << "POLLWRBAND\n";
+                    break;
+//                case POLLWRNORM:
+//                    std::cerr << "POLLWRNORM\n";
+//                    break;
+                case 0:
+                    continue;
+                default:
+                    std::cerr << "UNREACHABLE\n";
+                    remove_client(i);
             }
         }
         // ***************
     } while (true);
 }
+
+//
+void ServerPoll::add_client(int client_socket_fd, const Server &server_index) {
+    (void) server_index;
+    _fds[_num_of_servers + _num_of_clients].fd = client_socket_fd;
+    _fds[_num_of_servers + _num_of_clients].events = POLLIN;
+    ++_num_of_clients;
+}
+
+//
+void ServerPoll::remove_client(size_t client_index) {
+    close(_fds[client_index].fd);
+    if (client_index != _num_of_servers)
+        _fds[client_index] = _fds[_num_of_servers + --_num_of_clients];
+    else
+        _num_of_clients = 0;
+    std::cerr << "[INFO] close connection with client " << client_index << std::endl;
+}
+//POLLERR
+//POLLHUP
+//POLLIN
+//POLLNVAL
+//POLLOUT
+//POLLPRI
+//POLLRDBAND
+//POLLRDNORM
+//POLLWRBAND
+//POLLWRNORM
