@@ -54,6 +54,7 @@ This helps in manipulating options for the socket referred by the file descripto
 #include <netinet/in.h>
 #include <string>
 #include <sys/_types/_size_t.h>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/syslimits.h>
 #include <sys/types.h>
@@ -66,73 +67,92 @@ This helps in manipulating options for the socket referred by the file descripto
 #include <fcntl.h>
 typedef struct addrinfo infos;
 typedef struct sockaddr_storage storage;
+typedef struct pollfd spool;
+
 int main()
 {
-    infos *ret;
-    infos hints;
-    ret = NULL;
-    bzero(&hints, sizeof(infos));
-    hints.ai_family = AF_UNSPEC;//AF_INET;
-    hints.ai_flags = AI_PASSIVE;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    if (getaddrinfo("localhost", "8080", &hints, &ret) == -1)
+    infos info;
+    infos *ret[10];
+    spool data[10];
+    info.ai_protocol = IPPROTO_TCP;
+    info.ai_flags = AI_PASSIVE;
+    info.ai_family = AF_INET;
+    info.ai_socktype = SOCK_STREAM;
+    std::string y[10] = {"8081", "1037", "1125", "1319", "1331"};
+    for (int i = 0; i < 5; i++)
     {
-        std::cerr << "get address info joking!\n";
-        return 1;
+        if (getaddrinfo("localhost", y[i].c_str(), &info, &(ret[i])) == -1)
+        {
+            std::cerr << "get info is joking!\n";
+            exit (1);
+        }
+        if ((data[i].fd = socket(ret[i]->ai_family, ret[i]->ai_socktype, ret[i]->ai_protocol)) == -1)
+        {
+            std::cerr << "socket is joking!\n";
+            exit (1);
+        }
+        // fcntl(data[i].fd, F_SETFL, O_NONBLOCK);
+        data[i].events = POLLIN | POLLOUT;
+        if (bind(data[i].fd, ret[i]->ai_addr, ret[i]->ai_addrlen) == -1)
+        {
+            std::cerr << "bind is joking!\n";
+            exit (1);
+        }
+        if (listen(data[i].fd, 5) == -1)
+        {
+            std::cerr << "listen is joking!\n";
+            exit (1);
+        }
     }
-    int file_ds = socket(ret->ai_family, ret->ai_socktype ,ret->ai_protocol);
-    if (file_ds == -1)
-    {
-        std::cerr << "socket creating error!\n";
-        return 1;
-    }
-    fcntl(file_ds, F_SETFL, O_NONBLOCK);
-    // if (connect(file_ds, ret->ai_addr, ret->ai_addrlen) == -1) // just for client code !
-    // {
-    //     std::cerr << "connect error!\n";
-    //     return 1;
-    // }
-    if (bind(file_ds, ret->ai_addr, ret->ai_addrlen) == -1)
-    {
-        std::cerr << "binding error!\n";
-        return 1;
-    }
-    if (listen(file_ds, 10) == -1)
-    {
-        std::cerr << "listning ? !\n";
-        return 1;
-    }
-    int new_fileds;
-    storage getinfos;
-    socklen_t getinfos_size = sizeof(storage);
-    new_fileds = accept(file_ds, (struct sockaddr *)&getinfos, &getinfos_size);
-    if ( new_fileds == -1)
-    {
-        std::cerr << "accept ? !\n";
-        return 1;
-    }
-    char req[100000];
+    int pollre;
+    int i;
+    storage x;
+    int rwfd;
+    socklen_t len = sizeof(storage);
+    int clnt = 5;
+    int crl = 0;
     while (1)
     {
-        int rd = recv(new_fileds, &req, 100000, 0);
-        if (rd == 0)
+        std::cout << crl << '\n';
+        crl++;
+        pollre = poll(data, clnt, -1);
+        if (pollre == -1)
         {
-            std::cerr << "connection end\n";
-            return 1;
+            std::cerr << "pool is joking!\n";
+            exit (1);
         }
-        if (rd == -1)
+        else
         {
-            std::cerr << "connection error !\n";
-            return 1;
+            for (i = 0; i < 5 ; i++){
+                if (data[i].revents == POLLIN || data[i].revents == POLLOUT)
+                {
+                    break;
+                }
+            }
+            if (i > 5)
+            {
+                std::cerr << "pool return is joking!\n";
+                exit (1);
+            }
+            rwfd = accept(data[i].fd, NULL, NULL);
+            if (rwfd == -1)
+            {
+                std::cerr << "accept is joking!\n";
+                exit (1);
+            }
+            char buffer[1000];
+            int rec = recv(rwfd, buffer, 1000, 0);
+            if (rec == -1)
+            {
+                std::cerr << "recv is joking!\n";
+                exit (1);
+            }
+            buffer[rec] = '\0';
+            std::cout << "\n------------------------------------------------------------------------------------" << std::endl;
+            std::cout << buffer;
+            std::cout << "\n------------------------------------------------------------------------------------" << std::endl;
+            close(rwfd);
         }
-        req[rd] = '\0';
-        std::cout << req << "\n";
-        // send(new_fileds, "Hello, world!", 13, 0);
-        std::string x = "content-type: text/html;\r\n<h1>helooe</h1>\r\n\r\n";
-        write(new_fileds, x.c_str(), 66);
+
     }
-    // while (1);
-    freeaddrinfo(ret);
-    close(file_ds);
 }
