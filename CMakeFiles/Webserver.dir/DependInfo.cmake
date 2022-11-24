@@ -16,6 +16,10 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/orahmoun/Webserv/ServerBuilder.cpp" "CMakeFiles/Webserver.dir/ServerBuilder.cpp.o" "gcc" "CMakeFiles/Webserver.dir/ServerBuilder.cpp.o.d"
   "/Users/orahmoun/Webserv/ServerPoll.cpp" "CMakeFiles/Webserver.dir/ServerPoll.cpp.o" "gcc" "CMakeFiles/Webserver.dir/ServerPoll.cpp.o.d"
   "/Users/orahmoun/Webserv/main.cpp" "CMakeFiles/Webserver.dir/main.cpp.o" "gcc" "CMakeFiles/Webserver.dir/main.cpp.o.d"
+  "/Users/orahmoun/Webserv/parsing/location.cpp" "CMakeFiles/Webserver.dir/parsing/location.cpp.o" "gcc" "CMakeFiles/Webserver.dir/parsing/location.cpp.o.d"
+  "/Users/orahmoun/Webserv/parsing/parser.cpp" "CMakeFiles/Webserver.dir/parsing/parser.cpp.o" "gcc" "CMakeFiles/Webserver.dir/parsing/parser.cpp.o.d"
+  "/Users/orahmoun/Webserv/parsing/server.cpp" "CMakeFiles/Webserver.dir/parsing/server.cpp.o" "gcc" "CMakeFiles/Webserver.dir/parsing/server.cpp.o.d"
+  "/Users/orahmoun/Webserv/parsing/tokengen.cpp" "CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o" "gcc" "CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o.d"
   "/Users/orahmoun/Webserv/tools.cpp" "CMakeFiles/Webserver.dir/tools.cpp.o" "gcc" "CMakeFiles/Webserver.dir/tools.cpp.o.d"
   )
 

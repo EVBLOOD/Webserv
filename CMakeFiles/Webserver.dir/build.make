@@ -195,6 +195,62 @@ CMakeFiles/Webserver.dir/HttpResponse.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/HttpResponse.cpp.s"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/HttpResponse.cpp -o CMakeFiles/Webserver.dir/HttpResponse.cpp.s
 
+CMakeFiles/Webserver.dir/parsing/location.cpp.o: CMakeFiles/Webserver.dir/flags.make
+CMakeFiles/Webserver.dir/parsing/location.cpp.o: parsing/location.cpp
+CMakeFiles/Webserver.dir/parsing/location.cpp.o: CMakeFiles/Webserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/Webserver.dir/parsing/location.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Webserver.dir/parsing/location.cpp.o -MF CMakeFiles/Webserver.dir/parsing/location.cpp.o.d -o CMakeFiles/Webserver.dir/parsing/location.cpp.o -c /Users/orahmoun/Webserv/parsing/location.cpp
+
+CMakeFiles/Webserver.dir/parsing/location.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Webserver.dir/parsing/location.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/orahmoun/Webserv/parsing/location.cpp > CMakeFiles/Webserver.dir/parsing/location.cpp.i
+
+CMakeFiles/Webserver.dir/parsing/location.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/parsing/location.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/parsing/location.cpp -o CMakeFiles/Webserver.dir/parsing/location.cpp.s
+
+CMakeFiles/Webserver.dir/parsing/parser.cpp.o: CMakeFiles/Webserver.dir/flags.make
+CMakeFiles/Webserver.dir/parsing/parser.cpp.o: parsing/parser.cpp
+CMakeFiles/Webserver.dir/parsing/parser.cpp.o: CMakeFiles/Webserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/Webserver.dir/parsing/parser.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Webserver.dir/parsing/parser.cpp.o -MF CMakeFiles/Webserver.dir/parsing/parser.cpp.o.d -o CMakeFiles/Webserver.dir/parsing/parser.cpp.o -c /Users/orahmoun/Webserv/parsing/parser.cpp
+
+CMakeFiles/Webserver.dir/parsing/parser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Webserver.dir/parsing/parser.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/orahmoun/Webserv/parsing/parser.cpp > CMakeFiles/Webserver.dir/parsing/parser.cpp.i
+
+CMakeFiles/Webserver.dir/parsing/parser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/parsing/parser.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/parsing/parser.cpp -o CMakeFiles/Webserver.dir/parsing/parser.cpp.s
+
+CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o: CMakeFiles/Webserver.dir/flags.make
+CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o: parsing/tokengen.cpp
+CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o: CMakeFiles/Webserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o -MF CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o.d -o CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o -c /Users/orahmoun/Webserv/parsing/tokengen.cpp
+
+CMakeFiles/Webserver.dir/parsing/tokengen.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Webserver.dir/parsing/tokengen.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/orahmoun/Webserv/parsing/tokengen.cpp > CMakeFiles/Webserver.dir/parsing/tokengen.cpp.i
+
+CMakeFiles/Webserver.dir/parsing/tokengen.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/parsing/tokengen.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/parsing/tokengen.cpp -o CMakeFiles/Webserver.dir/parsing/tokengen.cpp.s
+
+CMakeFiles/Webserver.dir/parsing/server.cpp.o: CMakeFiles/Webserver.dir/flags.make
+CMakeFiles/Webserver.dir/parsing/server.cpp.o: parsing/server.cpp
+CMakeFiles/Webserver.dir/parsing/server.cpp.o: CMakeFiles/Webserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/Webserver.dir/parsing/server.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Webserver.dir/parsing/server.cpp.o -MF CMakeFiles/Webserver.dir/parsing/server.cpp.o.d -o CMakeFiles/Webserver.dir/parsing/server.cpp.o -c /Users/orahmoun/Webserv/parsing/server.cpp
+
+CMakeFiles/Webserver.dir/parsing/server.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Webserver.dir/parsing/server.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/orahmoun/Webserv/parsing/server.cpp > CMakeFiles/Webserver.dir/parsing/server.cpp.i
+
+CMakeFiles/Webserver.dir/parsing/server.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/parsing/server.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/parsing/server.cpp -o CMakeFiles/Webserver.dir/parsing/server.cpp.s
+
 # Object files for target Webserver
 Webserver_OBJECTS = \
 "CMakeFiles/Webserver.dir/main.cpp.o" \
@@ -205,7 +261,11 @@ Webserver_OBJECTS = \
 "CMakeFiles/Webserver.dir/ServerBuilder.cpp.o" \
 "CMakeFiles/Webserver.dir/ServerPoll.cpp.o" \
 "CMakeFiles/Webserver.dir/tools.cpp.o" \
-"CMakeFiles/Webserver.dir/HttpResponse.cpp.o"
+"CMakeFiles/Webserver.dir/HttpResponse.cpp.o" \
+"CMakeFiles/Webserver.dir/parsing/location.cpp.o" \
+"CMakeFiles/Webserver.dir/parsing/parser.cpp.o" \
+"CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o" \
+"CMakeFiles/Webserver.dir/parsing/server.cpp.o"
 
 # External object files for target Webserver
 Webserver_EXTERNAL_OBJECTS =
@@ -219,9 +279,13 @@ Webserver: CMakeFiles/Webserver.dir/ServerBuilder.cpp.o
 Webserver: CMakeFiles/Webserver.dir/ServerPoll.cpp.o
 Webserver: CMakeFiles/Webserver.dir/tools.cpp.o
 Webserver: CMakeFiles/Webserver.dir/HttpResponse.cpp.o
+Webserver: CMakeFiles/Webserver.dir/parsing/location.cpp.o
+Webserver: CMakeFiles/Webserver.dir/parsing/parser.cpp.o
+Webserver: CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o
+Webserver: CMakeFiles/Webserver.dir/parsing/server.cpp.o
 Webserver: CMakeFiles/Webserver.dir/build.make
 Webserver: CMakeFiles/Webserver.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable Webserver"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable Webserver"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Webserver.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

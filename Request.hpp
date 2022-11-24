@@ -21,7 +21,7 @@ using namespace tools;
 //};
 
 class HttpRequest {
-public:
+private:
     std::string _raw;
     std::string _method;
     std::string _location;

@@ -11,27 +11,38 @@ void ServerPoll::add_server(const Server &server) {
 
 HttpResponse test_response(HttpRequest request) {
     std::cerr << "[DEBUG] test_response\n";
-    if (request.getLocation() == "/") {
-        HttpResponse resp = HttpResponse(200, "1.1", "OK\r\nLocation: /");
-        resp.add_header("Content-Type", "text/html")
+    std::string location = request.getLocation();
+
+    if (location == "/") {
+        return HttpResponse(200, "1.1", "OK\r\nLocation: /")
+                .add_header("Content-Type", "text/html")
                 .add_to_body("<h1>hello, world</1>");
-        return resp;
-    } else if (request.getLocation() == "/oussama") {
-        HttpResponse resp = HttpResponse(200, "1.1", "OK\r\nLocation: /");
-        resp.add_header("Content-Type", "text/html")
-                .add_to_body("<h1>this is a webserver</1>");
-        return resp;
-    } else if (request.getLocation() == "/saad") {
-        HttpResponse resp = HttpResponse(
-                301, "1.1", "Moved Permanently\r\nLocation: /oussama");
-        resp.add_header("Location", "/oussama");
-        return resp;
+    }
+    if (location == "/oussama" && request.getMethod() == "GET") {
+        return HttpResponse(200, "1.1", "OK\r\nLocation: /oussama")
+                .add_header("Content-Type", "text/html")
+                .add_to_body(" <form  method = \"POST\">")
+                .add_to_body("Name: <input type = \"text\" name = \"name\" />")
+                .add_to_body("Weight: <input type = \"text\" name = \"weight\" />")
+                .add_to_body("<input type = \"submit\" />")
+                .add_to_body("</form>");
+    } else if (location == "/oussama" && request.getMethod() == "POST") {
+        std::string content = request.getBody()[0];
+        std::vector <std::string> name_weight = split(content, "&");
+        return HttpResponse(200, "1.1", "OK\r\nLocation: /oussama")
+                .add_header("Content-Type", "text/html")
+                .add_to_body("<h1>hello " + split(name_weight[0], "=")[1] + "</h1>")
+                .add_to_body("<h1>your weight is " + split(name_weight[1], "=")[1] + "</h1>");
+    }
+    if (location == "/saad") {
+        return HttpResponse(
+                301, "1.1", "Moved Permanently\r\nLocation: /oussama").
+                add_header("Location", "/oussama");
     }
 
-    HttpResponse resp = HttpResponse(404, "1.1", "Not Found\r\nLocation: /");
-    resp.add_header("Content-Type", "text/html")
+    return HttpResponse(404, "1.1", "Not Found\r\nLocation: /")
+            .add_header("Content-Type", "text/html")
             .add_to_body("<h1>404</1>");
-    return resp;
 }
 
 

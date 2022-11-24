@@ -321,6 +321,102 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+parsing/location.o: parsing/location.cpp.o
+.PHONY : parsing/location.o
+
+# target to build an object file
+parsing/location.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/location.cpp.o
+.PHONY : parsing/location.cpp.o
+
+parsing/location.i: parsing/location.cpp.i
+.PHONY : parsing/location.i
+
+# target to preprocess a source file
+parsing/location.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/location.cpp.i
+.PHONY : parsing/location.cpp.i
+
+parsing/location.s: parsing/location.cpp.s
+.PHONY : parsing/location.s
+
+# target to generate assembly for a file
+parsing/location.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/location.cpp.s
+.PHONY : parsing/location.cpp.s
+
+parsing/parser.o: parsing/parser.cpp.o
+.PHONY : parsing/parser.o
+
+# target to build an object file
+parsing/parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/parser.cpp.o
+.PHONY : parsing/parser.cpp.o
+
+parsing/parser.i: parsing/parser.cpp.i
+.PHONY : parsing/parser.i
+
+# target to preprocess a source file
+parsing/parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/parser.cpp.i
+.PHONY : parsing/parser.cpp.i
+
+parsing/parser.s: parsing/parser.cpp.s
+.PHONY : parsing/parser.s
+
+# target to generate assembly for a file
+parsing/parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/parser.cpp.s
+.PHONY : parsing/parser.cpp.s
+
+parsing/server.o: parsing/server.cpp.o
+.PHONY : parsing/server.o
+
+# target to build an object file
+parsing/server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/server.cpp.o
+.PHONY : parsing/server.cpp.o
+
+parsing/server.i: parsing/server.cpp.i
+.PHONY : parsing/server.i
+
+# target to preprocess a source file
+parsing/server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/server.cpp.i
+.PHONY : parsing/server.cpp.i
+
+parsing/server.s: parsing/server.cpp.s
+.PHONY : parsing/server.s
+
+# target to generate assembly for a file
+parsing/server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/server.cpp.s
+.PHONY : parsing/server.cpp.s
+
+parsing/tokengen.o: parsing/tokengen.cpp.o
+.PHONY : parsing/tokengen.o
+
+# target to build an object file
+parsing/tokengen.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o
+.PHONY : parsing/tokengen.cpp.o
+
+parsing/tokengen.i: parsing/tokengen.cpp.i
+.PHONY : parsing/tokengen.i
+
+# target to preprocess a source file
+parsing/tokengen.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/tokengen.cpp.i
+.PHONY : parsing/tokengen.cpp.i
+
+parsing/tokengen.s: parsing/tokengen.cpp.s
+.PHONY : parsing/tokengen.s
+
+# target to generate assembly for a file
+parsing/tokengen.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Webserver.dir/build.make CMakeFiles/Webserver.dir/parsing/tokengen.cpp.s
+.PHONY : parsing/tokengen.cpp.s
+
 tools.o: tools.cpp.o
 .PHONY : tools.o
 
@@ -378,6 +474,18 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... parsing/location.o"
+	@echo "... parsing/location.i"
+	@echo "... parsing/location.s"
+	@echo "... parsing/parser.o"
+	@echo "... parsing/parser.i"
+	@echo "... parsing/parser.s"
+	@echo "... parsing/server.o"
+	@echo "... parsing/server.i"
+	@echo "... parsing/server.s"
+	@echo "... parsing/tokengen.o"
+	@echo "... parsing/tokengen.i"
+	@echo "... parsing/tokengen.s"
 	@echo "... tools.o"
 	@echo "... tools.i"
 	@echo "... tools.s"

@@ -21,4 +21,13 @@ add_executable(Webserver
         ServerPoll.hpp
         tools.cpp
         tools.hpp
-        socket_header.hpp HttpResponse.cpp HttpResponse.hpp)
+        socket_header.hpp HttpResponse.cpp HttpResponse.hpp
+        parsing/location.cpp
+        parsing/location.hpp
+        parsing/parser.cpp
+        parsing/parser.hpp
+        parsing/tokengen.cpp
+        parsing/tokengen.hpp
+        parsing/server.cpp
+        parsing/server.hpp
+        )
