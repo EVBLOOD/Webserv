@@ -21,7 +21,7 @@ public:
 
     void run_servers();
 
-    void add_client(int client_socket_fd, const Server &server_index);
+    void add_client(int client_socket_fd, size_t server_index);
 
     void remove_client(size_t client_index);
 };

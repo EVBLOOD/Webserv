@@ -29,3 +29,13 @@ std::string tools::trim(std::string str, std::string del) {
     str = str.substr(i, j);
     return str;
 }
+
+std::vector <std::string> tools::open_to_serve(std::string path) {
+    std::ifstream file(path);
+    std::string line;
+    std::vector <std::string> res;
+    while (std::getline(file, line)) {
+        res.push_back(line);
+    }
+    return res;
+};

@@ -53,6 +53,12 @@ int main() {
         assert(test.getPort() == htons(8080));
         assert(test.getBacklog() == 100);
     }
+//    {
+//        std::vector <std::string> index_html = open_to_serve("index.html");
+//        for (size_t i = 0; i < index_html.size(); ++i) {
+//            std::cout << index_html[i] << '\n';
+//        }
+//    }
     std::cout << "Response test 👍" << '\n';
     std::cout << "Request test 👍" << '\n';
     std::cout << "ServerBuilder test 👍" << '\n';

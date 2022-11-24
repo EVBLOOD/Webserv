@@ -16,21 +16,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44754751-12e1-4375-b7aa-d4d11e269e7f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Webserver" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/a.out" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/cmake_clean.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/compiler_depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/compiler_depend.internal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/compiler_depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/compiler_depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/Webserver.dir/progress.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeFiles/progress.marks" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Request.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Request.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ServerPoll.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ServerPoll.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ServerPoll.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/ServerPoll.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tools.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/tools.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,13 +89,6 @@
     &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -114,6 +104,7 @@
       <workItem from="1669175123340" duration="3393000" />
       <workItem from="1669189759940" duration="2339000" />
       <workItem from="1669238754943" duration="6666000" />
+      <workItem from="1669326420559" duration="1773000" />
     </task>
     <servers />
   </component>

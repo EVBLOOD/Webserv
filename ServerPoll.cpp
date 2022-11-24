@@ -18,6 +18,21 @@ HttpResponse test_response(HttpRequest request) {
                 .add_header("Content-Type", "text/html")
                 .add_to_body("<h1>hello, world</1>");
     }
+    if (location == "/index.html") {
+        return HttpResponse(200, "1.1", "OK\r\nLocation: /index.html")
+                .add_header("Content-Type", "text/html")
+                .set_body(tools::open_to_serve("index.html"));
+    }
+    if (location == "/app.css") {
+        return HttpResponse(200, "1.1", "OK\r\nLocation: /index.html")
+                .add_header("Content-Type", "text/css")
+                .set_body(tools::open_to_serve("app.css"));
+    }
+    if (location == "/app.js") {
+        return HttpResponse(200, "1.1", "OK\r\nLocation: /index.html")
+                .add_header("Content-Type", "application/javascript")
+                .set_body(tools::open_to_serve("app.js"));
+    }
     if (location == "/oussama" && request.getMethod() == "GET") {
         return HttpResponse(200, "1.1", "OK\r\nLocation: /oussama")
                 .add_header("Content-Type", "text/html")
@@ -26,7 +41,8 @@ HttpResponse test_response(HttpRequest request) {
                 .add_to_body("Weight: <input type = \"text\" name = \"weight\" />")
                 .add_to_body("<input type = \"submit\" />")
                 .add_to_body("</form>");
-    } else if (location == "/oussama" && request.getMethod() == "POST") {
+    }
+    if (location == "/oussama" && request.getMethod() == "POST") {
         std::string content = request.getBody()[0];
         std::vector <std::string> name_weight = split(content, "&");
         return HttpResponse(200, "1.1", "OK\r\nLocation: /oussama")
@@ -75,7 +91,7 @@ void ServerPoll::run_servers() {
                         continue;
                     }
                     std::cout << "connection is accepted\n";
-                    add_client(client_socket_fd, _servers[i]);
+                    add_client(client_socket_fd, i);
                     continue;
                 }
 
@@ -92,8 +108,8 @@ void ServerPoll::run_servers() {
 
                 std::cout << "[REQUEST from client " << i << "]\n";
                 HttpRequest request = HttpRequest(std::string(buffer));
-                std::cout << "[DEBUG] raw buffer data start :\n[" << buffer << "]\n"
-                          << "[DEBUG] raw buffer data ends" << std::endl;
+//                std::cout << "[DEBUG] raw buffer data start :\n[" << buffer << "]\n"
+//                          << "[DEBUG] raw buffer data ends" << std::endl;
 
                 HttpResponse resp = test_response(request);
 
@@ -103,7 +119,6 @@ void ServerPoll::run_servers() {
                     std::cerr << "write error : " << strerror(errno) << '\n';
                     continue;
                 }
-                write(_fds[i].fd, "\0", 1);
 
                 std::cout << "[DEBUG REQUEST DUMB]\n";
                 request.dump();
@@ -119,53 +134,53 @@ void ServerPoll::run_servers() {
             std::cerr << "[ERROR] " << strerror(errno) << std::endl;
             errno = 0;
             std::cerr << "[DEBUG] index : " << i << " and revent " << _fds[i].revents << std::endl;
-            switch (_fds[i].revents) {
-                case POLLERR:
-                    std::cerr << "POLLERR\n";
-                    break;
-                case POLLHUP:
-                    std::cerr << "POLLHUP\n";
-                    remove_client(i);
-                    std::cout << "close connection with client " << i << "\n";
-                    break;
-                case POLLIN:
-                    std::cerr << "POLLIN\n";
-                    break;
-                case POLLNVAL:
-                    std::cerr << "POLLNVAL\n";
-                    break;
-                case POLLOUT:
-                    std::cerr << "POLLOU\n";
-                    break;
-                case POLLPRI:
-                    std::cerr << "POLLPRI\n";
-                    break;
-                case POLLRDBAND:
-                    std::cerr << "POLLRDBAND\n";
-                    break;
-                case POLLRDNORM:
-                    std::cerr << "POLLRDNOR\n";
-                    break;
-                case POLLWRBAND:
-                    std::cerr << "POLLWRBAND\n";
-                    break;
-//                case POLLWRNORM:
-//                    std::cerr << "POLLWRNORM\n";
+//            switch (_fds[i].revents) {
+//                case POLLERR:
+//                    std::cerr << "POLLERR\n";
 //                    break;
-                case 0:
-                    continue;
-                default:
-                    std::cerr << "UNREACHABLE\n";
-                    remove_client(i);
-            }
+//                case POLLHUP:
+//                    std::cerr << "POLLHUP\n";
+//                    remove_client(i);
+//                    std::cout << "close connection with client " << i << "\n";
+//                    break;
+//                case POLLIN:
+//                    std::cerr << "POLLIN\n";
+//                    break;
+//                case POLLNVAL:
+//                    std::cerr << "POLLNVAL\n";
+//                    break;
+//                case POLLOUT:
+//                    std::cerr << "POLLOU\n";
+//                    break;
+//                case POLLPRI:
+//                    std::cerr << "POLLPRI\n";
+//                    break;
+//                case POLLRDBAND:
+//                    std::cerr << "POLLRDBAND\n";
+//                    break;
+//                case POLLRDNORM:
+//                    std::cerr << "POLLRDNOR\n";
+//                    break;
+//                case POLLWRBAND:
+//                    std::cerr << "POLLWRBAND\n";
+//                    break;
+////                case POLLWRNORM:
+////                    std::cerr << "POLLWRNORM\n";
+////                    break;
+//                case 0:
+//                    continue;
+//                default:
+//                    std::cerr << "UNREACHABLE\n";
+//                    remove_client(i);
+//            }
         }
         // ***************
     } while (true);
 }
 
 //
-void ServerPoll::add_client(int client_socket_fd, const Server &server_index) {
-    (void) server_index;
+void ServerPoll::add_client(int client_socket_fd, size_t server_index) {
+    _owner[_num_of_servers + _num_of_clients] = server_index;
     _fds[_num_of_servers + _num_of_clients].fd = client_socket_fd;
     _fds[_num_of_servers + _num_of_clients].events = POLLIN;
     ++_num_of_clients;
@@ -174,19 +189,10 @@ void ServerPoll::add_client(int client_socket_fd, const Server &server_index) {
 //
 void ServerPoll::remove_client(size_t client_index) {
     close(_fds[client_index].fd);
-    if (client_index != _num_of_servers)
+    if (client_index != _num_of_servers) {
+        _owner[client_index] = _owner[_num_of_servers + --_num_of_clients];
         _fds[client_index] = _fds[_num_of_servers + --_num_of_clients];
-    else
+    } else
         _num_of_clients = 0;
     std::cerr << "[INFO] close connection with client " << client_index << std::endl;
 }
-//POLLERR
-//POLLHUP
-//POLLIN
-//POLLNVAL
-//POLLOUT
-//POLLPRI
-//POLLRDBAND
-//POLLRDNORM
-//POLLWRBAND
-//POLLWRNORM
