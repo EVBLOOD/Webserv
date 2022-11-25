@@ -1,4 +1,4 @@
-#include "HttpResponse.hpp"
+#include "Response.hpp"
 #include "Request.hpp"
 #include "ServerBuilder.hpp"
 #include "Server.hpp"

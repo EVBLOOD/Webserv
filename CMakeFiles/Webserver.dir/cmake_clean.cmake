@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Webserver.dir/HttpResponse.cpp.o"
-  "CMakeFiles/Webserver.dir/HttpResponse.cpp.o.d"
   "CMakeFiles/Webserver.dir/Request.cpp.o"
   "CMakeFiles/Webserver.dir/Request.cpp.o.d"
+  "CMakeFiles/Webserver.dir/Response.cpp.o"
+  "CMakeFiles/Webserver.dir/Response.cpp.o.d"
   "CMakeFiles/Webserver.dir/Route.cpp.o"
   "CMakeFiles/Webserver.dir/Route.cpp.o.d"
   "CMakeFiles/Webserver.dir/RouterBuilder.cpp.o"

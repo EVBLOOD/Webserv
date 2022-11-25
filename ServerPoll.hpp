@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Request.hpp"
-#include "HttpResponse.hpp"
+#include "Response.hpp"
 #include "Server.hpp"
 #include "socket_header.hpp"
 

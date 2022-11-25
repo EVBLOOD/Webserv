@@ -2,7 +2,7 @@
 // Created by Oussama Rahmouni on 11/23/22.
 //
 
-#include "HttpResponse.hpp"
+#include "Response.hpp"
 
 HttpResponse::HttpResponse(int status,
                            std::string version,
@@ -20,7 +20,7 @@ HttpResponse &HttpResponse::add_to_body(std::string line) {
     return *this;
 };
 
-HttpResponse &HttpResponse::set_body(std::vector<std::string> body) {
+HttpResponse &HttpResponse::set_body(std::vector <std::string> body) {
     _body = body;
     return *this;
 };

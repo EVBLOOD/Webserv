@@ -14,27 +14,32 @@ HttpResponse test_response(HttpRequest request) {
     std::string location = request.getLocation();
 
     if (location == "/") {
-        return HttpResponse(200, "1.1", "OK\r\nLocation: /")
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Location: ", "/")
                 .add_header("Content-Type", "text/html")
                 .add_to_body("<h1>hello, world</1>");
     }
     if (location == "/index.html") {
-        return HttpResponse(200, "1.1", "OK\r\nLocation: /index.html")
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Location: ", "/index.html")
                 .add_header("Content-Type", "text/html")
                 .set_body(tools::open_to_serve("index.html"));
     }
     if (location == "/app.css") {
-        return HttpResponse(200, "1.1", "OK\r\nLocation: /index.html")
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Location: ", "/index.html")
                 .add_header("Content-Type", "text/css")
                 .set_body(tools::open_to_serve("app.css"));
     }
     if (location == "/app.js") {
-        return HttpResponse(200, "1.1", "OK\r\nLocation: /index.html")
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Location: ", "/index.htm")
                 .add_header("Content-Type", "application/javascript")
                 .set_body(tools::open_to_serve("app.js"));
     }
     if (location == "/oussama" && request.getMethod() == "GET") {
-        return HttpResponse(200, "1.1", "OK\r\nLocation: /oussama")
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Location: ", "/oussama")
                 .add_header("Content-Type", "text/html")
                 .add_to_body(" <form  method = \"POST\">")
                 .add_to_body("Name: <input type = \"text\" name = \"name\" />")
@@ -45,18 +50,20 @@ HttpResponse test_response(HttpRequest request) {
     if (location == "/oussama" && request.getMethod() == "POST") {
         std::string content = request.getBody()[0];
         std::vector <std::string> name_weight = split(content, "&");
-        return HttpResponse(200, "1.1", "OK\r\nLocation: /oussama")
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Location: ", "/oussama")
                 .add_header("Content-Type", "text/html")
                 .add_to_body("<h1>hello " + split(name_weight[0], "=")[1] + "</h1>")
                 .add_to_body("<h1>your weight is " + split(name_weight[1], "=")[1] + "</h1>");
     }
     if (location == "/saad") {
         return HttpResponse(
-                301, "1.1", "Moved Permanently\r\nLocation: /oussama").
+                301, "1.1", "Moved Permanently").
                 add_header("Location", "/oussama");
     }
 
-    return HttpResponse(404, "1.1", "Not Found\r\nLocation: /")
+    return HttpResponse(404, "1.1", "Not Found")
+            .add_header("Location", "/404")
             .add_header("Content-Type", "text/html")
             .add_to_body("<h1>404</1>");
 }

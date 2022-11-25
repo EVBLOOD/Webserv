@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/orahmoun/Webserv/HttpResponse.cpp" "CMakeFiles/Webserver.dir/HttpResponse.cpp.o" "gcc" "CMakeFiles/Webserver.dir/HttpResponse.cpp.o.d"
   "/Users/orahmoun/Webserv/Request.cpp" "CMakeFiles/Webserver.dir/Request.cpp.o" "gcc" "CMakeFiles/Webserver.dir/Request.cpp.o.d"
+  "/Users/orahmoun/Webserv/Response.cpp" "CMakeFiles/Webserver.dir/Response.cpp.o" "gcc" "CMakeFiles/Webserver.dir/Response.cpp.o.d"
   "/Users/orahmoun/Webserv/Route.cpp" "CMakeFiles/Webserver.dir/Route.cpp.o" "gcc" "CMakeFiles/Webserver.dir/Route.cpp.o.d"
   "/Users/orahmoun/Webserv/RouterBuilder.cpp" "CMakeFiles/Webserver.dir/RouterBuilder.cpp.o" "gcc" "CMakeFiles/Webserver.dir/RouterBuilder.cpp.o.d"
   "/Users/orahmoun/Webserv/Server.cpp" "CMakeFiles/Webserver.dir/Server.cpp.o" "gcc" "CMakeFiles/Webserver.dir/Server.cpp.o.d"

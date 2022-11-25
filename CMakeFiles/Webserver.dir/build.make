@@ -181,19 +181,19 @@ CMakeFiles/Webserver.dir/tools.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/tools.cpp.s"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/tools.cpp -o CMakeFiles/Webserver.dir/tools.cpp.s
 
-CMakeFiles/Webserver.dir/HttpResponse.cpp.o: CMakeFiles/Webserver.dir/flags.make
-CMakeFiles/Webserver.dir/HttpResponse.cpp.o: HttpResponse.cpp
-CMakeFiles/Webserver.dir/HttpResponse.cpp.o: CMakeFiles/Webserver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/Webserver.dir/HttpResponse.cpp.o"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Webserver.dir/HttpResponse.cpp.o -MF CMakeFiles/Webserver.dir/HttpResponse.cpp.o.d -o CMakeFiles/Webserver.dir/HttpResponse.cpp.o -c /Users/orahmoun/Webserv/HttpResponse.cpp
+CMakeFiles/Webserver.dir/Response.cpp.o: CMakeFiles/Webserver.dir/flags.make
+CMakeFiles/Webserver.dir/Response.cpp.o: Response.cpp
+CMakeFiles/Webserver.dir/Response.cpp.o: CMakeFiles/Webserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/orahmoun/Webserv/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/Webserver.dir/Response.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Webserver.dir/Response.cpp.o -MF CMakeFiles/Webserver.dir/Response.cpp.o.d -o CMakeFiles/Webserver.dir/Response.cpp.o -c /Users/orahmoun/Webserv/Response.cpp
 
-CMakeFiles/Webserver.dir/HttpResponse.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Webserver.dir/HttpResponse.cpp.i"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/orahmoun/Webserv/HttpResponse.cpp > CMakeFiles/Webserver.dir/HttpResponse.cpp.i
+CMakeFiles/Webserver.dir/Response.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Webserver.dir/Response.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/orahmoun/Webserv/Response.cpp > CMakeFiles/Webserver.dir/Response.cpp.i
 
-CMakeFiles/Webserver.dir/HttpResponse.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/HttpResponse.cpp.s"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/HttpResponse.cpp -o CMakeFiles/Webserver.dir/HttpResponse.cpp.s
+CMakeFiles/Webserver.dir/Response.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Webserver.dir/Response.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/orahmoun/Webserv/Response.cpp -o CMakeFiles/Webserver.dir/Response.cpp.s
 
 CMakeFiles/Webserver.dir/parsing/location.cpp.o: CMakeFiles/Webserver.dir/flags.make
 CMakeFiles/Webserver.dir/parsing/location.cpp.o: parsing/location.cpp
@@ -261,7 +261,7 @@ Webserver_OBJECTS = \
 "CMakeFiles/Webserver.dir/ServerBuilder.cpp.o" \
 "CMakeFiles/Webserver.dir/ServerPoll.cpp.o" \
 "CMakeFiles/Webserver.dir/tools.cpp.o" \
-"CMakeFiles/Webserver.dir/HttpResponse.cpp.o" \
+"CMakeFiles/Webserver.dir/Response.cpp.o" \
 "CMakeFiles/Webserver.dir/parsing/location.cpp.o" \
 "CMakeFiles/Webserver.dir/parsing/parser.cpp.o" \
 "CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o" \
@@ -278,7 +278,7 @@ Webserver: CMakeFiles/Webserver.dir/Server.cpp.o
 Webserver: CMakeFiles/Webserver.dir/ServerBuilder.cpp.o
 Webserver: CMakeFiles/Webserver.dir/ServerPoll.cpp.o
 Webserver: CMakeFiles/Webserver.dir/tools.cpp.o
-Webserver: CMakeFiles/Webserver.dir/HttpResponse.cpp.o
+Webserver: CMakeFiles/Webserver.dir/Response.cpp.o
 Webserver: CMakeFiles/Webserver.dir/parsing/location.cpp.o
 Webserver: CMakeFiles/Webserver.dir/parsing/parser.cpp.o
 Webserver: CMakeFiles/Webserver.dir/parsing/tokengen.cpp.o
