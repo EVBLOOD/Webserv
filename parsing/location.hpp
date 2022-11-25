@@ -39,7 +39,7 @@ enum func{
 class location
 {
     private:
-        std::vector<std::string> index;
+        // std::vector<std::string> index;
         std::map<int, std::string> ret_rn;
         bool autoindex;
         std::vector<std::string> allow_methods;

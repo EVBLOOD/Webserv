@@ -22,13 +22,13 @@ class server
 {
     private:
         // std::vector<std::string> index;
-        std::string         host;
-        std::vector<int>    port;
-        std::vector<std::string> server_name;
-        std::map<int, std::string> error_page;
-        std::string                 root;
-        std::map<std::string, location> locations;
-        unsigned long long client_max_body_size;
+        std::string         host; // done
+        std::vector<int>    port; // done
+        // std::vector<std::string> server_name;
+        std::map<int, std::string> error_page; // done
+        std::string                 root; // done
+        std::map<std::string, location> locations; // done
+        unsigned long long client_max_body_size; 
         
     public:
         server(const server &sv);
