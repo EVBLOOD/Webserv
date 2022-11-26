@@ -12,10 +12,11 @@
 class HttpResponse {
 private:
     int _status;
+    size_t _content_length;
     std::string _version;
     std::string _action;
-    std::map<std::string, std::string> _headers;
-    std::vector<std::string> _body;
+    std::map <std::string, std::string> _headers;
+    std::vector <std::string> _body;
 public:
     HttpResponse(int status,
                  std::string version,
@@ -25,7 +26,9 @@ public:
 
     HttpResponse &add_to_body(std::string line);
 
-    HttpResponse &set_body(std::vector<std::string> body);
+    HttpResponse &add_to_body(std::vector <std::string> body);
+
+    size_t get_body_size();
 
     std::string build();
 

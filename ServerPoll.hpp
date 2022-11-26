@@ -9,8 +9,8 @@ typedef struct pollfd pollfd;
 
 class ServerPoll {
     std::vector <Server> _servers;
-    pollfd _fds[200];
-    size_t _owner[200];
+    std::vector <pollfd> _fds;
+    std::vector <size_t> _owner;
     size_t _num_of_servers;
     size_t _num_of_clients;
 

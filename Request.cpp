@@ -16,7 +16,6 @@
 //std::map<std::string, std::string> _headers;
 //std::vector<std::string> _body;
 
-
 HttpRequest::HttpRequest(std::string request) : _raw(), _method(), _location(), _version(), _headers(), _body() {
     assert(trim(" abc ", " ") == "abc");
     assert(trim("\nabc\n", "\n") == "abc");

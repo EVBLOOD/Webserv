@@ -8,8 +8,10 @@
 
 char resp[] =
         "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 58\r\n"
         "Content-type: text/html\r\n"
-        "Server: webserver-c\r\n\r\n"
+        "Server: webserver-c\r\n"
+        "\r\n"
         "<h1>hello, world</h1>\r\n"
         "<ul><li>13</li>\r\n"
         "<li>37</li></ul>\r\n";
@@ -29,6 +31,10 @@ char req[] =
 
 int main() {
     {
+        std::string body =
+                "<h1>hello, world</h1>\r\n"
+                "<ul><li>13</li>\r\n"
+                "<li>37</li></ul>\r\n";
         HttpResponse test(200, "1.1", "OK");
         test.add_header("Server", "webserver-c")
                 .add_header("Content-type", "text/html")
@@ -37,6 +43,7 @@ int main() {
                 .add_to_body("<li>37</li></ul>")
                 .build();
         assert(test.build() == resp);
+        assert(test.get_body_size() == body.length());
 //        std::cout << "RESPONSE\n";
 //        test.dump();
 //        std::cout << "END RESPONSE\n";

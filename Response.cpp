@@ -6,7 +6,8 @@
 
 HttpResponse::HttpResponse(int status,
                            std::string version,
-                           std::string action) : _status(status), _version(version), _action(action), _headers(),
+                           std::string action) : _status(status), _content_length(0), _version(version),
+                                                 _action(action), _headers(),
                                                  _body() {
 };
 
@@ -17,12 +18,21 @@ HttpResponse &HttpResponse::add_header(std::string key, std::string value) {
 
 HttpResponse &HttpResponse::add_to_body(std::string line) {
     _body.push_back(line);
+    _content_length += line.length() + 2;
     return *this;
 };
 
-HttpResponse &HttpResponse::set_body(std::vector <std::string> body) {
-    _body = body;
+HttpResponse &HttpResponse::add_to_body(std::vector <std::string> body) {
+    std::vector<std::string>::iterator iter = body.begin();
+    while (iter != body.end()) {
+        add_to_body(*iter);
+        ++iter;
+    }
     return *this;
+};
+
+size_t HttpResponse::get_body_size() {
+    return _content_length;
 };
 
 std::string HttpResponse::build() {
@@ -30,6 +40,7 @@ std::string HttpResponse::build() {
 
     res += "HTTP/" + _version + " " + std::to_string(_status) + " " + _action + "\r\n";
 
+    _headers["Content-Length"] = std::to_string(_content_length);
     {
         std::map<std::string, std::string>::iterator iter = _headers.begin();
         while (iter != _headers.end()) {
