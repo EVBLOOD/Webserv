@@ -1,7 +1,8 @@
 # Webserv
 This project is about writing an HTTP server.
 # TODO
-- [ ]  every array pointer should be a vector
+- [X]  every array pointer should be a vector
+- [ ]  should check the list of hosts for response if the port have multiple owners
 - [ ]  take location turn it into ===> route
 - [ ]  auto index
 - [ ]  multiple ports

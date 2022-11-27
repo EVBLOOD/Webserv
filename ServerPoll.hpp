@@ -17,10 +17,11 @@ class ServerPoll {
 public:
     ServerPoll();
 
-    void add_server(const Server &server);
+    ServerPoll &add_server(const Server &server);
 
     void run_servers();
 
+private:
     void add_client(int client_socket_fd, size_t server_index);
 
     void remove_client(size_t client_index);

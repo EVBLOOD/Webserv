@@ -1,6 +1,6 @@
 #include "ServerPoll.hpp"
 
-ServerPoll::ServerPoll() : _servers(), _fds(), _num_of_servers(0), _num_of_clients(0) {
+ServerPoll::ServerPoll() : _servers(), _fds(), _owner(), _num_of_servers(0), _num_of_clients(0) {
 }
 
 //std::vector <Server> _servers;
@@ -9,14 +9,16 @@ ServerPoll::ServerPoll() : _servers(), _fds(), _num_of_servers(0), _num_of_clien
 //size_t _num_of_servers;
 //size_t _num_of_clients;
 
-void ServerPoll::add_server(const Server &server) {
+ServerPoll &ServerPoll::add_server(const Server &server) {
     pollfd temp = {.fd = server.get_socket_fd(), .events= POLLIN};
     _servers.push_back(server);
+    _owner.push_back(_owner.size());
     _fds.push_back(temp);
     _num_of_servers = _servers.size();
+    return *this;
 }
 
-HttpResponse test_response(HttpRequest request) {
+HttpResponse test_response_server_1(HttpRequest request) {
     std::string location = request.getLocation();
 
     if (location == "/") {
@@ -75,6 +77,20 @@ HttpResponse test_response(HttpRequest request) {
 }
 
 
+HttpResponse test_response_server_2(HttpRequest request) {
+    std::string location = request.getLocation();
+
+    if (location == "/") {
+        return HttpResponse(200, "1.1", "OK")
+                .add_header("Content-Type", "text/html")
+                .add_to_body("<h1>This is server 2</1>");
+    }
+
+    return HttpResponse(404, "1.1", "Not Found")
+            .add_header("Content-Type", "text/html")
+            .add_to_body("<h1>404</1>");
+}
+
 void ServerPoll::run_servers() {
     int rc;
     char buffer[BUFFER_SIZE];
@@ -118,19 +134,21 @@ void ServerPoll::run_servers() {
                 std::cout << "[DEBUG] POLLIN event in the client " << i << std::endl;
                 memset((void *) buffer, 0, BUFFER_SIZE);
                 ssize_t bytes_read = read(_fds[i].fd, buffer, BUFFER_SIZE);
-//                if (bytes_read <= 0) {
-////                    remove_client(i);
-//                    if (bytes_read < 0)
-//                        std::cerr << "read error : " << strerror(errno) << '\n';
-//                    continue;
-//                }
+                if (bytes_read <= 0) {
+                    remove_client(i);
+                    if (bytes_read < 0)
+                        std::cerr << "[ERROR] read error : " << strerror(errno) << '\n';
+                    continue;
+                }
 
-                std::cout << "[REQUEST from client " << i << "]\n";
+                std::cout << "[INFO] request from client " << i << "]\n";
                 HttpRequest request = HttpRequest(std::string(buffer));
 //                std::cout << "[DEBUG] raw buffer data start :\n[" << buffer << "]\n"
 //                          << "[DEBUG] raw buffer data ends" << std::endl;
 
-                HttpResponse resp = test_response(request);
+
+                std::cout << "[INFO] client " << i << " owner is the server " << _owner[i] << '\n';
+                HttpResponse resp = _owner[i] == 0 ? test_response_server_1(request) : test_response_server_2(request);
 
                 ssize_t bytes_write =
                         write(_fds[i].fd, resp.build().c_str(), resp.build().size());
@@ -211,6 +229,9 @@ void ServerPoll::add_client(int client_socket_fd, size_t server_index) {
     pollfd temp = {.fd = client_socket_fd, .events= POLLIN};
     _owner.push_back(server_index);
     _fds.push_back(temp);
+
+    std::cout << _owner.size() << " " << _fds.size() << '\n';
+    assert(_owner.size() == _fds.size());
     ++_num_of_clients;
 }
 
@@ -222,5 +243,6 @@ void ServerPoll::remove_client(size_t client_index) {
         _owner[client_index] = _owner[_num_of_servers + _num_of_clients];
         _fds[client_index] = _fds[_num_of_servers + _num_of_clients];
     }
+    assert(_owner.size() == _fds.size());
     std::cerr << "[INFO] close connection with client " << client_index << std::endl;
 }

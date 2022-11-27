@@ -19,20 +19,20 @@ Server::Server()
           _backlog(SOMAXCONN) {}
 
 Server &Server::init_socket() {
-    std::cout << "starting the server\n";
+    std::cout << "[INFO] starting the server\n";
     _socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (_socket_fd == -1) {
-        std::cerr << "socket function failed : " << strerror(errno) << std::endl;
+        std::cerr << "[ERROR] socket function failed : " << strerror(errno) << std::endl;
         exit(1);
     }
-    std::cout << "socket created successfully\n";
+    std::cout << "[INFO] a socket {ipv4, TCP} was created successfully\n";
 
     int enable = 1;
 
     if (setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable,
                    sizeof(enable)) == -1) {
-        std::cerr << "Setsockopt failed" << strerror(errno) << std::endl;
+        std::cerr << "[ERROR] Setsockopt failed" << strerror(errno) << std::endl;
         exit(2);
     }
 
@@ -46,13 +46,15 @@ Server &Server::init_socket() {
         std::cerr << "bind function failed : " << strerror(errno) << std::endl;
         exit(3);
     }
-    std::cout << "socket was successfully binded to an address\n";
+    std::cout << "[INFO] socket was successfully bound port " << ntohs(_port) << " and host "
+              << inet_ntoa(_host_addr.sin_addr)
+              << '\n';
     // ***************
     if (listen(_socket_fd, _backlog) == -1) {
-        std::cerr << "listen function failed : " << strerror(errno) << std::endl;
+        std::cerr << "[ERROR] listen function failed : " << strerror(errno) << std::endl;
         exit(4);
     }
-    std::cout << "server is listening for connections\n";
+    std::cout << "[INFO] server is listening for connections\n";
     // ***************
     return *this;
 }
@@ -65,10 +67,10 @@ int Server::accept_connection() {
     int client_sockfd =
             accept(_socket_fd, (struct sockaddr *) &_host_addr, &_host_addrlen);
     if (client_sockfd == -1) {
-        std::cerr << "accept function failed : " << strerror(errno) << '\n';
+        std::cerr << "[ERROR] accept function failed : " << strerror(errno) << '\n';
         return -1;
     }
-    std::cout << "connection is accepted\n";
+    std::cout << "[INFO] connection is accepted\n";
     return client_sockfd;
 }
 
