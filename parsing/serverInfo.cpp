@@ -10,21 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "serverInfo.hpp"
 
-void server::setlocation(std::string x, location y)
-{
+void serverInfo::setlocation(std::string x, location y) {
     locations.insert(std::make_pair(x, y)); // don't forget the path in the other side plz
 }
 
 template<>
-    void server::setters<setport>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
+void serverInfo::setters<setport>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit(1); // alo alo
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -32,7 +30,7 @@ template<>
     int ports;
     for (int i = 0; tmp[i]; i++)
         if (isdigit(tmp[i]) == false) // TODO: check this
-            exit (1);
+            exit(1);
     std::stringstream x;
     x << tmp;
     x >> ports;
@@ -40,18 +38,17 @@ template<>
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1);
+        exit(1);
     big++; // TODO: check if it's the end in the other side;
 }
 
 template<>
-    void server::setters<setservername>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
+void serverInfo::setters<setservername>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1); // alo alo
+        exit(1); // alo alo
     if (big->type == QUOTES) // TODO: check if the double quotes are double
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -62,13 +59,12 @@ template<>
     if (big != end && big->type != SEMICOLONS)
         setters<setservername>(big, end);
     if (big == end)
-        exit (1); // TODO: check in the other side!
+        exit(1); // TODO: check in the other side!
     big++;
 }
 
 template<>
-    void server::setters<setmap>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
+void serverInfo::setters<setmap>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
     std::string tmp;
     int status;
     std::stringstream x;
@@ -76,20 +72,20 @@ template<>
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1);
+        exit(1);
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
         if (isdigit(tmp[i]) == false) // TODO: for the port the number is limited and status
-            exit (1);
+            exit(1);
     x << tmp;
     x >> status;
     big++;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1);
+        exit(1);
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -98,18 +94,17 @@ template<>
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1);
+        exit(1);
     big++;
 }
 
 template<>
-    void server::setters<setroot>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
+void serverInfo::setters<setroot>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1);
+        exit(1);
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -118,47 +113,46 @@ template<>
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1);
+        exit(1);
     big++;
 }
 
 template<>
-    void server::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
+void
+serverInfo::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
     std::string tmp;
     unsigned long long size;
     std::stringstream x;
-    
+
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1);
+        exit(1);
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
         if (isdigit(tmp[i]) == false)
-            exit (1);
+            exit(1);
     x << tmp;
     x >> size; // TODO: maybe I'll make it count by Mb
     client_max_body_size = size; // TODO: read about this one and find out the real lims
     big++;
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
-       exit (1);
+        exit(1);
     big++;
 }
 
 
 template<>
-    void server::setters<sethost>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
+void serverInfo::setters<sethost>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit (1);
+        exit(1);
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -167,44 +161,40 @@ template<>
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
-        exit (1);
+        exit(1);
     big++;
 }
 
-server::server()
-{
+serverInfo::serverInfo() {
 }
 
-server::~server()
-{
+serverInfo::~serverInfo() {
 }
 
 
-typedef void (server::*function_server)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
+typedef void (serverInfo::*function_server)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
 
-void server::execute(int i,std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end)
-{
-    function_server funs[] = {&server::setters<0>, &server::setters<1>, &server::setters<2>, &server::setters<3>, &server::setters<4>, &server::setters<sethost>};
+void serverInfo::execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+    function_server funs[] = {&serverInfo::setters<0>, &serverInfo::setters<1>, &serverInfo::setters<2>,
+                              &serverInfo::setters<3>,
+                              &serverInfo::setters<4>, &serverInfo::setters<sethost>};
     (this->*funs[i])(big, end);
 }
 
-server::server(const server &sv)
-{
+serverInfo::serverInfo(const serverInfo &sv) {
     *this = sv;
 }
 
-server &server::operator=(const server &sv)
-{
-    if (this == &sv)
-    {
+serverInfo &serverInfo::operator=(const serverInfo &sv) {
+    if (this == &sv) {
         std::cerr << "this was unexpected!";
-        exit (1);
+        exit(1);
     }
     port = sv.port;
     server_name = sv.server_name;
     error_page = sv.error_page;
     root = sv.root;
     locations = sv.locations;
-    client_max_body_size= sv.client_max_body_size;
+    client_max_body_size = sv.client_max_body_size;
     return *this;
 }

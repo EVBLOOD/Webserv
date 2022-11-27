@@ -19,21 +19,25 @@
 #include <list>
 #include "tokengen.hpp"
 #include <cctype>
-#include "server.hpp"
+#include "serverInfo.hpp"
 #include "location.hpp"
-class parser
-{
-    private:
-        std::ifstream config;
-        std::vector<server> servers;
-        location tmploc;
-        server tmpserv;
-    public:
-        parser(const std::string &filename);
-        std::list<tokengen> generate();
-        ~parser();
-        template <int>
-        void separating(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server = true);
-        std::vector<server> lexer_to_data(std::list<tokengen> lexer);
+
+class parser {
+private:
+    std::ifstream config;
+    std::vector <serverInfo> servers;
+    location tmploc;
+    serverInfo tmpserv;
+public:
+    parser(const std::string &filename);
+
+    std::list <tokengen> generate();
+
+    ~parser();
+
+    template<int>
+    void separating(std::list<tokengen>::iterator &begin, std::list<tokengen>::iterator &end, bool server = true);
+
+    std::vector <serverInfo> lexer_to_data(std::list <tokengen> lexer);
 };
 

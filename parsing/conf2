@@ -1,0 +1,111 @@
+server
+{
+	listen          80;
+	listen          90;
+	listen          100;
+
+	host 0.0.0.0;
+
+	server_name google.com;
+	server_name     example.com;
+
+	client_max_body_size    1024;
+
+	error_page 403 /errors/403.html;
+	error_page 404 /errors/404.html;
+	error_page 500 /errors/500.html;
+	error_page 502 /errors/502.html;
+
+	root /Users/arraji/Desktop/webserv/public;
+
+	location /
+	{
+
+		index index.html;
+
+		autoindex off;
+		allow_methods GET POST DELETE;
+	}
+
+	location /return
+	{
+		return 301 /;
+	}
+
+	location *.php
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
+	}
+
+	location *.py
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /usr/bin/python;
+	}
+
+	location /upload
+	{
+		allow_methods POST GET;
+		upload_enable on;
+		upload_store /upload;
+	}
+}
+
+server
+{
+	listen          80;
+	listen          120;
+	listen          80;
+
+	host 0.0.0.0;
+
+	server_name youtube.com;
+	server_name     example.com;
+
+	client_max_body_size    1024;
+
+	error_page 403 /errors/403.html;
+	error_page 404 /errors/404.html;
+	error_page 500 /errors/500.html;
+	error_page 502 /errors/502.html;
+
+	root /Users/arraji/Desktop/webserv/public;
+
+	location /
+	{
+
+		index index.html;
+
+		autoindex off;
+		allow_methods GET POST DELETE;
+	}
+
+	location /return
+	{
+		return 301 /;
+	}
+
+	location *.php
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
+	}
+
+	location *.py
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /usr/bin/python;
+	}
+
+	location /upload
+	{
+		allow_methods POST GET;
+		upload_enable on;
+		upload_store /upload;
+	}
+}
