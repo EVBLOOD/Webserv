@@ -120,6 +120,7 @@ int init_kqueue(int number, int *data)
     }
     for (int i = 0; i < number; i++)
     {
+        bzero(&evSet, sizeof(struct kevent));
         EV_SET(&evSet, data[i], EVFILT_READ, EV_ADD, 0, 0, NULL);
         if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
         {
@@ -127,7 +128,7 @@ int init_kqueue(int number, int *data)
             exit (1);
         }
     }
-    return (kq); // this may be an error!
+    return (kq);
 }
  
  // at the last moment : I found this and it does everything => https://nima101.github.io/io_multiplexing
@@ -137,7 +138,6 @@ void kJob(int kdata, int *data)
     struct kevent evSet;
     while (true)
     {
-        // EV_SET(evSet, sckfd, EVFILT_READ, EV_DELETE, 0, 0, 0); when needs to remove
         int fd = kevent(kdata, &change, 1, &event, 1, NULL);
         if (fd == -1)
         {
@@ -150,7 +150,34 @@ void kJob(int kdata, int *data)
             std::cerr << "accept is joking!\n";
             exit (1);
         }
-        std::cout << "Read?\n";
+                                                    //keep-alive = ok pair<>
+        /*
+            {
+                bzero(&evSet, sizeof(struct kevent));
+                EV_SET(&evSet, rwdf, EVFILT_READ, EV_ADD, 0, 0, NULL);
+                if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+                {
+                    std::cerr << "kevent is joking!\n";
+                    exit (1);
+                }
+        */
+        /*
+             else if (isListeningSocket(webserv))
+            {
+                struct sockaddr_storage addr;
+                socklen_t socklen = sizeof(addr);
+                int connfd = accept(webserv.changelist.ident, (struct sockaddr *)&addr, &socklen);
+                webserv.peer= new peer_socket_t();
+                bzero(webserv.peer, sizeof(peer_socket_t));
+                webserv.peer->fd = connfd;
+                bzero(&(webserv.changelist), sizeof(webserv.changelist));
+                EV_SET(&webserv.changelist, connfd, EVFILT_READ, EV_ADD, 0, 0, (void*)webserv.peer);
+                if (kevent(webserv.kq, &webserv.changelist, 1, NULL, 0, 0) == -1)
+                    handel_error("kevent() failed");
+            }
+        */
+        // 
+        // std::cout << "Read?\n";
         // write(rwfd, "200 1.1 OK\r\nLocation: / \r\nContent-Type text/html\r\n\r\n<h1>hello, world</h1>\r\n",strlen("200 1.1 OK\r\nLocation: / \r\nContent-Type text/html\r\n\r\n<h1>hello, world</h1>\r\n"));
         // close(rwfd);
         // }
@@ -178,6 +205,7 @@ void kJob(int kdata, int *data)
         // }
         // buffer[rec] = '\0';
         // std::cout << buffer << "\n";
+        // // EV_SET(evSet, sckfd, EVFILT_READ, EV_DELETE, 0, 0, 0); when needs to remove
     }
 }
 
