@@ -66,90 +66,15 @@ HttpResponse test_response_server_1(HttpRequest request) {
         .add_to_body("<h1>404</1>");
 }
 
-// void handler(Kqueue& kq, void* data) {
-//     std::set<int> is_server;
-//     std::cout << "kdata " << kq.get_kdata() << '\n';
-//     std::vector<struct kevent> servers = kq.get_targets();
-
-//     for (size_t i = 0; i < servers.size(); ++i) {
-//         is_server.insert(servers[i].ident);
-//     }
-
-//     loop {
-//         std::pair<int, struct kevent*> _events = kq.get_events();
-//         int number_of_events = _events.first;
-//         struct kevent* events = _events.second;
-//         std::cout << "number of events " << number_of_events << '\n';
-
-//         if (number_of_events == -1) {
-//             std::cerr << " kevent before accept is joking!\n";
-//             exit(1);
-//         }
-
-//         for (int i = 0; i < number_of_events; i++) {
-//             if (is_server.find(events[i].ident) != is_server.end()) {
-//                 const IServer& server =
-//                     (IServer&)kq.get_listener(events[i].ident);
-//                 IStreamer& client = server.accept();
-//                 if (client.get_raw_fd() == -1) {
-//                     std::cerr << "accept is joking!\n";
-//                     exit(1);
-//                 }
-//                 std::cout << "Server with fd == " << events[i].ident << " ";
-//                 std::cout << "Accepted a connection with client with fd == "
-//                           << client.get_raw_fd() << '\n';
-//                 kq.add_listener(&client);
-//                 std::cout << "\nend\n";
-//             } else {
-//                 TcpStream& client =
-//                     (TcpStream&)kq.get_listener(events[i].ident);
-//                 std::cout << "[DEBUG] " << i << " " << events[i].ident <<
-//                 '\n'; std::array<char, 4096> buff; memset(buff.data(), 0,
-//                 buff.size());
-
-//                 if (client.read(buff.data(), buff.size()) <= 0) {
-//                     client.shutdown();
-//                     continue;
-//                 }
-
-//                 std::cout << "start :\n";
-
-//                 for (size_t b = 0; b < buff.size() && buff[b]; ++b) {
-//                     std::cout << buff[b];
-//                 }
-
-//                 HttpRequest req(std::string(buff.data()));
-//                 HttpResponse res = test_response_server_1(req);
-//                 std::cout << "\nend;\n";
-//                 client.write(res.build().c_str(), res.build().size());
-//             }
-//         }
-//     }
-// }
-//
-//
 void handler(Kqueue& kq, void* data) {
-    std::set<int> is_server;
-    std::cout << "kdata " << kq.get_kdata() << '\n';
-    std::vector<struct kevent> servers = kq.get_targets();
-
-    for (size_t i = 0; i < servers.size(); ++i) {
-        is_server.insert(servers[i].ident);
-    }
-
     loop {
         std::vector<IListener*> _events = kq.get_listeners();
         int number_of_events = _events.size();
         std::cout << "number of events " << number_of_events << '\n';
 
-        if (number_of_events == -1) {
-            std::cerr << " kevent before accept is joking!\n";
-            exit(1);
-        }
-
         for (int i = 0; i < number_of_events; i++) {
             if (dynamic_cast<IServer*>(_events[i])) {
-                const IServer& server = *(IServer*)_events[i];
+                const IServer& server = *dynamic_cast<IServer*>(_events[i]);
                 IStreamer& client = server.accept();
                 if (client.get_raw_fd() == -1) {
                     std::cerr << "accept is joking!\n";
@@ -160,7 +85,7 @@ void handler(Kqueue& kq, void* data) {
                 kq.add_listener(&client);
                 std::cout << "\nend\n";
             } else {
-                TcpStream& client = *(TcpStream*)_events[i];
+                TcpStream& client = *dynamic_cast<TcpStream*>(_events[i]);
                 std::array<char, 4096> buff;
                 memset(buff.data(), 0, buff.size());
 

@@ -21,9 +21,9 @@ $(NAME) : $(OBJS)
 	c++ -Wall -Wextra -Wshadow -std=c++98 -o $(NAME) $(OBJS)
 
 clean:
-	rm -rf $(OBJS)
+	@rm -rf $(OBJS)
 
 fclean: clean
-	rm $(NAME)
+	@rm -rf $(NAME)
 
 re: fclean all
