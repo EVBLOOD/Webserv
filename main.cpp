@@ -83,6 +83,10 @@ HttpResponse test_response_server_2(HttpRequest request) {
 }
 
 void handler(Kqueue& kq, void* data) {
+    std::map<std::pair<std::string, std::string>,
+             std::function<HttpResponse(HttpRequest)> >
+        idea = *(std::map<std::pair<std::string, std::string>,
+                          std::function<HttpResponse(HttpRequest)> >*)data;
     loop {
         std::vector<IListener*> _events = kq.get_listeners();
         int number_of_events = _events.size();
@@ -101,12 +105,12 @@ void handler(Kqueue& kq, void* data) {
                 kq.add_listener(&client);
                 std::cout << "end\n";
             } else {
-                TcpStream& client = *dynamic_cast<TcpStream*>(_events[i]);
+                IStreamer& client = *dynamic_cast<TcpStream*>(_events[i]);
                 std::array<char, 4096> buff;
                 memset(buff.data(), 0, buff.size());
 
                 if (client.read(buff.data(), buff.size()) <= 0) {
-                    client.shutdown();
+                    close(client.get_raw_fd());
                     continue;
                 }
 
@@ -119,7 +123,24 @@ void handler(Kqueue& kq, void* data) {
                 HttpRequest req(buff.data());
                 std::cout << "client HOST value == ["
                           << req.getHeaderValue("Host") << "]\n";
-                HttpResponse res = test_response_server_1(req);
+                std::string host;
+                std::string port;
+                if (req.getHeaderValue("Host").empty() == false) {
+                    std::vector<std::string> tmp =
+                        split(req.getHeaderValue("Host"), ":");
+                    if (tmp.size() == 1) {
+                        host = tmp[0];
+                    } else {
+                        host = tmp[0];
+                        port = tmp[1];
+                    }
+                } else {
+                    exit(5);
+                }
+                if (idea.find(std::make_pair(port, host)) == idea.end()) {
+                    exit(1);
+                }
+                HttpResponse res = idea[std::make_pair(port, host)](req);
                 std::cout << "\nend\n";
                 client.write(res.build().c_str(), res.build().size());
                 std::cout << "Connection status : ["
@@ -127,7 +148,7 @@ void handler(Kqueue& kq, void* data) {
                 if (req.getHeaderValue("Connection") != "keep-alive") {
                     std::cout << "client with fd == " << client.get_raw_fd()
                               << " was shutdown\n";
-                    client.shutdown();
+                    close(client.get_raw_fd());
                 }
             }
         }
@@ -135,27 +156,39 @@ void handler(Kqueue& kq, void* data) {
 }
 
 int main() {
-    // parser file("conf2");
-    // std::list<tokengen> tokens = file.generate();
-    // std::vector<serverInfo> servers_info = file.lexer_to_data(tokens);
-    // std::map<std::pair<int, std::string>, int> idea;
-    // int i = 0;
-    // for (auto x : servers_info) {
-    //     for (auto p : x.port) {
-    //         idea.insert(std::make_pair(std::make_pair(p, ""), i));
-    //         for (auto n : x.server_name) {
-    //             idea.insert(std::make_pair(std::make_pair(p, n), i));
-    //         }
-    //     }
-    //     ++i;
-    // }
-    // for (auto x : idea) {
-    //     std::cout << "server id " << x.second << " port " << x.first.first
-    //               << " server name " << x.first.second << '\n';
-    // }
+    parser file("conf");
+    std::list<tokengen> tokens = file.generate();
+    std::vector<serverInfo> servers_info = file.lexer_to_data(tokens);
+    std::map<std::pair<std::string, std::string>,
+             std::function<HttpResponse(HttpRequest)> >
+        idea;
+    int i = 0;
+    std::array<std::function<HttpResponse(HttpRequest)>, 2> functions = {
+        test_response_server_1, test_response_server_2};
+    for (auto x : servers_info) {
+        for (auto p : x.port) {
+            idea.insert(std::make_pair(
+                std::make_pair(std::to_string(p), "0.0.0.0"), functions[i]));
+        }
+        for (auto p : x.port) {
+            idea.insert(std::make_pair(std::make_pair(std::to_string(p), ""),
+                                       functions[i]));
+            for (auto n : x.server_name) {
+                idea.insert(std::make_pair(std::make_pair(std::to_string(p), n),
+                                           functions[i]));
+            }
+        }
+        ++i;
+    }
 
+    for (auto x : idea) {
+        std::cout << " port " << x.first.first << " server name "
+                  << x.first.second << '\n';
+    }
+    auto server1 = TcpListener("localhost", "8080");
+    auto server2 = TcpListener("localhost", "8081");
     std::vector<IListener*> listeners;
-    listeners.push_back(new TcpListener("localhost", "8080"));
-    listeners.push_back(new TcpListener("localhost", "8081"));
-    Kqueue(listeners).kqueue_job(handler, NULL);
+    listeners.push_back(&server1);
+    listeners.push_back(&server2);
+    Kqueue(listeners).kqueue_job(handler, (void*)&idea);
 }

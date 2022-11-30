@@ -1,6 +1,7 @@
 NAME = Webserver
 
-CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98
+CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98 
+CXXFLAGS_EXTRA = -Wall -Wextra -Wshadow -std=c++98 -Wuninitialized -Wconversion -fsanitize=address,undefined
 
 CXX = c++
 
@@ -20,6 +21,9 @@ SRCS =  main.cpp\
 
 all: $(NAME)
 
+extra: 
+	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra
+
 run: all 
 	@./$(NAME)
 
@@ -31,5 +35,6 @@ clean:
 
 fclean: clean
 	@rm -rf $(NAME)
+	@rm -rf $(NAME)_extra
 
 re: fclean all

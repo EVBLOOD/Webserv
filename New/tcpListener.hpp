@@ -36,5 +36,5 @@ class TcpListener : public IServer {
     TcpListener(std::string host, std::string port);
     ~TcpListener();
     int get_raw_fd() const;
-    IStreamer& accept() const;
+    TcpStream& accept() const;
 };

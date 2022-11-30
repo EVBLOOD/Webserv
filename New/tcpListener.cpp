@@ -47,7 +47,7 @@ int accept_helper(int fd) {
     return accept(fd, NULL, NULL);
 }
 
-IStreamer& TcpListener::accept() const {
+TcpStream& TcpListener::accept() const {
     int client_sockfd = accept_helper(_fd);
     if (client_sockfd == -1) {
         std::cerr << "[ERROR] accept function failed : " << strerror(errno)
