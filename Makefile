@@ -12,10 +12,16 @@ SRCS =  main.cpp\
 		Response.cpp\
 		New/TcpStream.cpp\
 		New/kqueue.cpp\
-		New/tcpListener.cpp
-		
+		New/tcpListener.cpp\
+		parsing/location.cpp\
+		parsing/parser.cpp\
+		parsing/serverInfo.cpp\
+		parsing/tokengen.cpp\
 
 all: $(NAME)
+
+run: all 
+	@./$(NAME)
 
 $(NAME) : $(OBJS)
 	c++ -Wall -Wextra -Wshadow -std=c++98 -o $(NAME) $(OBJS)

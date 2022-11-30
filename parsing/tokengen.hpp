@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-# pragma once
-# include <string>
+#pragma once
+#include <string>
 
 enum Type {
     OPENCURL,
@@ -24,11 +24,9 @@ enum Type {
     COMMENT
 };
 
-struct tokengen
-{
+struct tokengen {
     int type;
     std::string content;
     tokengen(int type);
     tokengen(int type, std::string content);
 };
-

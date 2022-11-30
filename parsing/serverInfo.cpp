@@ -13,23 +13,25 @@
 #include "serverInfo.hpp"
 
 void serverInfo::setlocation(std::string x, location y) {
-    locations.insert(std::make_pair(x, y)); // don't forget the path in the other side plz
+    locations.insert(
+        std::make_pair(x, y));  // don't forget the path in the other side plz
 }
 
-template<>
-void serverInfo::setters<setport>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void serverInfo::setters<setport>(std::list<tokengen>::iterator& big,
+                                  std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1); // alo alo
+        exit(1);  // alo alo
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     int ports;
     for (int i = 0; tmp[i]; i++)
-        if (isdigit(tmp[i]) == false) // TODO: check this
+        if (isdigit(tmp[i]) == false)  // TODO: check this
             exit(1);
     std::stringstream x;
     x << tmp;
@@ -39,17 +41,18 @@ void serverInfo::setters<setport>(std::list<tokengen>::iterator &big, std::list<
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
         exit(1);
-    big++; // TODO: check if it's the end in the other side;
+    big++;  // TODO: check if it's the end in the other side;
 }
 
-template<>
-void serverInfo::setters<setservername>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void serverInfo::setters<setservername>(std::list<tokengen>::iterator& big,
+                                        std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1); // alo alo
-    if (big->type == QUOTES) // TODO: check if the double quotes are double
+        exit(1);              // alo alo
+    if (big->type == QUOTES)  // TODO: check if the double quotes are double
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
@@ -59,16 +62,16 @@ void serverInfo::setters<setservername>(std::list<tokengen>::iterator &big, std:
     if (big != end && big->type != SEMICOLONS)
         setters<setservername>(big, end);
     if (big == end)
-        exit(1); // TODO: check in the other side!
+        exit(1);  // TODO: check in the other side!
     big++;
 }
 
-template<>
-void serverInfo::setters<setmap>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void serverInfo::setters<setmap>(std::list<tokengen>::iterator& big,
+                                 std::list<tokengen>::iterator& end) {
     std::string tmp;
     int status;
     std::stringstream x;
-
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
@@ -78,7 +81,8 @@ void serverInfo::setters<setmap>(std::list<tokengen>::iterator &big, std::list<t
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
-        if (isdigit(tmp[i]) == false) // TODO: for the port the number is limited and status
+        if (isdigit(tmp[i]) ==
+            false)  // TODO: for the port the number is limited and status
             exit(1);
     x << tmp;
     x >> status;
@@ -98,8 +102,9 @@ void serverInfo::setters<setmap>(std::list<tokengen>::iterator &big, std::list<t
     big++;
 }
 
-template<>
-void serverInfo::setters<setroot>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void serverInfo::setters<setroot>(std::list<tokengen>::iterator& big,
+                                  std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
@@ -117,13 +122,13 @@ void serverInfo::setters<setroot>(std::list<tokengen>::iterator &big, std::list<
     big++;
 }
 
-template<>
-void
-serverInfo::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void serverInfo::setters<setclient_max_body_size>(
+    std::list<tokengen>::iterator& big,
+    std::list<tokengen>::iterator& end) {
     std::string tmp;
     unsigned long long size;
     std::stringstream x;
-
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
@@ -136,8 +141,9 @@ serverInfo::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big,
         if (isdigit(tmp[i]) == false)
             exit(1);
     x << tmp;
-    x >> size; // TODO: maybe I'll make it count by Mb
-    client_max_body_size = size; // TODO: read about this one and find out the real lims
+    x >> size;  // TODO: maybe I'll make it count by Mb
+    client_max_body_size =
+        size;  // TODO: read about this one and find out the real lims
     big++;
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
@@ -145,9 +151,9 @@ serverInfo::setters<setclient_max_body_size>(std::list<tokengen>::iterator &big,
     big++;
 }
 
-
-template<>
-void serverInfo::setters<sethost>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void serverInfo::setters<sethost>(std::list<tokengen>::iterator& big,
+                                  std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
@@ -165,27 +171,28 @@ void serverInfo::setters<sethost>(std::list<tokengen>::iterator &big, std::list<
     big++;
 }
 
-serverInfo::serverInfo() {
-}
+serverInfo::serverInfo() {}
 
-serverInfo::~serverInfo() {
-}
+serverInfo::~serverInfo() {}
 
+typedef void (serverInfo::*function_server)(std::list<tokengen>::iterator& big,
+                                            std::list<tokengen>::iterator& end);
 
-typedef void (serverInfo::*function_server)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
-
-void serverInfo::execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
-    function_server funs[] = {&serverInfo::setters<0>, &serverInfo::setters<1>, &serverInfo::setters<2>,
-                              &serverInfo::setters<3>,
-                              &serverInfo::setters<4>, &serverInfo::setters<sethost>};
+void serverInfo::execute(int i,
+                         std::list<tokengen>::iterator& big,
+                         std::list<tokengen>::iterator& end) {
+    function_server funs[] = {
+        &serverInfo::setters<0>, &serverInfo::setters<1>,
+        &serverInfo::setters<2>, &serverInfo::setters<3>,
+        &serverInfo::setters<4>, &serverInfo::setters<sethost>};
     (this->*funs[i])(big, end);
 }
 
-serverInfo::serverInfo(const serverInfo &sv) {
+serverInfo::serverInfo(const serverInfo& sv) {
     *this = sv;
 }
 
-serverInfo &serverInfo::operator=(const serverInfo &sv) {
+serverInfo& serverInfo::operator=(const serverInfo& sv) {
     if (this == &sv) {
         std::cerr << "this was unexpected!";
         exit(1);

@@ -1,22 +1,22 @@
 #include "Request.hpp"
 
-//char resp[] =
-//        "HTTP/1.0 200 OK\r\n"
-//        "Server: webserver-c\r\n"
-//        "Content-type: text/html\r\n\r\n"
-//        "<h1>hello, world</1>\r\n"
-//        "<ul><li>13</li>\r\n"
-//        "<li>37</li></ul>\r\n";
+// char resp[] =
+//         "HTTP/1.0 200 OK\r\n"
+//         "Server: webserver-c\r\n"
+//         "Content-type: text/html\r\n\r\n"
+//         "<h1>hello, world</1>\r\n"
+//         "<ul><li>13</li>\r\n"
+//         "<li>37</li></ul>\r\n";
 
+// std::string _raw;
+// std::string _method;
+// std::string _location;
+// std::string _version;
+// std::map<std::string, std::string> _headers;
+// std::vector<std::string> _body;
 
-//std::string _raw;
-//std::string _method;
-//std::string _location;
-//std::string _version;
-//std::map<std::string, std::string> _headers;
-//std::vector<std::string> _body;
-
-HttpRequest::HttpRequest(std::string request) : _raw(), _method(), _location(), _version(), _headers(), _body() {
+HttpRequest::HttpRequest(std::string request)
+    : _raw(), _method(), _location(), _version(), _headers(), _body() {
     assert(trim(" abc ", " ") == "abc");
     assert(trim("\nabc\n", "\n") == "abc");
     assert(trim("\rabc\r", "\r") == "abc");
@@ -34,7 +34,15 @@ HttpRequest::HttpRequest(std::string request) : _raw(), _method(), _location(), 
     for (i = 0; i < splited.size() && splited[i] != "\r"; ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
         std::string key = trim(tmp[0], "\n\r ");
-        std::string value = trim(tmp[1], "\n\r ");
+        std::string value;
+        if (tmp.size() > 2) {
+            for (size_t j = 1; j < tmp.size(); ++j)
+                value += tmp[j] + ":";
+            value = trim(value, "\n\r :");
+        } else {
+            value = trim(tmp[1], "\n\r ");
+        }
+
         _headers[key] = value;
     }
 
@@ -49,7 +57,8 @@ void HttpRequest::dump() {
     std::cout << _method << " " << _location << " " << _version << "\n";
     for (std::map<std::string, std::string>::iterator iter = _headers.begin();
          iter != _headers.end(); ++iter) {
-        std::cout << "[" << iter->first << "]" << " : [" << iter->second << "]" << '\n';
+        std::cout << "[" << iter->first << "]"
+                  << " : [" << iter->second << "]" << '\n';
     }
     for (std::vector<std::string>::iterator iter = _body.begin();
          iter != _body.end(); ++iter) {

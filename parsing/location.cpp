@@ -13,22 +13,27 @@
 #include "location.hpp"
 #include "tokengen.hpp"
 
-void CURLWAIT(std::list<tokengen>::iterator &x, std::list<tokengen>::iterator &end, bool loc) {
-    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+void CURLWAIT(std::list<tokengen>::iterator& x,
+              std::list<tokengen>::iterator& end,
+              bool loc) {
+    while (x != end && (x->type == WHITESPACE || x->type == COMMENT ||
+                        x->type == ENDOFLINE))
         x++;
     if (loc)
         return;
     if (x == end || x->type != OPENCURL)
         exit(1);
     x++;
-    while (x != end && (x->type == WHITESPACE || x->type == COMMENT || x->type == ENDOFLINE))
+    while (x != end && (x->type == WHITESPACE || x->type == COMMENT ||
+                        x->type == ENDOFLINE))
         x++;
     if (x == end)
         exit(1);
 }
 
-template<>
-void location::set<setallow_methods>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setallow_methods>(std::list<tokengen>::iterator& big,
+                                     std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
@@ -52,8 +57,9 @@ void location::set<setallow_methods>(std::list<tokengen>::iterator &big, std::li
         big++;
 }
 
-template<>
-void location::set<setfastcgi_pass>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setfastcgi_pass>(std::list<tokengen>::iterator& big,
+                                    std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
@@ -71,8 +77,9 @@ void location::set<setfastcgi_pass>(std::list<tokengen>::iterator &big, std::lis
     big++;
 }
 
-template<>
-void location::set<setindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setindex>(std::list<tokengen>::iterator& big,
+                             std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
@@ -93,14 +100,14 @@ void location::set<setindex>(std::list<tokengen>::iterator &big, std::list<token
         big++;
 }
 
-template<>
-void location::set<setreturn>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setreturn>(std::list<tokengen>::iterator& big,
+                              std::list<tokengen>::iterator& end) {
     std::string tmp;
-
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1); // alo alo
+        exit(1);  // alo alo
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -128,12 +135,13 @@ void location::set<setreturn>(std::list<tokengen>::iterator &big, std::list<toke
     big++;
 }
 
-template<>
-void location::set<setautoindex>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setautoindex>(std::list<tokengen>::iterator& big,
+                                 std::list<tokengen>::iterator& end) {
     std::string tmp;
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1); // alo alo
+        exit(1);  // alo alo
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -143,7 +151,7 @@ void location::set<setautoindex>(std::list<tokengen>::iterator &big, std::list<t
     else if (tmp == "off")
         autoindex = false;
     else
-        exit(1); // error again!
+        exit(1);  // error again!
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
@@ -151,13 +159,14 @@ void location::set<setautoindex>(std::list<tokengen>::iterator &big, std::list<t
     big++;
 }
 
-template<>
-void location::set<setupload_enable>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setupload_enable>(std::list<tokengen>::iterator& big,
+                                     std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1); // alo alo
+        exit(1);  // alo alo
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 1);
     else
@@ -167,7 +176,7 @@ void location::set<setupload_enable>(std::list<tokengen>::iterator &big, std::li
     else if (tmp == "off")
         upload_enable = false;
     else
-        exit(1); // error again!
+        exit(1);  // error again!
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
@@ -175,13 +184,14 @@ void location::set<setupload_enable>(std::list<tokengen>::iterator &big, std::li
     big++;
 }
 
-template<>
-void location::set<setupload_store>(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
+template <>
+void location::set<setupload_store>(std::list<tokengen>::iterator& big,
+                                    std::list<tokengen>::iterator& end) {
     std::string tmp;
 
     CURLWAIT(big, end, true);
     if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1); // alo alo
+        exit(1);  // alo alo
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 1);
     else
@@ -194,30 +204,30 @@ void location::set<setupload_store>(std::list<tokengen>::iterator &big, std::lis
     big++;
 }
 
-typedef void (location::*function_location)(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
+typedef void (location::*function_location)(std::list<tokengen>::iterator& big,
+                                            std::list<tokengen>::iterator& end);
 
-void location::execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end) {
-    function_location funs[] = {&location::set<setallow_methods>, &location::set<setfastcgi_pass>,
-                                &location::set<setindex>, &location::set<setreturn>,
-                                &location::set<setautoindex>, &location::set<setupload_enable>,
-                                &location::set<setupload_store>};
-//    std::cout << i  << "\n";
+void location::execute(int i,
+                       std::list<tokengen>::iterator& big,
+                       std::list<tokengen>::iterator& end) {
+    function_location funs[] = {
+        &location::set<setallow_methods>, &location::set<setfastcgi_pass>,
+        &location::set<setindex>,         &location::set<setreturn>,
+        &location::set<setautoindex>,     &location::set<setupload_enable>,
+        &location::set<setupload_store>};
+    //    std::cout << i  << "\n";
     (this->*funs[i])(big, end);
 }
 
-location::location() {
+location::location() {}
 
-}
+location::~location() {}
 
-location::~location() {
-
-}
-
-location::location(const location &lc) {
+location::location(const location& lc) {
     *this = lc;
 }
 
-location &location::operator=(const location &lc) {
+location& location::operator=(const location& lc) {
     if (this == &lc) {
         std::cerr << "wait what??? \n";
         exit(1);

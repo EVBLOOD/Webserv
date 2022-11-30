@@ -12,38 +12,40 @@
 
 #pragma once
 
+#include <list>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 #include "location.hpp"
 #include "tokengen.hpp"
-#include <list>
 
 class serverInfo {
-
-public:
-    std::vector <std::string> index;
-    std::string host; // done
-    std::vector <in_port_t> port; // done
-    std::vector <std::string> server_name;
-    std::map<int, std::string> error_page; // done
-    std::string root; // done
-    std::map <std::string, location> locations; // done
+   public:
+    std::vector<std::string> index;
+    std::string host;             // done
+    std::vector<in_port_t> port;  // done
+    std::vector<std::string> server_name;
+    std::map<int, std::string> error_page;      // done
+    std::string root;                           // done
+    std::map<std::string, location> locations;  // done
     unsigned long long client_max_body_size;
 
-public:
-    serverInfo(const serverInfo &sv);
+   public:
+    serverInfo(const serverInfo& sv);
 
     serverInfo();
 
     ~serverInfo();
 
-    serverInfo &operator=(const serverInfo &info);
+    serverInfo& operator=(const serverInfo& info);
 
-    template<int>
-    void setters(std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
+    template <int>
+    void setters(std::list<tokengen>::iterator& big,
+                 std::list<tokengen>::iterator& end);
 
     void setlocation(std::string x, location y);
 
-    void execute(int i, std::list<tokengen>::iterator &big, std::list<tokengen>::iterator &end);
+    void execute(int i,
+                 std::list<tokengen>::iterator& big,
+                 std::list<tokengen>::iterator& end);
 };

@@ -5,6 +5,8 @@
 #include "Server.hpp"
 #include "ServerBuilder.hpp"
 #include "ServerPoll.hpp"
+#include "parsing/parser.hpp"
+#include "parsing/tokengen.hpp"
 
 #define loop for (;;)
 
@@ -66,6 +68,20 @@ HttpResponse test_response_server_1(HttpRequest request) {
         .add_to_body("<h1>404</1>");
 }
 
+HttpResponse test_response_server_2(HttpRequest request) {
+    std::string location = request.getLocation();
+
+    if (location == "/") {
+        return HttpResponse(200, "1.1", "OK")
+            .add_header("Content-Type", "text/html")
+            .add_to_body("<h1>This is server 2</1>");
+    }
+
+    return HttpResponse(404, "1.1", "Not Found")
+        .add_header("Content-Type", "text/html")
+        .add_to_body("<h1>404</1>");
+}
+
 void handler(Kqueue& kq, void* data) {
     loop {
         std::vector<IListener*> _events = kq.get_listeners();
@@ -81,9 +97,9 @@ void handler(Kqueue& kq, void* data) {
                     exit(1);
                 }
                 std::cout << "Accepted a connection with client with fd == "
-                          << client.get_raw_fd() << '\n';
+                          << client.get_raw_fd();
                 kq.add_listener(&client);
-                std::cout << "\nend\n";
+                std::cout << "end\n";
             } else {
                 TcpStream& client = *dynamic_cast<TcpStream*>(_events[i]);
                 std::array<char, 4096> buff;
@@ -100,21 +116,46 @@ void handler(Kqueue& kq, void* data) {
                     std::cout << buff[b];
                 }
 
-                HttpRequest req(std::string(buff.data()));
+                HttpRequest req(buff.data());
+                std::cout << "client HOST value == ["
+                          << req.getHeaderValue("Host") << "]\n";
                 HttpResponse res = test_response_server_1(req);
-                std::cout << "\nend;\n";
+                std::cout << "\nend\n";
                 client.write(res.build().c_str(), res.build().size());
+                std::cout << "Connection status : ["
+                          << req.getHeaderValue("Connection") << "]\n";
+                if (req.getHeaderValue("Connection") != "keep-alive") {
+                    std::cout << "client with fd == " << client.get_raw_fd()
+                              << " was shutdown\n";
+                    client.shutdown();
+                }
             }
         }
     }
 }
 
 int main() {
-    TcpListener server1("localhost", "8080");
-    TcpListener server2("localhost", "8081");
-    std::vector<IListener*> listeners;
+    // parser file("conf2");
+    // std::list<tokengen> tokens = file.generate();
+    // std::vector<serverInfo> servers_info = file.lexer_to_data(tokens);
+    // std::map<std::pair<int, std::string>, int> idea;
+    // int i = 0;
+    // for (auto x : servers_info) {
+    //     for (auto p : x.port) {
+    //         idea.insert(std::make_pair(std::make_pair(p, ""), i));
+    //         for (auto n : x.server_name) {
+    //             idea.insert(std::make_pair(std::make_pair(p, n), i));
+    //         }
+    //     }
+    //     ++i;
+    // }
+    // for (auto x : idea) {
+    //     std::cout << "server id " << x.second << " port " << x.first.first
+    //               << " server name " << x.first.second << '\n';
+    // }
 
-    listeners.push_back(&server1);
-    listeners.push_back(&server2);
+    std::vector<IListener*> listeners;
+    listeners.push_back(new TcpListener("localhost", "8080"));
+    listeners.push_back(new TcpListener("localhost", "8081"));
     Kqueue(listeners).kqueue_job(handler, NULL);
 }
