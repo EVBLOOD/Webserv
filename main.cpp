@@ -168,13 +168,13 @@ int main() {
     for (auto x : servers_info) {
         for (auto p : x.port) {
             idea.insert(std::make_pair(
-                std::make_pair(std::to_string(p), "0.0.0.0"), functions[i]));
+                std::make_pair(p, "0.0.0.0"), functions[i]));
         }
         for (auto p : x.port) {
-            idea.insert(std::make_pair(std::make_pair(std::to_string(p), ""),
+            idea.insert(std::make_pair(std::make_pair(p, ""),
                                        functions[i]));
             for (auto n : x.server_name) {
-                idea.insert(std::make_pair(std::make_pair(std::to_string(p), n),
+                idea.insert(std::make_pair(std::make_pair(p, n),
                                            functions[i]));
             }
         }

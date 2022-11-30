@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
+/*   serverInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 18:48:33 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/11/30 15:38:10 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,10 @@ void serverInfo::setters<setport>(std::list<tokengen>::iterator& big,
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
-    int ports;
     for (int i = 0; tmp[i]; i++)
         if (isdigit(tmp[i]) == false)  // TODO: check this
             exit(1);
-    std::stringstream x;
-    x << tmp;
-    x >> ports;
-    port.push_back(ports);
+    port.push_back(tmp);
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
@@ -163,7 +159,7 @@ void serverInfo::setters<sethost>(std::list<tokengen>::iterator& big,
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
-    root = tmp;
+    host = tmp;
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
