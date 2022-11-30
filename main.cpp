@@ -94,6 +94,7 @@ void handler(Kqueue& kq, void* data) {
 
         for (int i = 0; i < number_of_events; i++) {
             if (dynamic_cast<IServer*>(_events[i])) {
+                // TODO: we should add the the port from server to user!
                 const IServer& server = *dynamic_cast<IServer*>(_events[i]);
                 IStreamer& client = server.accept();
                 if (client.get_raw_fd() == -1) {
