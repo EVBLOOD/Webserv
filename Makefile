@@ -4,17 +4,16 @@ CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98
 
 CXX = c++
 
-OBJS	=	$(SRCS:.cpp=.o)
+OBJS	=	$(SRCS:%.cpp=%.o)
 
 SRCS =  main.cpp\
         Request.cpp\
-        Route.cpp\
-        RouterBuilder.cpp\
-        Server.cpp\
-        ServerBuilder.cpp\
-        ServerPoll.cpp\
         tools.cpp\
-		Response.cpp
+		Response.cpp\
+		New/TcpStream.cpp\
+		New/kqueue.cpp\
+		New/tcpListener.cpp
+		
 
 all: $(NAME)
 
