@@ -58,8 +58,8 @@ HttpResponse test_response_server_1(HttpRequest request) {
                          "</h1>");
     }
     if (location == "/saad") {
-        return HttpResponse(301, "1.1", "Moved Permanently");
-        //                add_header("Location", "/oussama");
+        return HttpResponse(301, "1.1", "Moved Permanently")
+            .add_header("Location", "/oussama");
     }
 
     return HttpResponse(404, "1.1", "Not Found")
@@ -109,36 +109,36 @@ int main() {
     parser file("conf");
     std::list<tokengen> tokens = file.generate();
     std::vector<serverInfo> servers_info = file.lexer_to_data(tokens);
-    std::map<std::pair<std::string, std::string>,
-             std::function<HttpResponse(HttpRequest)> >
-        idea;
+    idea_t idea;
     int i = 0;
     std::array<std::function<HttpResponse(HttpRequest)>, 2> functions = {
         test_response_server_1, test_response_server_2};
-    for (auto x : servers_info) {
-        for (auto p : x.port) {
+    for (auto ser : servers_info) {
+        for (auto p : ser.port) {
             idea.insert(
                 std::make_pair(std::make_pair(p, "0.0.0.0"), functions[i]));
         }
-        for (auto p : x.port) {
+        for (auto p : ser.port) {
             idea.insert(std::make_pair(std::make_pair(p, ""), functions[i]));
-            for (auto n : x.server_name) {
+            for (auto n : ser.server_name) {
                 idea.insert(std::make_pair(std::make_pair(p, n), functions[i]));
             }
         }
         ++i;
     }
 
-    for (auto x : idea) {
-        std::cout << " port " << x.first.first << " server name "
-                  << x.first.second << '\n';
-    }
-    auto server1 = TcpListener("localhost", "8080");
-    auto server2 = TcpListener("localhost", "8081");
+    // for (auto x : idea) {
+    //     std::cout << " port " << x.first.first << " server name "
+    //               << x.first.second << '\n';
+    // }
+    TcpListener server1 = TcpListener("localhost", "8080");
+    TcpListener server2 = TcpListener("localhost", "8081");
     std::vector<IListener*> listeners;
     listeners.push_back(&server1);
     listeners.push_back(&server2);
-    Kqueue kq = Kqueue(listeners);
+    Kqueue kq = Kqueue();
+    kq.attach(&server1);
+    kq.attach(&server2);
     handler(kq, (void*)&idea);
 }
 
@@ -151,8 +151,7 @@ void handler(Kqueue& kq, const TcpListener& server, idea_t idea) {
     }
     std::cout << "Accepted a connection with client with fd == "
               << client.get_raw_fd();
-    kq.attach(&client);
-    std::cout << "end\n";
+    handler(kq, *(TcpStream*)&client, idea);
 }
 
 void handler(Kqueue& kq, TcpStream& client, idea_t idea) {
@@ -165,53 +164,44 @@ void handler(Kqueue& kq, TcpStream& client, idea_t idea) {
         return;
     }
 
-    std::cout << "start :\n";
-
+    std::cout << "------------------------------------------------------\n";
     for (size_t b = 0; b < buff.size() && buff[b]; ++b) {
         std::cout << buff[b];
     }
+    std::cout << "------------------------------------------------------\n";
 
     HttpRequest req(buff.data());
     std::cout << "client HOST value == [" << req.getHeaderValue("Host")
               << "]\n";
     std::string host;
     std::string port;
-    std::cout << "EXIT 2 1\n";
     if (req.getHeaderValue("Host").empty() == false) {
         std::vector<std::string> tmp = split(req.getHeaderValue("Host"), ":");
         if (tmp.size() == 1) {
-            std::cout << "1\n";
             host = tmp[0];
-            std::cout << "port khawi " << client.get_port() << "\n";
             port = client.get_port();
         } else {
-            std::cout << "2\n";
             host = tmp[0];
             port = tmp[1];
         }
     } else {
-        std::cout << "3\n";
         port = client.get_port();
         host = client.get_host();
     }
-    std::cout << "EXIT 2 2\n";
-    std::cout << "PORT == " << port << "HOSTO == " << host << '\n';
     if (idea.find(std::make_pair(port, host)) == idea.end()) {
         exit(1);
     }
-    std::cout << "EXIT 2 3\n";
     HttpResponse res = idea[std::make_pair(port, host)](req);
-    std::cout << "EXIT 2 4\n";
     std::cout << "\nend\n";
     client.write(res.build().c_str(), res.build().size());
-    std::cout << "EXIT 2 5\n";
     std::cout << "Connection status : [" << req.getHeaderValue("Connection")
               << "]\n";
-    if (req.getHeaderValue("Connection") != "keep-alive") {
+    if (req.getHeaderValue("Connection") == "keep-alive") {
+        kq.attach(&client);
+    } else {
         std::cout << "client with fd == " << client.get_raw_fd()
                   << " was shutdown\n";
         kq.detach(&client);
         client.shutdown();
     }
-    std::cout << "EXIT 2 6\n";
 }

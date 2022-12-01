@@ -219,7 +219,14 @@ void location::execute(int i,
     (this->*funs[i])(big, end);
 }
 
-location::location() {}
+location::location()
+    : index(),
+      ret_rn(),
+      autoindex(false),
+      allow_methods(),
+      fastcgi_pass(),
+      upload_enable(false),
+      upload_store() {}
 
 location::~location() {}
 

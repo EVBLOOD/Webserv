@@ -22,7 +22,7 @@ class Kqueue {
     std::pair<int, struct kevent*> get_kevents();
 
    public:
-    Kqueue(std::vector<IListener*> listeners);
+    Kqueue();
     std::vector<IListener*> get_events();
     void attach(IListener* listener);
     void detach(IListener* listener);

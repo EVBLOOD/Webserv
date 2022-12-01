@@ -1,25 +1,11 @@
 #include "kqueue.hpp"
 #include <cassert>
 
-Kqueue::Kqueue(std::vector<IListener*> listeners)
-    : _kdata(0), _change(), _listeners() {
-    struct kevent evSet;
+Kqueue::Kqueue() : _kdata(0), _change(), _listeners() {
     _kdata = kqueue();
     if (_kdata == -1) {
         std::cerr << "kqueue is joking!\n";
         exit(1);
-    }
-
-    for (size_t i = 0; i < listeners.size(); i++) {
-        bzero(&evSet, sizeof(struct kevent));
-        EV_SET(&evSet, listeners[i]->get_raw_fd(), EVFILT_READ, EV_ADD, 0, 0,
-               NULL);
-        if (kevent(_kdata, &evSet, 1, NULL, 0, NULL) == -1) {
-            std::cerr << "kevent is joking!\n";
-            exit(1);
-        }
-        _change.push_back(evSet);
-        _listeners[evSet.ident] = listeners[i];
     }
 };
 
