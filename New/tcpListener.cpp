@@ -1,4 +1,6 @@
 #include "tcpListener.hpp"
+#include <arpa/inet.h>
+#include <stdio.h>
 #include <sys/socket.h>
 
 // class TcpListener {
@@ -26,6 +28,28 @@ TcpListener::TcpListener(std::string host, std::string port)
         std::cerr << "get info is joking!\n";
         exit(1);
     }
+    // struct addrinfo* res = addr;
+    // char addrstr[100];
+    // void* ptr;
+    // {
+    //     while (res) {
+    //         inet_ntop(res->ai_family, res->ai_addr->sa_data, addrstr, 100);
+
+    //         switch (res->ai_family) {
+    //             case AF_INET:
+    //                 ptr = &((struct sockaddr_in*)res->ai_addr)->sin_addr;
+    //                 break;
+    //             case AF_INET6:
+    //                 ptr = &((struct sockaddr_in6*)res->ai_addr)->sin6_addr;
+    //                 break;
+    //         }
+    //         inet_ntop(res->ai_family, ptr, addrstr, 100);
+    //         printf("IPv%d address: %s (%s)\n",
+    //                res->ai_family == PF_INET6 ? 6 : 4, addrstr,
+    //                res->ai_canonname);
+    //         res = res->ai_next;
+    //     }
+    // }
     _fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
     int enable = 1;
     setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
@@ -57,7 +81,6 @@ IStreamer& TcpListener::accept() const {
     }
     TcpStream* new_client = new TcpStream(client_sockfd, *this);
     _clients.push_back(new_client);
-    std::cout << "[INFO] connection is accepted\n";
     return *(new_client);
 };
 

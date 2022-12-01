@@ -1,10 +1,8 @@
 server
 {
 	listen          8080;
-	listen          90;
-	listen          100;
 
-	host 0.0.0.0;
+	host localhost;
 
 	server_name google.com;
 	server_name     example.com;
@@ -58,10 +56,10 @@ server
 {
 	listen          8080;
 	listen          8081;
-	listen          120;
-	listen          80;
+	listen          9999;
+	listen          2565;
 
-	host 0.0.0.0;
+	host localhost;
 
 	server_name youtube.com;
 	server_name     example.com;
@@ -73,7 +71,7 @@ server
 	error_page 500 /errors/500.html;
 	error_page 502 /errors/502.html;
 
-	root /Users/arraji/Desktop/webserv/public;
+	root /Users/arraji/Desktop/webserv/;
 
 	location /
 	{

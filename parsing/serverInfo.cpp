@@ -159,7 +159,7 @@ void serverInfo::setters<sethost>(std::list<tokengen>::iterator& big,
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
-    host = tmp;
+    host = std::string(tmp);
     big++;
     CURLWAIT(big, end, true);
     if (big == end || big->type != SEMICOLONS)
@@ -193,6 +193,7 @@ serverInfo& serverInfo::operator=(const serverInfo& sv) {
         std::cerr << "this was unexpected!";
         exit(1);
     }
+    host = sv.host;
     port = sv.port;
     server_name = sv.server_name;
     error_page = sv.error_page;

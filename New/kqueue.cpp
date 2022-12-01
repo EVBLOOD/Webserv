@@ -73,8 +73,8 @@ std::vector<IListener*> Kqueue::get_events() {
         ret.push_back(&get_listener(events.second[i].ident));
     }
 
-    std::cout << "[KQUEUE] number of change " << _change.size() << '\n';
-    std::cout << "[KQUEUE] number of listners " << _listeners.size() << '\n';
-    std::cout << "[KQUEUE] number of events " << ret.size() << '\n';
+    // std::cout << "[KQUEUE] number of change " << _change.size() << '\n';
+    // std::cout << "[KQUEUE] number of listners " << _listeners.size() << '\n';
+    // std::cout << "[KQUEUE] number of events " << ret.size() << '\n';
     return ret;
 };
