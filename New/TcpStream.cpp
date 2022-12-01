@@ -12,10 +12,11 @@
 // };
 //
 
-TcpStream::TcpStream(int fd) : _fd(fd){};
+TcpStream::TcpStream(int fd, const TcpListener& owner)
+    : _fd(fd), _owner(owner){};
 
 void TcpStream::shutdown() {
-    close(_fd);
+    _owner.delete_client(this);
 };
 
 size_t TcpStream::read(char* buff, size_t size) const {
@@ -30,4 +31,13 @@ int TcpStream::get_raw_fd() const {
     return _fd;
 }
 
-TcpStream::~TcpStream() {}
+TcpStream::~TcpStream() {
+    close(_fd);
+}
+
+std::string TcpStream::get_port() const {
+    return _owner.get_port();
+};
+std::string TcpStream::get_host() const {
+    return _owner.get_host();
+};

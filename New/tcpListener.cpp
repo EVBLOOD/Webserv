@@ -11,7 +11,8 @@
 // };
 
 // EX :: TcpListener("localhost", 8080)
-TcpListener::TcpListener(std::string host, std::string port) {
+TcpListener::TcpListener(std::string host, std::string port)
+    : _port(port), _host(host) {
     int backlog = SOMAXCONN;
     infos* addr;
     infos hints;
@@ -47,15 +48,32 @@ int accept_helper(int fd) {
     return accept(fd, NULL, NULL);
 }
 
-TcpStream& TcpListener::accept() const {
+IStreamer& TcpListener::accept() const {
     int client_sockfd = accept_helper(_fd);
     if (client_sockfd == -1) {
         std::cerr << "[ERROR] accept function failed : " << strerror(errno)
                   << '\n';
         exit(1);
     }
+    TcpStream* new_client = new TcpStream(client_sockfd, *this);
+    _clients.push_back(new_client);
     std::cout << "[INFO] connection is accepted\n";
-    return *(new TcpStream(client_sockfd));
+    return *(new_client);
 };
 
 TcpListener::~TcpListener() {}
+
+void TcpListener::delete_client(TcpStream* client) const {
+    std::vector<TcpStream*>::iterator it =
+        std::find(_clients.begin(), _clients.end(), client);
+    assert(it != _clients.end());
+    delete client;
+    _clients.erase(it);
+}
+
+std::string TcpListener::get_port() const {
+    return _port;
+};
+std::string TcpListener::get_host() const {
+    return _host;
+};

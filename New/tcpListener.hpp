@@ -29,12 +29,19 @@ typedef struct sockaddr_storage storage;
 
 #include "TcpStream.hpp"
 #include "server_interface.hpp"
+class TcpStream;
 class TcpListener : public IServer {
     int _fd;
+    std::string _port;
+    std::string _host;
+    mutable std::vector<TcpStream*> _clients;
 
    public:
+    std::string get_port() const;
+    std::string get_host() const;
     TcpListener(std::string host, std::string port);
-    ~TcpListener();
+    virtual ~TcpListener();
     int get_raw_fd() const;
-    TcpStream& accept() const;
+    IStreamer& accept() const;
+    void delete_client(TcpStream* client) const;
 };

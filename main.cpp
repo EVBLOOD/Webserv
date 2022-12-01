@@ -82,75 +82,24 @@ HttpResponse test_response_server_2(HttpRequest request) {
         .add_to_body("<h1>404</1>");
 }
 
+typedef std::map<std::pair<std::string, std::string>,
+                 std::function<HttpResponse(HttpRequest)> >
+    idea_t;
+
+void handler(Kqueue& kq, const TcpListener& server, idea_t idea);
+void handler(Kqueue& kq, TcpStream& client, idea_t idea);
 void handler(Kqueue& kq, void* data) {
-    std::map<std::pair<std::string, std::string>,
-             std::function<HttpResponse(HttpRequest)> >
-        idea = *(std::map<std::pair<std::string, std::string>,
-                          std::function<HttpResponse(HttpRequest)> >*)data;
+    idea_t idea = *(idea_t*)data;
     loop {
-        std::vector<IListener*> _events = kq.get_listeners();
+        std::vector<IListener*> _events = kq.get_events();
         int number_of_events = _events.size();
         std::cout << "number of events " << number_of_events << '\n';
 
         for (int i = 0; i < number_of_events; i++) {
-            if (dynamic_cast<IServer*>(_events[i])) {
-                // TODO: we should add the the port from server to user!
-                const IServer& server = *dynamic_cast<IServer*>(_events[i]);
-                IStreamer& client = server.accept();
-                if (client.get_raw_fd() == -1) {
-                    std::cerr << "accept is joking!\n";
-                    exit(1);
-                }
-                std::cout << "Accepted a connection with client with fd == "
-                          << client.get_raw_fd();
-                kq.add_listener(&client);
-                std::cout << "end\n";
-            } else {
-                IStreamer& client = *dynamic_cast<TcpStream*>(_events[i]);
-                std::array<char, 4096> buff;
-                memset(buff.data(), 0, buff.size());
-
-                if (client.read(buff.data(), buff.size()) <= 0) {
-                    close(client.get_raw_fd());
-                    continue;
-                }
-
-                std::cout << "start :\n";
-
-                for (size_t b = 0; b < buff.size() && buff[b]; ++b) {
-                    std::cout << buff[b];
-                }
-
-                HttpRequest req(buff.data());
-                std::cout << "client HOST value == ["
-                          << req.getHeaderValue("Host") << "]\n";
-                std::string host;
-                std::string port;
-                if (req.getHeaderValue("Host").empty() == false) {
-                    std::vector<std::string> tmp =
-                        split(req.getHeaderValue("Host"), ":");
-                    if (tmp.size() == 1) {
-                        host = tmp[0];
-                    } else {
-                        host = tmp[0];
-                        port = tmp[1];
-                    }
-                } else {
-                    exit(5);
-                }
-                if (idea.find(std::make_pair(port, host)) == idea.end()) {
-                    exit(1);
-                }
-                HttpResponse res = idea[std::make_pair(port, host)](req);
-                std::cout << "\nend\n";
-                client.write(res.build().c_str(), res.build().size());
-                std::cout << "Connection status : ["
-                          << req.getHeaderValue("Connection") << "]\n";
-                if (req.getHeaderValue("Connection") != "keep-alive") {
-                    std::cout << "client with fd == " << client.get_raw_fd()
-                              << " was shutdown\n";
-                    close(client.get_raw_fd());
-                }
+            if (dynamic_cast<IServer*>(_events[i]))
+                handler(kq, *dynamic_cast<TcpListener*>(_events[i]), idea);
+            else {
+                handler(kq, *dynamic_cast<TcpStream*>(_events[i]), idea);
             }
         }
     }
@@ -168,15 +117,13 @@ int main() {
         test_response_server_1, test_response_server_2};
     for (auto x : servers_info) {
         for (auto p : x.port) {
-            idea.insert(std::make_pair(
-                std::make_pair(p, "0.0.0.0"), functions[i]));
+            idea.insert(
+                std::make_pair(std::make_pair(p, "0.0.0.0"), functions[i]));
         }
         for (auto p : x.port) {
-            idea.insert(std::make_pair(std::make_pair(p, ""),
-                                       functions[i]));
+            idea.insert(std::make_pair(std::make_pair(p, ""), functions[i]));
             for (auto n : x.server_name) {
-                idea.insert(std::make_pair(std::make_pair(p, n),
-                                           functions[i]));
+                idea.insert(std::make_pair(std::make_pair(p, n), functions[i]));
             }
         }
         ++i;
@@ -191,5 +138,80 @@ int main() {
     std::vector<IListener*> listeners;
     listeners.push_back(&server1);
     listeners.push_back(&server2);
-    Kqueue(listeners).kqueue_job(handler, (void*)&idea);
+    Kqueue kq = Kqueue(listeners);
+    handler(kq, (void*)&idea);
+}
+
+void handler(Kqueue& kq, const TcpListener& server, idea_t idea) {
+    // TODO: we should add the the port from server to user!
+    IStreamer& client = server.accept();
+    if (client.get_raw_fd() == -1) {
+        std::cerr << "accept is joking!\n";
+        exit(1);
+    }
+    std::cout << "Accepted a connection with client with fd == "
+              << client.get_raw_fd();
+    kq.attach(&client);
+    std::cout << "end\n";
+}
+
+void handler(Kqueue& kq, TcpStream& client, idea_t idea) {
+    std::array<char, 4096> buff;
+    memset(buff.data(), 0, buff.size());
+
+    if (client.read(buff.data(), buff.size()) <= 0) {
+        kq.detach(&client);
+        client.shutdown();
+        return;
+    }
+
+    std::cout << "start :\n";
+
+    for (size_t b = 0; b < buff.size() && buff[b]; ++b) {
+        std::cout << buff[b];
+    }
+
+    HttpRequest req(buff.data());
+    std::cout << "client HOST value == [" << req.getHeaderValue("Host")
+              << "]\n";
+    std::string host;
+    std::string port;
+    std::cout << "EXIT 2 1\n";
+    if (req.getHeaderValue("Host").empty() == false) {
+        std::vector<std::string> tmp = split(req.getHeaderValue("Host"), ":");
+        if (tmp.size() == 1) {
+            std::cout << "1\n";
+            host = tmp[0];
+            std::cout << "port khawi " << client.get_port() << "\n";
+            port = client.get_port();
+        } else {
+            std::cout << "2\n";
+            host = tmp[0];
+            port = tmp[1];
+        }
+    } else {
+        std::cout << "3\n";
+        port = client.get_port();
+        host = client.get_host();
+    }
+    std::cout << "EXIT 2 2\n";
+    std::cout << "PORT == " << port << "HOSTO == " << host << '\n';
+    if (idea.find(std::make_pair(port, host)) == idea.end()) {
+        exit(1);
+    }
+    std::cout << "EXIT 2 3\n";
+    HttpResponse res = idea[std::make_pair(port, host)](req);
+    std::cout << "EXIT 2 4\n";
+    std::cout << "\nend\n";
+    client.write(res.build().c_str(), res.build().size());
+    std::cout << "EXIT 2 5\n";
+    std::cout << "Connection status : [" << req.getHeaderValue("Connection")
+              << "]\n";
+    if (req.getHeaderValue("Connection") != "keep-alive") {
+        std::cout << "client with fd == " << client.get_raw_fd()
+                  << " was shutdown\n";
+        kq.detach(&client);
+        client.shutdown();
+    }
+    std::cout << "EXIT 2 6\n";
 }
