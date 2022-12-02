@@ -3,6 +3,7 @@
 //
 
 #include "Response.hpp"
+#include <string>
 #include "tools.hpp"
 
 HttpResponse::HttpResponse(int status, std::string version, std::string action)
@@ -174,13 +175,13 @@ HttpResponse HttpResponse::send_file(std::string path,
     std::cout << "[DEBUG] full path " << root + path << '\n';
     // TODO check if the file in the right path
     errno = 0;
-    std::ifstream file(full_path);
     if (tools::is_file_exists(full_path) == false) {
         return error_response(404, root + error_pages[404]);
     } else if (tools::is_file_readable(full_path) == false) {
         return error_response(403, root + error_pages[403]);
 
     } else {
+        std::ifstream file(full_path);
         return HttpResponse(200, "1.1", "OK")
             .add_to_body(tools::open_to_serve(file))
             .add_content_type(full_path);
@@ -196,6 +197,22 @@ HttpResponse HttpResponse::redirect_found_response(
     std::string const& location) {
     return HttpResponse(302, "1.1", "Found").add_header("Location", location);
 };
+
+HttpResponse HttpResponse::index_response(std::vector<std::string> index, std::string root, std::map<int, std::string> error_pages)
+{
+    std::vector<std::string>::iterator it = index.begin();
+      std::vector<std::string>::iterator it_nd = index.end();
+      while (it != it_nd)
+      {
+          std::string path = root + "/" + *it;
+          if (tools::is_file_exists(path) && tools::is_file_readable(path))
+              break;
+          it++;
+      }
+      if (it == it_nd)
+          it = index.begin();
+    return HttpResponse::send_file( "/" + *it, root, error_pages);
+}
 //  int _status;
 //    std::string _version;
 //    std::string _action;

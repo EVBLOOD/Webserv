@@ -19,7 +19,7 @@ server
 	location /
 	{
 
-		index index.html;
+		index hi index.html;
 
 		autoindex off;
 		allow_methods GET POST DELETE;
@@ -67,16 +67,16 @@ server
 
 	client_max_body_size    1024;
 
-	error_page 403 /errors/403.html;
-	error_page 404 /errors/404.html;
-	error_page 500 /errors/500.html;
-	error_page 502 /errors/502.html;
+	error_page 403 /public/errors/403.html;
+	error_page 404 /public/errors/404.html;
+	error_page 500 /public/errors/500.html;
+	error_page 502 /public/errors/502.html;
 
 	root /Users/orahmoun/webserv;
 
 	location /
 	{
-		index index.html;
+		index main.cpp;
 
 		autoindex off;
 		allow_methods GET POST DELETE;

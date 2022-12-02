@@ -1,3 +1,4 @@
+#include <iostream>
 #include <set>
 #include "New/TcpStream.hpp"
 #include "New/kqueue.hpp"
@@ -213,21 +214,10 @@ int main() {
                                     ++it;
                                 }
                             }
-                            if (route.index.size() == 1) {
-                                cout << "[DEBUG] full path "
-                                     << info.root + route.index[0] << '\n';
-                                std::ifstream file(info.root + "/" +
-                                                   route.index[0]);
-                                response =
-                                    HttpResponse(200, "1.1", "OK")
-                                        .add_to_body(open_to_serve(file))
-                                        .add_header("Content-Type", "text/html")
-                                        .build();
-                            } else if (route.index.size() > 1) {
-                                // TODO handle multiple indexes
-                                cerr << "[TODO] multiple indexes\n";
-                                assert(false);
-                            } else {
+                            if (route.index.size() >= 1) {
+                                cerr << "[DEBUG] handle index\n";
+                                response = HttpResponse::index_response(route.index, info.root, info.error_page).build();
+                            } else if (route.index.empty() && route.ret_rn.size() == 1) {
                                 assert(route.ret_rn.size() == 1);
                                 pair<int, string> ret = *route.ret_rn.begin();
                                 cout << "[DEBUG] redirect " << ret.first << " "
@@ -236,6 +226,11 @@ int main() {
                                 response =
                                     handle_redirection(ret.first, ret.second)
                                         .build();
+                            }
+                            else 
+                            {
+                                cerr << "[ERROR] no index + no return \n";
+                                exit (1);
                             }
                         }
                         // }
