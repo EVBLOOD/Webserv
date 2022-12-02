@@ -26,7 +26,7 @@ class parser {
    private:
     std::ifstream config;
     std::vector<serverInfo> servers;
-    location tmploc;
+    Location tmploc;
     serverInfo tmpserv;
 
    public:

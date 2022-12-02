@@ -174,7 +174,7 @@ void parser::separating<context_location>(std::list<tokengen>::iterator& begin,
                                           std::list<tokengen>::iterator& end,
                                           bool server) {
     //    std::cout << "context location\n";
-    tmploc = location();
+    tmploc = Location();
     std::string name;
     begin++;
     CURLWAIT(begin, end, true);

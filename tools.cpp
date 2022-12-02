@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
-std::vector <std::string> tools::split(std::string str, std::string del) {
-    std::vector <std::string> res;
+std::vector<std::string> tools::split(std::string str, std::string del) {
+    std::vector<std::string> res;
     size_t pos = 0;
     while ((pos = str.find(del)) != std::string::npos) {
         res.push_back(str.substr(0, pos));
@@ -30,12 +30,20 @@ std::string tools::trim(std::string str, std::string del) {
     return str;
 }
 
-std::vector <std::string> tools::open_to_serve(std::string path) {
-    std::ifstream file(path);
+std::vector<std::string> tools::open_to_serve(std::ifstream& file) {
     std::string line;
-    std::vector <std::string> res;
+    std::vector<std::string> res;
     while (std::getline(file, line)) {
         res.push_back(line);
     }
     return res;
 };
+
+bool tools::is_file_readable(const std::string& path) {
+    errno = 0;
+    return access(path.c_str(), R_OK) != -1;
+}
+bool tools::is_file_exists(const std::string& path) {
+    errno = 0;
+    return access(path.c_str(), F_OK) != -1;
+}

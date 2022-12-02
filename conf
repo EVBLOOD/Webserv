@@ -14,7 +14,7 @@ server
 	error_page 500 /errors/500.html;
 	error_page 502 /errors/502.html;
 
-	root /Users/arraji/Desktop/webserv/public;
+	root /Users/orahmoun/webserv/public;
 
 	location /
 	{
@@ -35,7 +35,7 @@ server
 	{
 		allow_methods GET POST;
 
-		fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
+		fastcgi_pass /Users/orahmoun/.brew/bin/php-cgi;
 	}
 
 	location *.py
@@ -72,7 +72,7 @@ server
 	error_page 500 /errors/500.html;
 	error_page 502 /errors/502.html;
 
-	root /Users/arraji/Desktop/webserv/;
+	root /Users/orahmoun/webserv/;
 
 	location /
 	{
@@ -92,7 +92,7 @@ server
 	{
 		allow_methods GET POST;
 
-		fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
+		fastcgi_pass /Users/orahmoun/.brew/bin/php-cgi;
 	}
 
 	location *.py

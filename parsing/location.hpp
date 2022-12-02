@@ -37,7 +37,7 @@ enum func {
     setupload_store
 };
 
-class location {
+class Location {
    public:
     std::vector<std::string> index;
     std::map<int, std::string> ret_rn;
@@ -48,13 +48,13 @@ class location {
     std::string upload_store;
 
    public:
-    location(const location& lc);
+    Location(const Location& lc);
 
-    location();
+    Location();
 
-    ~location();
+    ~Location();
 
-    location& operator=(const location& lc);
+    Location& operator=(const Location& lc);
 
     template <int>
     void set(std::list<tokengen>::iterator& big,

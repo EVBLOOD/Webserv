@@ -12,7 +12,7 @@
 
 #include "serverInfo.hpp"
 
-void serverInfo::setlocation(std::string x, location y) {
+void serverInfo::setlocation(std::string x, Location y) {
     locations.insert(
         std::make_pair(x, y));  // don't forget the path in the other side plz
 }

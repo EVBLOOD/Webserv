@@ -18,6 +18,39 @@ using std::set;
 using std::string;
 using std::vector;
 
+serverInfo get_the_server_info_for_the_client(
+    std::string HostHeader,
+    TcpStream& client,
+    map<pair<string, string>, serverInfo>& server_infos) {
+    // PARSE HOST HEADER FROM THE REQUEST
+    // TODO handle empty Host
+    assert(!HostHeader.empty());
+    vector<string> tmp = split(HostHeader, ":");
+
+    // TODO handle not having both the host and port in Host
+    assert(tmp.size() <= 2);
+
+    std::string host = trim(tmp.at(0), " ");
+    std::string port;
+    if (tmp.size() != 1)
+        port = trim(tmp.at(1), " ");
+
+    cout << "---> The request contains the Host header "
+            "with {host, port} == {"
+         << host << "," << port << "}" << '\n';
+
+    if (client.get_port() != port) {
+        port = client.get_port();
+        host = HostHeader;
+    }
+
+    map<pair<string, string>, serverInfo>::iterator it =
+        server_infos.find(std::make_pair(port, host));
+    if (it == server_infos.end())
+        return server_infos.at(make_pair(port, ""));
+    return it->second;
+}
+
 int main() {
     ///// PARSING THE CONFIG FILE
     parser file("conf");
@@ -82,67 +115,47 @@ int main() {
             if (dynamic_cast<IServer*>(event)) {
                 TcpListener* server = dynamic_cast<TcpListener*>(event);
                 IStreamer& client = server->accept();
+                cout
+                    << "----------------------------------------------------\n";
                 cout << "[INFO] the server with {host, port} == {"
                      << server->get_host() << "," << server->get_port() << "}"
                      << '\n';
                 cout << "       ---> is accepting a new connection\n";
                 cout << "[INFO] attaching the newly accepted client\n";
+                cout
+                    << "----------------------------------------------------\n";
                 event_queue.attach(&client);
             } else {
                 TcpStream& client = *dynamic_cast<TcpStream*>(event);
+                cout
+                    << "----------------------------------------------------\n";
                 cout << "[INFO] the client comming from {host, port} == {"
                      << client.get_host() << "," << client.get_port() << "}"
                      << '\n';
                 cout << "       ---> is ready for IO\n";
-                std::array<char, 4096> buffer;
+                cout << "[INFO] reading the request" << std::endl;
+                std::array<char, 1024> buffer;
                 buffer.fill(0);
-                client.read(buffer.data(), buffer.size());
-                cout << "[INFO] reading the request\n";
+                if (client.read(buffer.data(), buffer.size()) <= 0) {
+                    event_queue.detach(&client);
+                    client.shutdown();
+                }
+
+                cout << "[DEBUG] request start\n";
+                cout << buffer.data();
+                cout << "[DEBUG] request end\n";
 
                 /////////////////////////////////////////
-                /// TODO
                 {
+                    cout << "[INFO] parsing the request" << std::endl;
                     // PARSING REQUEST
                     HttpRequest request = HttpRequest(buffer.data());
                     //////////////////
                     // PARSE HOST HEADER FROM THE REQUEST
                     std::string HostHeader = request.getHeaderValue("Host");
                     {
-                        assert(!HostHeader.empty());
-                        vector<string> tmp = split(HostHeader, ":");
-
-                        assert(tmp.size() <= 2);
-
-                        std::string host = trim(tmp.at(0), " ");
-                        std::string port;
-                        if (tmp.size() != 1)
-                            port = trim(tmp.at(1), " ");
-
-                        cout << "---> The request contains the Host header "
-                                "with {host, port} == {"
-                             << host << "," << port << "}" << '\n';
-
-                        if (client.get_port() != port) {
-                            // TODO USE SERVER NAME TO PICK THE WRITE SERVER TO
-                            // RESPONDE
-                            // PORT = CLIENT.PORT
-                            // HOST = request.HOST
-                            // map with HOST and PORT
-                            port = client.get_port();
-                            host = HostHeader;
-                        }
-
-                        serverInfo info;
-
-                        {
-                            map<pair<string, string>, serverInfo>::iterator it =
-                                infos.find(std::make_pair(port, host));
-                            if (it == infos.end()) {
-                                info = infos.at(make_pair(port, ""));
-                            } else {
-                                info = it->second;
-                            }
-                        }
+                        serverInfo info = get_the_server_info_for_the_client(
+                            HostHeader, client, infos);
 
                         // TODO handle request with the server info
                         // check if auto indexing is on and display the dir if
@@ -155,21 +168,22 @@ int main() {
                         // the methode is allowed using the Location class
                         /////////////////////////////////////////
 
-                        std::string const& loc = request.getLocation();
-                        const map<string, location>& locations = info.locations;
-                        const map<string, location>::const_iterator it =
-                            locations.find(loc);
-                        location route;
-                        if (it == locations.end()) {
-                            // TODO handle is a location doesnt exists in
-                            // Locations
-                            cerr << "[TODO] location doesnt exists\n";
-                            assert(false);
-                        } else {
-                            route = it->second;
-                        }
-                        const std::string& method = request.getMethod();
                         std::string response;
+                        std::string const& loc = request.getLocation();
+                        map<string, Location>& locations = info.locations;
+                        map<string, Location>::const_iterator it =
+                            locations.find(loc);
+                        if (it == locations.end()) {
+                            response = HttpResponse::send_file(loc, info.root,
+                                                               info.error_page)
+                                           .build();
+                            client.write(response.c_str(), response.size());
+                            events.pop_back();
+                            continue;
+                        }
+                        ////// if Route is in Locations
+                        Location route = it->second;
+                        const std::string& method = request.getMethod();
                         if (find(route.allow_methods.begin(),
                                  route.allow_methods.end(),
                                  method) == route.allow_methods.end()) {
@@ -189,8 +203,16 @@ int main() {
                                     }
                                 }
                                 if (route.index.size() == 1) {
+                                    cout << "[DEBUG] full path "
+                                         << info.root + route.index[0] << '\n';
+                                    std::ifstream file(info.root + "/" +
+                                                       route.index[0]);
                                     response =
-                                        HttpResponse(200, "1.1", "OK").build();
+                                        HttpResponse(200, "1.1", "OK")
+                                            .add_to_body(open_to_serve(file))
+                                            .add_header("Content-Type",
+                                                        "text/html")
+                                            .build();
                                 } else if (route.index.size() > 1) {
                                     // TODO handle multiple indexes
                                     cerr << "[TODO] multiple indexes\n";
@@ -211,24 +233,6 @@ int main() {
                         client.write(response.data(), response.size());
                     }
                 }
-
-                // HttpResponse(int status,
-                //              std::string version,
-                //              std::string action);
-
-                // HttpResponse &add_header(std::string key, std::string value);
-
-                // HttpResponse &add_to_body(std::string line);
-
-                // HttpResponse &add_to_body(std::vector <std::string> body);
-                /////////////////////////////////////////
-                // std::string response =
-                //     HttpResponse(200, "1.1", "OK")
-                //         .add_header("Content-Type", "text/html")
-                //         .add_to_body("<h1>hello, world</1>")
-                //         .build();
-                // cout << "[INFO] sending the response\n";
-                // client.write(response.c_str(), response.size());
             }
             events.pop_back();
         }

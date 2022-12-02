@@ -32,7 +32,7 @@ void CURLWAIT(std::list<tokengen>::iterator& x,
 }
 
 template <>
-void location::set<setallow_methods>(std::list<tokengen>::iterator& big,
+void Location::set<setallow_methods>(std::list<tokengen>::iterator& big,
                                      std::list<tokengen>::iterator& end) {
     std::string tmp;
 
@@ -58,7 +58,7 @@ void location::set<setallow_methods>(std::list<tokengen>::iterator& big,
 }
 
 template <>
-void location::set<setfastcgi_pass>(std::list<tokengen>::iterator& big,
+void Location::set<setfastcgi_pass>(std::list<tokengen>::iterator& big,
                                     std::list<tokengen>::iterator& end) {
     std::string tmp;
 
@@ -78,7 +78,7 @@ void location::set<setfastcgi_pass>(std::list<tokengen>::iterator& big,
 }
 
 template <>
-void location::set<setindex>(std::list<tokengen>::iterator& big,
+void Location::set<setindex>(std::list<tokengen>::iterator& big,
                              std::list<tokengen>::iterator& end) {
     std::string tmp;
 
@@ -89,7 +89,7 @@ void location::set<setindex>(std::list<tokengen>::iterator& big,
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
-    allow_methods.push_back(tmp);
+    index.push_back(tmp);
     big++;
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
@@ -101,7 +101,7 @@ void location::set<setindex>(std::list<tokengen>::iterator& big,
 }
 
 template <>
-void location::set<setreturn>(std::list<tokengen>::iterator& big,
+void Location::set<setreturn>(std::list<tokengen>::iterator& big,
                               std::list<tokengen>::iterator& end) {
     std::string tmp;
 
@@ -136,7 +136,7 @@ void location::set<setreturn>(std::list<tokengen>::iterator& big,
 }
 
 template <>
-void location::set<setautoindex>(std::list<tokengen>::iterator& big,
+void Location::set<setautoindex>(std::list<tokengen>::iterator& big,
                                  std::list<tokengen>::iterator& end) {
     std::string tmp;
     CURLWAIT(big, end, true);
@@ -160,7 +160,7 @@ void location::set<setautoindex>(std::list<tokengen>::iterator& big,
 }
 
 template <>
-void location::set<setupload_enable>(std::list<tokengen>::iterator& big,
+void Location::set<setupload_enable>(std::list<tokengen>::iterator& big,
                                      std::list<tokengen>::iterator& end) {
     std::string tmp;
 
@@ -185,7 +185,7 @@ void location::set<setupload_enable>(std::list<tokengen>::iterator& big,
 }
 
 template <>
-void location::set<setupload_store>(std::list<tokengen>::iterator& big,
+void Location::set<setupload_store>(std::list<tokengen>::iterator& big,
                                     std::list<tokengen>::iterator& end) {
     std::string tmp;
 
@@ -204,22 +204,22 @@ void location::set<setupload_store>(std::list<tokengen>::iterator& big,
     big++;
 }
 
-typedef void (location::*function_location)(std::list<tokengen>::iterator& big,
+typedef void (Location::*function_location)(std::list<tokengen>::iterator& big,
                                             std::list<tokengen>::iterator& end);
 
-void location::execute(int i,
+void Location::execute(int i,
                        std::list<tokengen>::iterator& big,
                        std::list<tokengen>::iterator& end) {
     function_location funs[] = {
-        &location::set<setallow_methods>, &location::set<setfastcgi_pass>,
-        &location::set<setindex>,         &location::set<setreturn>,
-        &location::set<setautoindex>,     &location::set<setupload_enable>,
-        &location::set<setupload_store>};
+        &Location::set<setallow_methods>, &Location::set<setfastcgi_pass>,
+        &Location::set<setindex>,         &Location::set<setreturn>,
+        &Location::set<setautoindex>,     &Location::set<setupload_enable>,
+        &Location::set<setupload_store>};
     //    std::cout << i  << "\n";
     (this->*funs[i])(big, end);
 }
 
-location::location()
+Location::Location()
     : index(),
       ret_rn(),
       autoindex(false),
@@ -228,13 +228,13 @@ location::location()
       upload_enable(false),
       upload_store() {}
 
-location::~location() {}
+Location::~Location() {}
 
-location::location(const location& lc) {
+Location::Location(const Location& lc) {
     *this = lc;
 }
 
-location& location::operator=(const location& lc) {
+Location& Location::operator=(const Location& lc) {
     if (this == &lc) {
         std::cerr << "wait what??? \n";
         exit(1);

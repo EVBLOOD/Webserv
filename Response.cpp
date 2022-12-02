@@ -3,26 +3,28 @@
 //
 
 #include "Response.hpp"
+#include "tools.hpp"
 
-HttpResponse::HttpResponse(int status,
-                           std::string version,
-                           std::string action) : _status(status), _content_length(0), _version(version),
-                                                 _action(action), _headers(),
-                                                 _body() {
-};
+HttpResponse::HttpResponse(int status, std::string version, std::string action)
+    : _status(status),
+      _content_length(0),
+      _version(version),
+      _action(action),
+      _headers(),
+      _body(){};
 
-HttpResponse &HttpResponse::add_header(std::string key, std::string value) {
+HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
     _headers[key] = value;
     return *this;
 };
 
-HttpResponse &HttpResponse::add_to_body(std::string line) {
+HttpResponse& HttpResponse::add_to_body(std::string line) {
     _body.push_back(line);
     _content_length += line.length() + 2;
     return *this;
 };
 
-HttpResponse &HttpResponse::add_to_body(std::vector <std::string> body) {
+HttpResponse& HttpResponse::add_to_body(std::vector<std::string> body) {
     std::vector<std::string>::iterator iter = body.begin();
     while (iter != body.end()) {
         add_to_body(*iter);
@@ -38,7 +40,8 @@ size_t HttpResponse::get_body_size() {
 std::string HttpResponse::build() {
     std::string res;
 
-    res += "HTTP/" + _version + " " + std::to_string(_status) + " " + _action + "\r\n";
+    res += "HTTP/" + _version + " " + std::to_string(_status) + " " + _action +
+           "\r\n";
 
     _headers["Content-Length"] = std::to_string(_content_length);
     {
@@ -47,7 +50,6 @@ std::string HttpResponse::build() {
             res += iter->first + ": " + iter->second + "\r\n";
             iter++;
         }
-
     }
     res += "\r\n";
     {
@@ -61,16 +63,130 @@ std::string HttpResponse::build() {
 }
 
 void HttpResponse::dump() {
-    std::cout << "HTTP/" + _version + " " + std::to_string(_status) + " " + _action + "\n";
+    std::cout << "HTTP/" + _version + " " + std::to_string(_status) + " " +
+                     _action + "\n";
     for (std::map<std::string, std::string>::iterator iter = _headers.begin();
          iter != _headers.end(); ++iter) {
-        std::cout << "[" << iter->first << "]" << " : [" << iter->second << "]" << '\n';
+        std::cout << "[" << iter->first << "]"
+                  << " : [" << iter->second << "]" << '\n';
     }
     for (std::vector<std::string>::iterator iter = _body.begin();
          iter != _body.end(); ++iter) {
         std::cout << *iter << "\n";
     }
 }
+
+std::string HttpResponse::get_content_type(std::string location) {
+    std::string content_type = "text/plain";
+    if (location.rfind('.') != std::string::npos) {
+        std::string ext = location.substr(location.rfind('.'), location.size());
+        if (ext == ".html") {
+            content_type = "text/html";
+        } else if (ext == ".js") {
+            content_type = "application/javascript";
+        } else if (ext == ".css") {
+            content_type = "text/css";
+        }
+    }
+    // application/EDI-X12
+    // application/EDIFACT
+    // application/javascript
+    // application/octet-stream
+    // application/ogg
+    // application/pdf
+    // application/xhtml+xml
+    // application/x-shockwave-flash
+    // application/json
+    // application/ld+json
+    // application/xml
+    // application/zip
+    // application/x-www-form-urlencoded
+    // Audio	audio/mpeg
+    // audio/x-ms-wma
+    // audio/vnd.rn-realaudio
+    // audio/x-wav
+    // Image	image/gif
+    // image/jpeg
+    // image/png
+    // image/tiff
+    // image/vnd.microsoft.icon
+    // image/x-icon
+    // image/vnd.djvu
+    // image/svg+xml
+    // Multipart	multipart/mixed
+    // multipart/alternative
+    // multipart/related (using by MHTML (HTML mail).)
+    // multipart/form-data
+    // Text	text/css
+    // text/csv
+    // text/html
+    // text/javascript (obsolete)
+    // text/plain
+    // text/xml
+    // Video	video/mpeg
+    // video/mp4
+    // video/quicktime
+    // video/x-ms-wmv
+    // video/x-msvideo
+    // video/x-flv
+    // video/webm
+    // VND	application/vnd.oasis.opendocument.text
+    // application/vnd.oasis.opendocument.spreadsheet
+    // application/vnd.oasis.opendocument.presentation
+    // application/vnd.oasis.opendocument.graphics
+    // application/vnd.ms-excel
+    // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    // application/vnd.ms-powerpoint
+    // application/vnd.openxmlformats-officedocument.presentationml.presentation
+    // application/msword
+    // application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    // application/vnd.mozilla.xul+xml
+    return content_type;
+};
+
+HttpResponse HttpResponse::error_response(int status, std::string path) {
+    std::string action;
+    if (status == 404) {
+        action = "Not Found";
+    } else if (status == 403) {
+        action = "Forbidden";
+    } else {
+        std::cerr << "[ERROR] unknown status code\n";
+        exit(1);
+    }
+
+    std::ifstream file(path);
+    return HttpResponse(status, "1.1", action)
+        .add_to_body(tools::open_to_serve(file))
+        .add_header("Content-Type", get_content_type(path));
+};
+
+HttpResponse& HttpResponse::add_content_type(std::string path) {
+    return add_header("Content-Type", get_content_type(path));
+};
+
+HttpResponse HttpResponse::send_file(std::string path,
+                                     std::string root,
+                                     std::map<int, std::string> error_pages) {
+    std::string full_path = root + path;
+
+    std::cout << "[DEBUG] location " << path << '\n';
+    std::cout << "[DEBUG] full path " << root + path << '\n';
+    // TODO check if the file in the right path
+    errno = 0;
+    std::ifstream file(full_path);
+    if (tools::is_file_exists(full_path) == false) {
+        return error_response(404, root + error_pages[404]);
+    } else if (tools::is_file_readable(full_path) == false) {
+        return error_response(403, root + error_pages[403]);
+
+    } else {
+        return HttpResponse(200, "1.1", "OK")
+            .add_to_body(tools::open_to_serve(file))
+            .add_content_type(full_path);
+    }
+}
+
 //  int _status;
 //    std::string _version;
 //    std::string _action;

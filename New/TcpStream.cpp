@@ -20,10 +20,12 @@ void TcpStream::shutdown() {
 };
 
 size_t TcpStream::read(char* buff, size_t size) const {
+    assert(_fd != -1);
     return recv(_fd, buff, size, 0);
 };
 
 size_t TcpStream::write(const char* const buff, size_t size) const {
+    assert(_fd != -1);
     return send(_fd, buff, size, 0);
 };
 
