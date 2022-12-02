@@ -2,14 +2,15 @@
 #include "New/TcpStream.hpp"
 #include "New/kqueue.hpp"
 #include "New/tcpListener.hpp"
-#include "Server.hpp"
-#include "ServerBuilder.hpp"
-#include "ServerPoll.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 #include "parsing/location.hpp"
 #include "parsing/parser.hpp"
 #include "parsing/tokengen.hpp"
+#include "tools.hpp"
 
 #define loop for (;;)
+using namespace tools;
 using std::cerr;
 using std::cout;
 using std::map;
