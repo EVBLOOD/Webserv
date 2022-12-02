@@ -5,6 +5,7 @@
 #include "Server.hpp"
 #include "ServerBuilder.hpp"
 #include "ServerPoll.hpp"
+#include "parsing/location.hpp"
 #include "parsing/parser.hpp"
 #include "parsing/tokengen.hpp"
 
@@ -59,6 +60,15 @@ int main() {
     //     cout << info.first.first << " [" << info.first.second << "] "
     //          << info.second.root << '\n';
     // }
+    ///// PREPARE ROUTES
+    // map<pair<serverInfo, std::string>, location> routes;
+    // for (size_t i = 0; i < servers_info.size(); ++i) {
+    //     for (size_t j = 0; j < servers_info[i].locations.size(); ++j) {
+    //         location& loc = servers_info[i].locations[j];
+    //         routes[make_pair(servers_info[i], )]
+    //     }
+    // }
+    /////////////////////////////////////////////
     /// CREATING EVENT LOOP
     loop {
         // KQUEUE RETURNS ALL LISTNERS READY FOR
@@ -113,8 +123,6 @@ int main() {
                              << host << "," << port << "}" << '\n';
 
                         if (client.get_port() != port) {
-                            cout << "TODO : request port is diffrent than the "
-                                    "original port\n";
                             // TODO USE SERVER NAME TO PICK THE WRITE SERVER TO
                             // RESPONDE
                             // PORT = CLIENT.PORT
@@ -126,12 +134,14 @@ int main() {
 
                         serverInfo info;
 
-                        map<pair<string, string>, serverInfo>::iterator it =
-                            infos.find(std::make_pair(port, host));
-                        if (it == infos.end()) {
-                            info = infos.at(make_pair(port, ""));
-                        } else {
-                            info = it->second;
+                        {
+                            map<pair<string, string>, serverInfo>::iterator it =
+                                infos.find(std::make_pair(port, host));
+                            if (it == infos.end()) {
+                                info = infos.at(make_pair(port, ""));
+                            } else {
+                                info = it->second;
+                            }
                         }
 
                         // TODO handle request with the server info
@@ -144,17 +154,81 @@ int main() {
                         // then responde with the proper thing after checking if
                         // the methode is allowed using the Location class
                         /////////////////////////////////////////
-                        assert(false);
+
+                        std::string const& loc = request.getLocation();
+                        const map<string, location>& locations = info.locations;
+                        const map<string, location>::const_iterator it =
+                            locations.find(loc);
+                        location route;
+                        if (it == locations.end()) {
+                            // TODO handle is a location doesnt exists in
+                            // Locations
+                            cerr << "[TODO] location doesnt exists\n";
+                            assert(false);
+                        } else {
+                            route = it->second;
+                        }
+                        const std::string& method = request.getMethod();
+                        std::string response;
+                        if (find(route.allow_methods.begin(),
+                                 route.allow_methods.end(),
+                                 method) == route.allow_methods.end()) {
+                            // TODO handle a no allowed method
+                            cerr << "[TODO] method is not allowed\n";
+                            assert(false);
+                        } else {
+                            if (route.autoindex) {
+                                // TODO handle auto index on
+                            } else {
+                                {
+                                    vector<string>::iterator it =
+                                        route.index.begin();
+                                    while (it != route.index.end()) {
+                                        cout << "[DEBUG] " << *it << '\n';
+                                        ++it;
+                                    }
+                                }
+                                if (route.index.size() == 1) {
+                                    response =
+                                        HttpResponse(200, "1.1", "OK").build();
+                                } else if (route.index.size() > 1) {
+                                    // TODO handle multiple indexes
+                                    cerr << "[TODO] multiple indexes\n";
+                                    assert(false);
+                                } else {
+                                    map<int, string>::iterator it =
+                                        route.ret_rn.begin();
+                                    while (it != route.ret_rn.end()) {
+                                        cout << "[DEBUG] " << it->first << " "
+                                             << it->second << '\n';
+                                        ++it;
+                                    }
+                                    cerr << "[TODO] no index\n";
+                                    assert(false);
+                                }
+                            }
+                        }
+                        client.write(response.data(), response.size());
                     }
                 }
+
+                // HttpResponse(int status,
+                //              std::string version,
+                //              std::string action);
+
+                // HttpResponse &add_header(std::string key, std::string value);
+
+                // HttpResponse &add_to_body(std::string line);
+
+                // HttpResponse &add_to_body(std::vector <std::string> body);
                 /////////////////////////////////////////
-                std::string response =
-                    HttpResponse(200, "1.1", "OK")
-                        .add_header("Content-Type", "text/html")
-                        .add_to_body("<h1>hello, world</1>")
-                        .build();
-                cout << "[INFO] sending the response\n";
-                client.write(response.c_str(), response.size());
+                // std::string response =
+                //     HttpResponse(200, "1.1", "OK")
+                //         .add_header("Content-Type", "text/html")
+                //         .add_to_body("<h1>hello, world</1>")
+                //         .build();
+                // cout << "[INFO] sending the response\n";
+                // client.write(response.c_str(), response.size());
             }
             events.pop_back();
         }

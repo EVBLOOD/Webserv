@@ -27,6 +27,7 @@ server
 
 	location /return
 	{
+		allow_methods GET POST DELETE;
 		return 301 /;
 	}
 
