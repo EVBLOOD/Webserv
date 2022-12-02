@@ -28,7 +28,7 @@ server
 	location /return
 	{
 		allow_methods GET POST DELETE;
-		return 301 /;
+		return 302 /;
 	}
 
 	location *.php
@@ -72,20 +72,19 @@ server
 	error_page 500 /errors/500.html;
 	error_page 502 /errors/502.html;
 
-	root /Users/orahmoun/webserv/;
+	root /Users/orahmoun/webserv;
 
 	location /
 	{
-
 		index index.html;
 
 		autoindex off;
 		allow_methods GET POST DELETE;
 	}
 
-	location /return
+	location /saad
 	{
-		return 301 /;
+		return 301 public/app.css;
 	}
 
 	location *.php

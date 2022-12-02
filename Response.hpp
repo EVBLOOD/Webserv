@@ -42,4 +42,7 @@ class HttpResponse {
     static HttpResponse send_file(std::string file,
                                   std::string root,
                                   std::map<int, std::string> error_pages);
+
+    static HttpResponse redirect_moved_response(std::string const& location);
+    static HttpResponse redirect_found_response(std::string const& location);
 };

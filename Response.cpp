@@ -187,6 +187,15 @@ HttpResponse HttpResponse::send_file(std::string path,
     }
 }
 
+HttpResponse HttpResponse::redirect_moved_response(
+    std::string const& location) {
+    return HttpResponse(301, "1.1", "Moved Permanently")
+        .add_header("Location", location);
+};
+HttpResponse HttpResponse::redirect_found_response(
+    std::string const& location) {
+    return HttpResponse(302, "1.1", "Found").add_header("Location", location);
+};
 //  int _status;
 //    std::string _version;
 //    std::string _action;

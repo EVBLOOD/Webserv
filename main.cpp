@@ -19,6 +19,16 @@ using std::set;
 using std::string;
 using std::vector;
 
+HttpResponse handle_redirection(int status, std::string location) {
+    if (status == 302)
+        return HttpResponse::redirect_found_response(location);
+    else if (status == 301)
+        return HttpResponse::redirect_moved_response(location);
+    cerr << "[ERROR] invalid status for "
+            "redirection\n";
+    exit(1);
+}
+
 serverInfo get_the_server_info_for_the_client(
     std::string HostHeader,
     TcpStream& client,
@@ -185,52 +195,50 @@ int main() {
                         ////// if Route is in Locations
                         Location route = it->second;
                         const std::string& method = request.getMethod();
-                        if (find(route.allow_methods.begin(),
-                                 route.allow_methods.end(),
-                                 method) == route.allow_methods.end()) {
-                            // TODO handle a no allowed method
-                            cerr << "[TODO] method is not allowed\n";
-                            assert(false);
+                        // if (find(route.allow_methods.begin(),
+                        //          route.allow_methods.end(),
+                        //          method) == route.allow_methods.end()) {
+                        //     // TODO handle a no allowed method
+                        //     cerr << "[TODO] method is not allowed\n";
+                        //     assert(false);
+                        // } else {
+                        if (route.autoindex) {
+                            // TODO handle auto index on
                         } else {
-                            if (route.autoindex) {
-                                // TODO handle auto index on
-                            } else {
-                                {
-                                    vector<string>::iterator it =
-                                        route.index.begin();
-                                    while (it != route.index.end()) {
-                                        cout << "[DEBUG] " << *it << '\n';
-                                        ++it;
-                                    }
-                                }
-                                if (route.index.size() == 1) {
-                                    cout << "[DEBUG] full path "
-                                         << info.root + route.index[0] << '\n';
-                                    std::ifstream file(info.root + "/" +
-                                                       route.index[0]);
-                                    response =
-                                        HttpResponse(200, "1.1", "OK")
-                                            .add_to_body(open_to_serve(file))
-                                            .add_header("Content-Type",
-                                                        "text/html")
-                                            .build();
-                                } else if (route.index.size() > 1) {
-                                    // TODO handle multiple indexes
-                                    cerr << "[TODO] multiple indexes\n";
-                                    assert(false);
-                                } else {
-                                    map<int, string>::iterator it =
-                                        route.ret_rn.begin();
-                                    while (it != route.ret_rn.end()) {
-                                        cout << "[DEBUG] " << it->first << " "
-                                             << it->second << '\n';
-                                        ++it;
-                                    }
-                                    cerr << "[TODO] no index\n";
-                                    assert(false);
+                            {
+                                vector<string>::iterator it =
+                                    route.index.begin();
+                                while (it != route.index.end()) {
+                                    cout << "[DEBUG] " << *it << '\n';
+                                    ++it;
                                 }
                             }
+                            if (route.index.size() == 1) {
+                                cout << "[DEBUG] full path "
+                                     << info.root + route.index[0] << '\n';
+                                std::ifstream file(info.root + "/" +
+                                                   route.index[0]);
+                                response =
+                                    HttpResponse(200, "1.1", "OK")
+                                        .add_to_body(open_to_serve(file))
+                                        .add_header("Content-Type", "text/html")
+                                        .build();
+                            } else if (route.index.size() > 1) {
+                                // TODO handle multiple indexes
+                                cerr << "[TODO] multiple indexes\n";
+                                assert(false);
+                            } else {
+                                assert(route.ret_rn.size() == 1);
+                                pair<int, string> ret = *route.ret_rn.begin();
+                                cout << "[DEBUG] redirect " << ret.first << " "
+                                     << ret.second << '\n';
+
+                                response =
+                                    handle_redirection(ret.first, ret.second)
+                                        .build();
+                            }
                         }
+                        // }
                         client.write(response.data(), response.size());
                     }
                 }
