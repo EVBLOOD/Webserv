@@ -38,6 +38,32 @@ HttpResponse handle_redirection(int status, std::string location) {
     exit(1);
 }
 
+std::string pathcorrection(std::string a, std::string b)
+{
+    std::string::iterator it = a.begin();
+    std::string::iterator ite = a.end();
+    std::string result = std::string();
+    while (it != ite)
+    {
+        if (result.empty() == true ||
+            *(--result.end()) != '/' || *(--result.end()) != *it)
+            result += *it;
+        it++;;
+    }
+    if (result.empty() == false && *(--result.end()) != '/')
+        result += '/';
+    ite = b.end();
+    it = b.begin();
+    while (it != ite)
+    {
+       if (result.empty() == true ||
+            *(--result.end()) != '/' || *(--result.end()) != *it)
+            result += *it;
+        it++;
+    }
+    return result;
+}
+
 serverInfo get_the_server_info_for_the_client(
     std::string HostHeader,
     TcpStream& client,
