@@ -11,9 +11,9 @@ SRCS =  main.cpp\
         Request.cpp\
         tools.cpp\
 		Response.cpp\
-		New/TcpStream.cpp\
-		New/kqueue.cpp\
-		New/tcpListener.cpp\
+		socket/TcpStream.cpp\
+		socket/kqueue.cpp\
+		socket/tcpListener.cpp\
 		parsing/location.cpp\
 		parsing/parser.cpp\
 		parsing/serverInfo.cpp\

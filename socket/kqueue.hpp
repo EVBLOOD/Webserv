@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 #include "listener_interface.hpp"
-#include "streamer_interface.hpp"
 
 class Kqueue {
     int _kdata;

@@ -2,11 +2,11 @@
 #include <unistd.h>
 #include <array>
 #include <cstring>
-#include "server_interface.hpp"
+#include "listener_interface.hpp"
 #include "tcpListener.hpp"
 
 class TcpListener;
-class TcpStream : public IStreamer {
+class TcpStream : public IListener {
     const int _fd;
     const TcpListener& _owner;
 

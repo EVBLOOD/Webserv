@@ -1,15 +1,14 @@
 #include <iostream>
 #include <set>
-#include "New/TcpStream.hpp"
-#include "New/kqueue.hpp"
-#include "New/streamer_interface.hpp"
-#include "New/tcpListener.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "parsing/location.hpp"
 #include "parsing/parser.hpp"
 #include "parsing/serverInfo.hpp"
 #include "parsing/tokengen.hpp"
+#include "socket/TcpStream.hpp"
+#include "socket/kqueue.hpp"
+#include "socket/tcpListener.hpp"
 #include "tools.hpp"
 
 #define loop for (;;)
@@ -22,8 +21,12 @@ using std::set;
 using std::string;
 using std::vector;
 
-void handle_new_connection(Kqueue &kq, TcpListener *server, map<pair<string, string>, serverInfo> infos);
-void handle_requests(Kqueue &event_queue, IStreamer &client, map<pair<string, string>, serverInfo> infos);
+void handle_new_connection(Kqueue& kq,
+                           TcpListener* server,
+                           map<pair<string, string>, serverInfo> infos);
+void handle_requests(Kqueue& event_queue,
+                     TcpStream& client,
+                     map<pair<string, string>, serverInfo> infos);
 
 HttpResponse handle_redirection(int status, std::string location) {
     if (status == 302)
@@ -116,11 +119,12 @@ int main() {
              << '\n';
         while (events.size()) {
             IListener* event = events.back();
-            if (dynamic_cast<IServer*>(event)) {
-                handle_new_connection(event_queue,  dynamic_cast<TcpListener*>(event), infos);
-            } else 
-            {
-                handle_requests(event_queue, *dynamic_cast<IStreamer*>(event), infos);
+            if (dynamic_cast<TcpListener*>(event)) {
+                handle_new_connection(event_queue,
+                                      dynamic_cast<TcpListener*>(event), infos);
+            } else {
+                handle_requests(event_queue, *dynamic_cast<TcpStream*>(event),
+                                infos);
             }
             events.pop_back();
         }
@@ -128,29 +132,26 @@ int main() {
     ////////////////////////
 }
 
-void handle_new_connection(Kqueue &kq, TcpListener *server, map<pair<string, string>, serverInfo> infos)
-{
-    IStreamer& client = server->accept();
-    cout
-        << "----------------------------------------------------\n";
-    cout << "[INFO] the server with {host, port} == {"
-         << server->get_host() << "," << server->get_port() << "}"
-         << '\n';
+void handle_new_connection(Kqueue& kq,
+                           TcpListener* server,
+                           map<pair<string, string>, serverInfo> infos) {
+    TcpStream& client = server->accept();
+    cout << "----------------------------------------------------\n";
+    cout << "[INFO] the server with {host, port} == {" << server->get_host()
+         << "," << server->get_port() << "}" << '\n';
     cout << "       ---> is accepting a new connection\n";
     cout << "[INFO] attaching the newly accepted client\n";
-    cout
-        << "----------------------------------------------------\n";
+    cout << "----------------------------------------------------\n";
     kq.attach(&client);
 }
 
-void handle_requests(Kqueue &event_queue, IStreamer &event, map<pair<string, string>, serverInfo> infos)
-{
+void handle_requests(Kqueue& event_queue,
+                     TcpStream& event,
+                     map<pair<string, string>, serverInfo> infos) {
     TcpStream& client = dynamic_cast<TcpStream&>(event);
-    cout
-        << "----------------------------------------------------\n";
+    cout << "----------------------------------------------------\n";
     cout << "[INFO] the client comming from {host, port} == {"
-         << client.get_host() << "," << client.get_port() << "}"
-         << '\n';
+         << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
     cout << "[INFO] reading the request" << std::endl;
     std::array<char, 1024> buffer;
@@ -158,90 +159,87 @@ void handle_requests(Kqueue &event_queue, IStreamer &event, map<pair<string, str
     if (client.read(buffer.data(), buffer.size()) <= 0) {
         event_queue.detach(&client);
         client.shutdown();
-    }
+    } else {
+        cout << "[DEBUG] request start\n";
+        cout << buffer.data();
+        cout << "[DEBUG] request end\n";
 
-    cout << "[DEBUG] request start\n";
-    cout << buffer.data();
-    cout << "[DEBUG] request end\n";
-
-    /////////////////////////////////////////
-    {
-        cout << "[INFO] parsing the request" << std::endl;
-        // PARSING REQUEST
-        HttpRequest request = HttpRequest(buffer.data());
-        //////////////////
-        // PARSE HOST HEADER FROM THE REQUEST
-        std::string HostHeader = request.getHeaderValue("Host");
+        /////////////////////////////////////////
         {
-            serverInfo info = get_the_server_info_for_the_client(
-                HostHeader, client, infos);
-
-            // TODO handle request with the server info
-            // check if auto indexing is on and display the dir if
-            // the toute isnt a file return a file if possible
-            // ------ persmission denied should return out default
-            // error page if the page isnt set the conf file ------
-            // ------ all error should behave similarly -------
-            // the route should start with the root
-            // then responde with the proper thing after checking if
-            // the methode is allowed using the Location class
-            /////////////////////////////////////////
-
-            std::string response;
-            std::string const& loc = request.getLocation();
-            map<string, Location>& locations = info.locations;
-            map<string, Location>::const_iterator it =
-                locations.find(loc);
-            if (it == locations.end()) {
-                response = HttpResponse::send_file(loc, info.root,
-                                                   info.error_page)
-                               .build();
-            }
-            else
+            cout << "[INFO] parsing the request" << std::endl;
+            // PARSING REQUEST
+            HttpRequest request = HttpRequest(buffer.data());
+            //////////////////
+            // PARSE HOST HEADER FROM THE REQUEST
+            std::string HostHeader = request.getHeaderValue("Host");
             {
-                ////// if Route is in Locations
-                Location route = it->second;
-                const std::string& method = request.getMethod();
-                // if (find(route.allow_methods.begin(),
-                //          route.allow_methods.end(),
-                //          method) == route.allow_methods.end()) {
-                //     // TODO handle a no allowed method
-                //     cerr << "[TODO] method is not allowed\n";
-                //     assert(false);
-                // } else {
-                if (route.autoindex) {
-                    // TODO handle auto index on
+                serverInfo info = get_the_server_info_for_the_client(
+                    HostHeader, client, infos);
+
+                // TODO handle request with the server info
+                // check if auto indexing is on and display the dir if
+                // the toute isnt a file return a file if possible
+                // ------ persmission denied should return out default
+                // error page if the page isnt set the conf file ------
+                // ------ all error should behave similarly -------
+                // the route should start with the root
+                // then responde with the proper thing after checking if
+                // the methode is allowed using the Location class
+                /////////////////////////////////////////
+
+                std::string response;
+                std::string const& loc = request.getLocation();
+                map<string, Location>& locations = info.locations;
+                map<string, Location>::const_iterator it = locations.find(loc);
+                if (it == locations.end()) {
+                    response =
+                        HttpResponse::send_file(loc, info.root, info.error_page)
+                            .build();
                 } else {
-                    {
-                        vector<string>::iterator it =
-                            route.index.begin();
-                        while (it != route.index.end()) {
-                            cout << "[DEBUG] " << *it << '\n';
-                            ++it;
+                    ////// if Route is in Locations
+                    Location route = it->second;
+                    const std::string& method = request.getMethod();
+                    // if (find(route.allow_methods.begin(),
+                    //          route.allow_methods.end(),
+                    //          method) == route.allow_methods.end()) {
+                    //     // TODO handle a no allowed method
+                    //     cerr << "[TODO] method is not allowed\n";
+                    //     assert(false);
+                    // } else {
+                    if (route.autoindex) {
+                        // TODO handle auto index on
+                    } else {
+                        {
+                            vector<string>::iterator it = route.index.begin();
+                            while (it != route.index.end()) {
+                                cout << "[DEBUG] " << *it << '\n';
+                                ++it;
+                            }
+                        }
+                        if (route.index.size() >= 1) {
+                            cerr << "[DEBUG] handle index\n";
+                            response =
+                                HttpResponse::index_response(
+                                    route.index, info.root, info.error_page)
+                                    .build();
+                        } else if (route.index.empty() &&
+                                   route.ret_rn.size() == 1) {
+                            assert(route.ret_rn.size() == 1);
+                            pair<int, string> ret = *route.ret_rn.begin();
+                            cout << "[DEBUG] redirect " << ret.first << " "
+                                 << ret.second << '\n';
+
+                            response = handle_redirection(ret.first, ret.second)
+                                           .build();
+                        } else {
+                            cerr << "[ERROR] no index + no return \n";
+                            exit(1);
                         }
                     }
-                    if (route.index.size() >= 1) {
-                        cerr << "[DEBUG] handle index\n";
-                        response = HttpResponse::index_response(route.index, info.root, info.error_page).build();
-                    } else if (route.index.empty() && route.ret_rn.size() == 1) {
-                        assert(route.ret_rn.size() == 1);
-                        pair<int, string> ret = *route.ret_rn.begin();
-                        cout << "[DEBUG] redirect " << ret.first << " "
-                            << ret.second << '\n';
-
-                        response =
-                            handle_redirection(ret.first, ret.second)
-                                .build();
-                    }
-                    else 
-                    {
-                        cerr << "[ERROR] no index + no return \n";
-                        exit (1);
-                    }
                 }
+                // }
+                client.write(response.data(), response.size());
             }
-            // }
-            client.write(response.data(), response.size());
         }
     }
 }
