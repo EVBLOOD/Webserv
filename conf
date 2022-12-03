@@ -25,6 +25,16 @@ server
 		allow_methods GET POST DELETE;
 	}
 
+    location /dir {
+        autoindex on;
+        allow_methods GET;
+    }
+
+    location /dir/dir {
+        autoindex on;
+        allow_methods GET;
+    }
+
 	location /return
 	{
 		allow_methods GET POST DELETE;

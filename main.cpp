@@ -21,9 +21,7 @@ using std::set;
 using std::string;
 using std::vector;
 
-void handle_new_connection(Kqueue& kq,
-                           TcpListener* server,
-                           map<pair<string, string>, serverInfo> infos);
+void handle_new_connection(Kqueue& kq, TcpListener* server);
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo> infos);
@@ -72,19 +70,13 @@ serverInfo get_the_server_info_for_the_client(
 }
 
 int main() {
-    ///// PARSING THE CONFIG FILE
     parser file("conf");
     std::list<tokengen> tokens = file.generate();
     std::vector<serverInfo> servers_info = file.lexer_to_data(tokens);
-    /////////////////////////////
-    ///// CREATING KQUEUE
+
     Kqueue event_queue;
-    /////////////////////////////
-    ///// LOOPING OVER THE PORTS
-    ///// AND HOST AND CREATING TCP LISTNERS ("SERVERS")
-    ///// AND KEEPING TRACK OF THE BOUNDED PORT/HOST COMBO
+
     set<pair<string, string> > already_bounded;
-    ///// CREATE MAP KEY IS A PAIR OF PORT AND HOST AND VALUE IS SERVER INFO
     map<pair<string, string>, serverInfo> infos;
     for (size_t i = 0; i < servers_info.size(); ++i) {
         for (size_t j = 0; j < servers_info[i].port.size(); ++j) {
@@ -109,9 +101,7 @@ int main() {
             }
         }
     }
-    /// CREATING EVENT LOOP
     loop {
-        // KQUEUE RETURNS ALL LISTNERS READY FOR
         cout << "[INFO] waiting for events ....\n";
         std::vector<IListener*> events = event_queue.get_events();
         cout << "[INFO] handling events\n";
@@ -121,7 +111,7 @@ int main() {
             IListener* event = events.back();
             if (dynamic_cast<TcpListener*>(event)) {
                 handle_new_connection(event_queue,
-                                      dynamic_cast<TcpListener*>(event), infos);
+                                      dynamic_cast<TcpListener*>(event));
             } else {
                 handle_requests(event_queue, *dynamic_cast<TcpStream*>(event),
                                 infos);
@@ -129,12 +119,9 @@ int main() {
             events.pop_back();
         }
     }
-    ////////////////////////
 }
 
-void handle_new_connection(Kqueue& kq,
-                           TcpListener* server,
-                           map<pair<string, string>, serverInfo> infos) {
+void handle_new_connection(Kqueue& kq, TcpListener* server) {
     TcpStream& client = server->accept();
     cout << "----------------------------------------------------\n";
     cout << "[INFO] the server with {host, port} == {" << server->get_host()
@@ -146,19 +133,18 @@ void handle_new_connection(Kqueue& kq,
 }
 
 void handle_requests(Kqueue& event_queue,
-                     TcpStream& event,
+                     TcpStream& client,
                      map<pair<string, string>, serverInfo> infos) {
-    TcpStream& client = dynamic_cast<TcpStream&>(event);
     cout << "----------------------------------------------------\n";
     cout << "[INFO] the client comming from {host, port} == {"
          << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
     cout << "[INFO] reading the request ..." << std::endl;
     std::array<char, 4096> buffer;
-    buffer.fill(0);
     std::string request_str;
     ssize_t ret = 0;
     loop {
+        buffer.fill(0);
         if ((ret = client.read(buffer.data(), buffer.size()) <= 0)) {
             break;
         }
@@ -172,7 +158,6 @@ void handle_requests(Kqueue& event_queue,
         }
         cout << "[INFO] reading the request ..." << std::endl;
     }
-    request_str += std::string(buffer.data());
     cout << "[DEBUG] return value is " << ret << " size of the request is "
          << request_str.size() << '\n';
     if ((request_str.size() == 0 && ret == 0) || ret < 0) {
@@ -186,82 +171,67 @@ void handle_requests(Kqueue& event_queue,
         cout << buffer.data();
         cout << "[DEBUG] request end\n";
 
-        /////////////////////////////////////////
+        cout << "[INFO] parsing the request" << std::endl;
+        HttpRequest request = HttpRequest(buffer.data());
         {
-            cout << "[INFO] parsing the request" << std::endl;
-            // PARSING REQUEST
-            HttpRequest request = HttpRequest(buffer.data());
-            {
-                if (request.getHeaderValue("Content-Length") != "") {
-                    cerr << "[TODO] handling request with a body -- checking "
-                            "if the body size is equal to Content-Length\n";
-                    assert(false);
-                }
-            }
-            //////////////////
-            // PARSE HOST HEADER FROM THE REQUEST
-            std::string HostHeader = request.getHeaderValue("Host");
-            {
-                serverInfo info = get_the_server_info_for_the_client(
-                    HostHeader, client, infos);
-
-                // TODO handle request with the server info
-                // check if auto indexing is on and display the dir if
-                // the toute isnt a file return a file if possible
-                // ------ persmission denied should return out default
-                // error page if the page isnt set the conf file ------
-                // ------ all error should behave similarly -------
-                // the route should start with the root
-                // then responde with the proper thing after checking if
-                // the methode is allowed using the Location class
-                /////////////////////////////////////////
-
-                std::string response;
-                std::string const& loc = request.getLocation();
-                map<string, Location>& locations = info.locations;
-                map<string, Location>::const_iterator it = locations.find(loc);
-                if (it == locations.end()) {
-                    response =
-                        HttpResponse::send_file(loc, info.root, info.error_page)
-                            .build();
-                } else {
-                    ////// if Route is in Locations
-                    Location route = it->second;
-                    const std::string& method = request.getMethod();
-                    // if (find(route.allow_methods.begin(),
-                    //          route.allow_methods.end(),
-                    //          method) == route.allow_methods.end()) {
-                    //     // TODO handle a no allowed method
-                    //     cerr << "[TODO] method is not allowed\n";
-                    //     assert(false);
-                    // } else {
-                    if (route.autoindex) {
-                        // TODO handle auto index on
-                    } else {
-                        if (route.index.size() >= 1) {
-                            cerr << "[DEBUG] handle index\n";
-                            response =
-                                HttpResponse::index_response(
-                                    route.index, info.root, info.error_page)
-                                    .build();
-                        } else if (route.index.empty() &&
-                                   route.ret_rn.size() == 1) {
-                            assert(route.ret_rn.size() == 1);
-                            pair<int, string> ret = *route.ret_rn.begin();
-                            cout << "[DEBUG] redirect " << ret.first << " "
-                                 << ret.second << '\n';
-
-                            response = handle_redirection(ret.first, ret.second)
-                                           .build();
-                        } else {
-                            cerr << "[ERROR] no index + no return \n";
-                            exit(1);
-                        }
-                    }
-                }
-                // }
-                client.write(response.data(), response.size());
+            if (request.getHeaderValue("Content-Length") != "") {
+                cerr << "[TODO] handling request with a body -- checking "
+                        "if the body size is equal to Content-Length\n";
+                assert(false);
             }
         }
+
+        std::string HostHeader = request.getHeaderValue("Host");
+        serverInfo info =
+            get_the_server_info_for_the_client(HostHeader, client, infos);
+
+        // TODO ////////////////////////////////////////////////////
+        // then responde with the proper thing after checking if  //
+        // the methode is allowed using the Location class        //
+        ////////////////////////////////////////////////////////////
+
+        std::string response;
+        std::string root = info.root;
+        std::string const& loc = request.getLocation();
+        map<string, Location>& locations = info.locations;
+        map<string, Location>::const_iterator it = locations.find(loc);
+
+        if (it == locations.end()) {
+            response = HttpResponse::send_file(loc, info.root, info.error_page)
+                           .build();
+        } else {
+            Location route = it->second;
+            const std::string& method = request.getMethod();
+
+            if (is_part_of_root(root, loc) &&
+                is_dir(tools::url_path_correction(root, loc)) &&
+                route.autoindex) {
+                response = HttpResponse::generate_indexing(
+                               tools::url_path_correction(root, loc), loc)
+                               .build();
+            } else {
+                if (route.index.size() >= 1) {
+                    cerr << "[DEBUG] handle indexes\n";
+                    response = HttpResponse::index_response(
+                                   route.index, info.root, info.error_page)
+                                   .build();
+                } else if (route.index.empty() && route.ret_rn.size() == 1) {
+                    assert(route.ret_rn.size() == 1);
+                    pair<int, string> ret = *route.ret_rn.begin();
+                    cout << "[DEBUG] redirect " << ret.first << " "
+                         << ret.second << '\n';
+
+                    response =
+                        handle_redirection(ret.first, ret.second).build();
+                } else {
+                    cerr << "[ERROR] no index + no return \n";
+                    exit(1);
+                }
+            }
+        }
+        // cout << "[DEBUG] response start\n";
+        // cout << response << '\n';
+        // cout << "[DEBUG] response end\n";
+        client.write(response.data(), response.size());
     }
 }

@@ -45,5 +45,9 @@ class HttpResponse {
 
     static HttpResponse redirect_moved_response(std::string const& location);
     static HttpResponse redirect_found_response(std::string const& location);
-    static HttpResponse index_response(std::vector<std::string> index, std::string root, std::map<int, std::string> error_pages);
+    static HttpResponse index_response(std::vector<std::string> index,
+                                       std::string root,
+                                       std::map<int, std::string> error_pages);
+    static HttpResponse generate_indexing(std::string dir,
+                                          std::string location);
 };

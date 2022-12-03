@@ -1,5 +1,27 @@
 #include "tools.hpp"
 
+std::vector<std::string> tools::list_files_in_dir(std::string path) {
+    assert(is_dir(path));
+    DIR* dir = opendir(path.c_str());
+
+    if (dir == NULL) {
+        // TODO think about it
+        std::cerr << "[ERROR] open dir function failed\n";
+        assert(false);
+        return std::vector<std::string>();
+    }
+
+    std::vector<std::string> files;
+    struct dirent* file;
+    while ((file = readdir(dir))) {
+        if (file->d_name[0] == '.')
+            continue;
+        files.push_back(file->d_name);
+    }
+    closedir(dir);
+    return (files);
+}
+
 std::string tools::url_path_correction(std::string a, std::string b) {
     std::string::iterator it = a.begin();
     std::string::iterator ite = a.end();
@@ -25,9 +47,16 @@ std::string tools::url_path_correction(std::string a, std::string b) {
 bool tools::is_part_of_root(std::string root, std::string location) {
     assert(root.size() < PATH_MAX && location.size() < PATH_MAX);
     char actualpath[PATH_MAX + 1];
-    char* ptr = realpath(location.c_str(), actualpath);
+    std::cout << "[SAAD] " << tools::url_path_correction(root, location)
+              << '\n';
+    char* ptr =
+        realpath(url_path_correction(root, location).c_str(), actualpath);
     if (ptr == NULL) {
-        std::cerr << "actualpath function failed\n";
+        return false;
+        // TODO besure
+        std::cerr << "[ERROR] realpath function failed\n";
+        std::cerr << "[ERROR] root == " << root << '\n';
+        std::cerr << "[ERROR] location == " << location << '\n';
         assert(false);
     }
     std::string actual_path(actualpath);

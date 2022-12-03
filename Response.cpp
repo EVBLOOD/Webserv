@@ -6,6 +6,24 @@
 #include <string>
 #include "tools.hpp"
 
+HttpResponse HttpResponse::generate_indexing(std::string dir,
+                                             std::string location) {
+    std::vector<std::string> body;
+    std::vector<std::string> files = tools::list_files_in_dir(dir);
+
+    std::cout << "[OUSSAMA] " << files.size() << '\n';
+    for (size_t i = 0; i < files.size(); ++i) {
+        std::cout << "[SAAD] " << location << " " << files[i] << " "
+                  << tools::url_path_correction(location, files[i]) << '\n';
+        body.push_back("<a href='" +
+                       tools::url_path_correction(location, files[i]) +
+                       "'><h1>" + files[i] + "</h1></a>");
+    }
+    return HttpResponse(200, "1.1", "OK")
+        .add_to_body(body)
+        .add_content_type(".html");
+}
+
 HttpResponse::HttpResponse(int status, std::string version, std::string action)
     : _status(status),
       _content_length(0),
@@ -87,6 +105,8 @@ std::string HttpResponse::get_content_type(std::string location) {
             content_type = "application/javascript";
         } else if (ext == ".css") {
             content_type = "text/css";
+        } else if (ext == ".ico") {
+            content_type = "image/x-icon";
         }
     }
     // application/EDI-X12
@@ -170,13 +190,12 @@ HttpResponse HttpResponse::send_file(std::string path,
                                      std::string root,
                                      std::map<int, std::string> error_pages) {
     std::string full_path = tools::url_path_correction(root, path);
-
     std::cout << "[DEBUG] location " << path << '\n';
     std::cout << "[DEBUG] full path " << full_path << '\n';
     if (!tools::is_dir(full_path) && !tools::is_file(full_path)) {
         return error_response(404, root + error_pages[404]);
     }
-    if (!tools::is_part_of_root(root, full_path) ||
+    if (!tools::is_part_of_root(root, path) ||
         (tools::is_file_readable(full_path) == false)) {
         return error_response(403, root + error_pages[403]);
     }
@@ -201,8 +220,10 @@ HttpResponse HttpResponse::index_response(
     std::vector<std::string> index,
     std::string root,
     std::map<int, std::string> error_pages) {
+    // TODO think about it
     assert(error_pages.size() != 0);
     if (index.size() == 0) {
+        // TODO same
         assert(error_pages.find(404) != error_pages.end());
         return error_response(404, error_pages[404]);
     }
@@ -216,10 +237,5 @@ HttpResponse HttpResponse::index_response(
     }
     if (it == it_nd)
         it = index.begin();
-    return HttpResponse::send_file("/" + *it, root, error_pages);
+    return HttpResponse::send_file(*it, root, error_pages);
 }
-//  int _status;
-//    std::string _version;
-//    std::string _action;
-//    std::map<std::string, std::string> _headers;
-//    std::vector<std::string> _body;

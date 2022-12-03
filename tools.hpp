@@ -5,6 +5,7 @@
 #pragma once
 
 #include <assert.h>
+#include <dirent.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -15,6 +16,8 @@
 #include <vector>
 
 namespace tools {
+
+std::vector<std::string> list_files_in_dir(std::string path);
 
 std::string url_path_correction(std::string a, std::string b);
 
