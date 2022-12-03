@@ -153,10 +153,32 @@ void handle_requests(Kqueue& event_queue,
     cout << "[INFO] the client comming from {host, port} == {"
          << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
-    cout << "[INFO] reading the request" << std::endl;
-    std::array<char, 1024> buffer;
+    cout << "[INFO] reading the request ..." << std::endl;
+    std::array<char, 4096> buffer;
     buffer.fill(0);
-    if (client.read(buffer.data(), buffer.size()) <= 0) {
+    std::string request_str;
+    ssize_t ret = 0;
+    loop {
+        if ((ret = client.read(buffer.data(), buffer.size()) <= 0)) {
+            break;
+        }
+        request_str += std::string(buffer.data());
+        cout << "[DEBUG] return value of read is " << ret
+             << " size of the request is " << request_str.size() << '\n';
+        if (request_str.size() > 2 &&
+            request_str.substr(request_str.size() - 2, request_str.size()) ==
+                "\r\n") {
+            break;
+        }
+        cout << "[INFO] reading the request ..." << std::endl;
+    }
+    request_str += std::string(buffer.data());
+    cout << "[DEBUG] return value is " << ret << " size of the request is "
+         << request_str.size() << '\n';
+    if ((request_str.size() == 0 && ret == 0) || ret < 0) {
+        if (ret < 0) {
+            cerr << "[ERRRO] read error\n";
+        }
         event_queue.detach(&client);
         client.shutdown();
     } else {
@@ -169,6 +191,13 @@ void handle_requests(Kqueue& event_queue,
             cout << "[INFO] parsing the request" << std::endl;
             // PARSING REQUEST
             HttpRequest request = HttpRequest(buffer.data());
+            {
+                if (request.getHeaderValue("Content-Length") != "") {
+                    cerr << "[TODO] handling request with a body -- checking "
+                            "if the body size is equal to Content-Length\n";
+                    assert(false);
+                }
+            }
             //////////////////
             // PARSE HOST HEADER FROM THE REQUEST
             std::string HostHeader = request.getHeaderValue("Host");
@@ -209,13 +238,6 @@ void handle_requests(Kqueue& event_queue,
                     if (route.autoindex) {
                         // TODO handle auto index on
                     } else {
-                        {
-                            vector<string>::iterator it = route.index.begin();
-                            while (it != route.index.end()) {
-                                cout << "[DEBUG] " << *it << '\n';
-                                ++it;
-                            }
-                        }
                         if (route.index.size() >= 1) {
                             cerr << "[DEBUG] handle index\n";
                             response =
