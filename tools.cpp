@@ -1,5 +1,35 @@
 #include "tools.hpp"
 
+bool tools::is_part_of_root(std::string root, std::string location) {
+    assert(root.size() < PATH_MAX && location.size() < PATH_MAX);
+    char actualpath[PATH_MAX + 1];
+    char* ptr = realpath(location.c_str(), actualpath);
+    if (ptr == NULL) {
+        std::cerr << "actualpath function failed\n";
+        assert(false);
+    }
+    std::string actual_path(actualpath);
+    if (actual_path.length() < root.length()) {
+        return false;
+    }
+    if (actual_path.substr(0, root.size()) != root) {
+        return false;
+    }
+    return true;
+}
+
+bool tools::is_dir(std::string path) {
+    struct stat path_stat;
+    stat(path.c_str(), &path_stat);
+    return S_ISDIR(path_stat.st_mode);
+}
+
+bool tools::is_file(std::string path) {
+    struct stat path_stat;
+    stat(path.c_str(), &path_stat);
+    return S_ISREG(path_stat.st_mode);
+}
+
 std::vector<std::string> tools::split(std::string str, std::string del) {
     std::vector<std::string> res;
     size_t pos = 0;
