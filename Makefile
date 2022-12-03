@@ -19,10 +19,28 @@ SRCS =  main.cpp\
 		parsing/serverInfo.cpp\
 		parsing/tokengen.cpp\
 
+
+SRCS_TEST =  tests.cpp\
+			Request.cpp\
+			tools.cpp\
+			Response.cpp\
+			socket/TcpStream.cpp\
+			socket/kqueue.cpp\
+			socket/tcpListener.cpp\
+			parsing/location.cpp\
+			parsing/parser.cpp\
+			parsing/serverInfo.cpp\
+			parsing/tokengen.cpp\
+
+
 all: $(NAME)
 
 extra: 
 	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra
+
+test: $(TEST)
+	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
+	./$(NAME)_test 
 
 run: all 
 	@./$(NAME)
@@ -36,5 +54,6 @@ clean:
 fclean: clean
 	@rm -rf $(NAME)
 	@rm -rf $(NAME)_extra
+	@rm -rf $(NAME)_test
 
 re: fclean all

@@ -1,5 +1,27 @@
 #include "tools.hpp"
 
+std::string tools::url_path_correction(std::string a, std::string b) {
+    std::string::iterator it = a.begin();
+    std::string::iterator ite = a.end();
+    std::string result = std::string();
+    while (it != ite) {
+        if (result.empty() || result.back() != '/' || result.back() != *it)
+            result += *it;
+        it++;
+        ;
+    }
+    if (result.size() && result.back() != '/')
+        result += '/';
+    ite = b.end();
+    it = b.begin();
+    while (it != ite) {
+        if (result.empty() || result.back() != '/' || result.back() != *it)
+            result += *it;
+        it++;
+    }
+    return result;
+}
+
 bool tools::is_part_of_root(std::string root, std::string location) {
     assert(root.size() < PATH_MAX && location.size() < PATH_MAX);
     char actualpath[PATH_MAX + 1];

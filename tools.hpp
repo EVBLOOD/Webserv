@@ -16,6 +16,8 @@
 
 namespace tools {
 
+std::string url_path_correction(std::string a, std::string b);
+
 bool is_part_of_root(std::string root, std::string location);
 
 bool is_dir(std::string path);
