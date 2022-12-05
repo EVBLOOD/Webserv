@@ -34,7 +34,7 @@ enum KEYEGN { context_server, context_location, simpledir };
 #define L "upload_enable"         // let's download not apload default == nope!
 #define M "upload_store"          // place to put your stuff in
 #define N "server_name"           // place to put your stuff in
-
+#include <stdio.h>
 parser::parser(const std::string& filename) {
     config.open(filename);          // open file
     if (config.is_open() == false)  // protection mode: file opened?
@@ -235,6 +235,4 @@ std::vector<serverInfo> parser::lexer_to_data(std::list<tokengen> lexer) {
     return servers;
 }
 
-parser::~parser() {
-    config.close();
-}
+parser::~parser() {}

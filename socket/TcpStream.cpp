@@ -4,9 +4,10 @@
 TcpStream::TcpStream(int fd, const TcpListener& owner)
     : _fd(fd), _owner(owner){};
 
-void TcpStream::shutdown() {
-    _owner.delete_client(this);
-};
+void shutdown_helper(int fd) {
+    shutdown(fd, SHUT_RDWR);
+    close(fd);
+}
 
 size_t TcpStream::read(char* buff, size_t size) const {
     assert(_fd != -1);
@@ -23,7 +24,7 @@ int TcpStream::get_raw_fd() const {
 }
 
 TcpStream::~TcpStream() {
-    close(_fd);
+    shutdown_helper(_fd);
 }
 
 std::string TcpStream::get_port() const {

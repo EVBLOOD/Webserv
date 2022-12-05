@@ -11,17 +11,23 @@ TcpListener::TcpListener(std::string host, std::string port)
     infos hints;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_protocol = IPPROTO_TCP;  // I think I can remove this one!
-    hints.ai_flags = AI_PASSIVE;
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &addr) == -1) {
+    hints.ai_protocol = IPPROTO_TCP;  // I think I can remove this one!
+    hints.ai_flags = AI_PASSIVE;
+    int ireturn = ::getaddrinfo(host.c_str(), port.c_str(), &hints, &addr);
+    if (ireturn == -1) {
         std::cerr << "get info is joking!\n";
         exit(1);
     }
     _fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+    std::cout << "{SAAD IS A LIER} " << _fd << '\n';
     int enable = 1;
-    setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+    if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) ==
+        -1) {
+        std::cerr << "Setsockopt failed" << strerror(errno) << std::endl;
+        exit(-1);
+    }
     if (bind(_fd, addr->ai_addr, addr->ai_addrlen) == -1) {
         std::cerr << "bind is joking!\n";
         exit(1);
@@ -49,19 +55,10 @@ TcpStream& TcpListener::accept() const {
         exit(1);
     }
     TcpStream* new_client = new TcpStream(client_sockfd, *this);
-    _clients.push_back(new_client);
     return *(new_client);
 };
 
 TcpListener::~TcpListener() {}
-
-void TcpListener::delete_client(TcpStream* client) const {
-    std::vector<TcpStream*>::iterator it =
-        std::find(_clients.begin(), _clients.end(), client);
-    assert(it != _clients.end());
-    delete client;
-    _clients.erase(it);
-}
 
 std::string TcpListener::get_port() const {
     return _port;

@@ -1,6 +1,6 @@
 NAME = Webserver
 
-CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98 
+CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98
 CXXFLAGS_EXTRA = -Wall -Wextra -Wshadow -std=c++98 -Wuninitialized -Wconversion -fsanitize=address,undefined
 
 CXX = c++
@@ -41,6 +41,12 @@ extra:
 test: $(TEST)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
 	./$(NAME)_test 
+
+
+fast: $(NAME) $(SRCS)
+	c++ $(CXXFLAGS) $(SRCS) -O2 -DFAST -o $(NAME)_fast
+	./$(NAME)_fast 
+
 
 run: all 
 	@./$(NAME)

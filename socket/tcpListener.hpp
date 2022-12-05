@@ -34,7 +34,6 @@ class TcpListener : public IListener {
     int _fd;
     std::string _port;
     std::string _host;
-    mutable std::vector<TcpStream*> _clients;
 
    public:
     std::string get_port() const;

@@ -11,12 +11,10 @@
 
 class Kqueue {
     int _kdata;
-    std::vector<struct kevent> _change;
     std::map<uintptr_t, IListener*> _listeners;
 
    private:
     int get_kdata();
-    std::vector<struct kevent> get_targets();
     IListener& get_listener(int ident);
     std::pair<int, struct kevent*> get_kevents();
 

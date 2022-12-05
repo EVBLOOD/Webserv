@@ -13,20 +13,34 @@
 
 #define loop for (;;)
 using namespace tools;
+using std::array;
 using std::cerr;
 using std::cout;
+using std::endl;
+using std::list;
 using std::map;
 using std::pair;
 using std::set;
 using std::string;
 using std::vector;
 
-void handle_new_connection(Kqueue& kq, TcpListener* server);
+void print(std::string& type, std::string msg) {
+    cout << "[" << type << "] " << msg << '\n';
+}
+
+void print(std::string msg) {
+    cout << msg << '\n';
+}
+
+void handle_new_connection(Kqueue& kq,
+                           TcpListener* server,
+                           map<pair<string, string>, serverInfo>& infos);
+
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
-                     map<pair<string, string>, serverInfo> infos);
+                     map<pair<string, string>, serverInfo>& infos);
 
-HttpResponse handle_redirection(int status, std::string location) {
+HttpResponse handle_redirection(int status, string location) {
     if (status == 302)
         return HttpResponse::redirect_found_response(location);
     else if (status == 301)
@@ -37,7 +51,7 @@ HttpResponse handle_redirection(int status, std::string location) {
 }
 
 serverInfo get_the_server_info_for_the_client(
-    std::string HostHeader,
+    string HostHeader,
     TcpStream& client,
     map<pair<string, string>, serverInfo>& server_infos) {
     // PARSE HOST HEADER FROM THE REQUEST
@@ -48,8 +62,8 @@ serverInfo get_the_server_info_for_the_client(
     // TODO handle not having both the host and port in Host
     assert(tmp.size() <= 2);
 
-    std::string host = trim(tmp.at(0), " ");
-    std::string port;
+    string host = trim(tmp.at(0), " ");
+    string port;
     if (tmp.size() != 1)
         port = trim(tmp.at(1), " ");
 
@@ -63,17 +77,20 @@ serverInfo get_the_server_info_for_the_client(
     }
 
     map<pair<string, string>, serverInfo>::iterator it =
-        server_infos.find(std::make_pair(port, host));
+        server_infos.find(make_pair(port, host));
     if (it == server_infos.end())
         return server_infos.at(make_pair(port, ""));
     return it->second;
 }
 
 int main() {
+#ifdef FAST
+    cout.rdbuf(NULL);
+    cerr.rdbuf(NULL);
+#endif
     parser file("conf");
-    std::list<tokengen> tokens = file.generate();
-    std::vector<serverInfo> servers_info = file.lexer_to_data(tokens);
-
+    list<tokengen> tokens = file.generate();
+    vector<serverInfo> servers_info = file.lexer_to_data(tokens);
     Kqueue event_queue;
 
     set<pair<string, string> > already_bounded;
@@ -81,12 +98,13 @@ int main() {
     for (size_t i = 0; i < servers_info.size(); ++i) {
         for (size_t j = 0; j < servers_info[i].port.size(); ++j) {
             serverInfo& ser = servers_info[i];
-            std::string& host = ser.host;
-            std::string& port = ser.port[j];
+            string& host = ser.host;
+            string& port = ser.port[j];
             if (already_bounded.insert(make_pair(host, port)).second) {
                 cout << "[INFO] binding and attaching {host, port} == {" << host
                      << "," << port << "}" << '\n';
-                event_queue.attach(new TcpListener(host, port));
+                IListener* server = new TcpListener(host, port);
+                event_queue.attach(server);
             }
         }
     }
@@ -103,15 +121,20 @@ int main() {
     }
     loop {
         cout << "[INFO] waiting for events ....\n";
-        std::vector<IListener*> events = event_queue.get_events();
+        vector<IListener*> events = event_queue.get_events();
+        assert(events.size() != 0);
+        cerr << "first " << events[0]->get_raw_fd() << '\n';
+        if (events.size() == 2) {
+            cerr << "second " << events[1]->get_raw_fd() << '\n';
+        }
         cout << "[INFO] handling events\n";
-        cout << "       ---> number of events ready for IO : " << events.size()
+        cerr << "       ---> number of events ready for IO : " << events.size()
              << '\n';
-        while (events.size()) {
+        while (events.size() != 0) {
             IListener* event = events.back();
             if (dynamic_cast<TcpListener*>(event)) {
                 handle_new_connection(event_queue,
-                                      dynamic_cast<TcpListener*>(event));
+                                      dynamic_cast<TcpListener*>(event), infos);
             } else {
                 handle_requests(event_queue, *dynamic_cast<TcpStream*>(event),
                                 infos);
@@ -121,34 +144,35 @@ int main() {
     }
 }
 
-void handle_new_connection(Kqueue& kq, TcpListener* server) {
+void handle_new_connection(Kqueue& event_queue,
+                           TcpListener* server,
+                           map<pair<string, string>, serverInfo>& infos) {
     TcpStream& client = server->accept();
-    cout << "----------------------------------------------------\n";
     cout << "[INFO] the server with {host, port} == {" << server->get_host()
          << "," << server->get_port() << "}" << '\n';
     cout << "       ---> is accepting a new connection\n";
     cout << "[INFO] attaching the newly accepted client\n";
-    cout << "----------------------------------------------------\n";
-    kq.attach(&client);
+    // kq.attach(&client);
+    handle_requests(event_queue, client, infos);
 }
 
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
-                     map<pair<string, string>, serverInfo> infos) {
+                     map<pair<string, string>, serverInfo>& infos) {
     cout << "----------------------------------------------------\n";
     cout << "[INFO] the client comming from {host, port} == {"
          << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
-    cout << "[INFO] reading the request ..." << std::endl;
-    std::array<char, 4096> buffer;
-    std::string request_str;
+    cout << "[INFO] reading the request ..." << endl;
+    array<char, 4096> buffer;
+    string request_str;
     ssize_t ret = 0;
     loop {
         buffer.fill(0);
         if ((ret = client.read(buffer.data(), buffer.size()) <= 0)) {
             break;
         }
-        request_str += std::string(buffer.data());
+        request_str += string(buffer.data());
         cout << "[DEBUG] return value of read is " << ret
              << " size of the request is " << request_str.size() << '\n';
         if (request_str.size() > 2 &&
@@ -156,7 +180,7 @@ void handle_requests(Kqueue& event_queue,
                 "\r\n") {
             break;
         }
-        cout << "[INFO] reading the request ..." << std::endl;
+        cout << "[INFO] reading the request ..." << endl;
     }
     cout << "[DEBUG] return value is " << ret << " size of the request is "
          << request_str.size() << '\n';
@@ -165,14 +189,15 @@ void handle_requests(Kqueue& event_queue,
             cerr << "[ERRRO] read error\n";
         }
         event_queue.detach(&client);
-        client.shutdown();
+        delete &client;
     } else {
         cout << "[DEBUG] request start\n";
         cout << buffer.data();
         cout << "[DEBUG] request end\n";
 
-        cout << "[INFO] parsing the request" << std::endl;
+        cout << "[INFO] parsing the request" << endl;
         HttpRequest request = HttpRequest(buffer.data());
+
         {
             if (request.getHeaderValue("Content-Length") != "") {
                 cerr << "[TODO] handling request with a body -- checking "
@@ -181,7 +206,7 @@ void handle_requests(Kqueue& event_queue,
             }
         }
 
-        std::string HostHeader = request.getHeaderValue("Host");
+        string HostHeader = request.getHeaderValue("Host");
         serverInfo info =
             get_the_server_info_for_the_client(HostHeader, client, infos);
 
@@ -190,9 +215,9 @@ void handle_requests(Kqueue& event_queue,
         // the methode is allowed using the Location class        //
         ////////////////////////////////////////////////////////////
 
-        std::string response;
-        std::string root = info.root;
-        std::string const& loc = request.getLocation();
+        string response;
+        string root = info.root;
+        string const& loc = request.getLocation();
         map<string, Location>& locations = info.locations;
         map<string, Location>::const_iterator it = locations.find(loc);
 
@@ -201,7 +226,7 @@ void handle_requests(Kqueue& event_queue,
                            .build();
         } else {
             Location route = it->second;
-            const std::string& method = request.getMethod();
+            const string& method = request.getMethod();
 
             if (is_part_of_root(root, loc) &&
                 is_dir(tools::url_path_correction(root, loc)) &&
@@ -211,7 +236,7 @@ void handle_requests(Kqueue& event_queue,
                                .build();
             } else {
                 if (route.index.size() >= 1) {
-                    cerr << "[DEBUG] handle indexes\n";
+                    cout << "[DEBUG] handle indexes\n";
                     response = HttpResponse::index_response(
                                    route.index, info.root, info.error_page)
                                    .build();
@@ -233,5 +258,13 @@ void handle_requests(Kqueue& event_queue,
         // cout << response << '\n';
         // cout << "[DEBUG] response end\n";
         client.write(response.data(), response.size());
+        {
+            if (request.getHeaderValue("Connection") == "keep-alive") {
+                cout << "[INFO] keep-alive request\n";
+                event_queue.attach(&client);
+            } else {
+                delete &client;
+            }
+        }
     }
 }

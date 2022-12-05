@@ -1,6 +1,8 @@
 server
 {
 	listen          8080;
+	listen          9090;
+	listen          9091;
 
 	host localhost;
 
