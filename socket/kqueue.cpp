@@ -28,12 +28,17 @@ void Kqueue::attach(IListener* listener) {
 };
 
 void Kqueue::detach(IListener* listener) {
+    assert(listener != NULL);
+    std::map<uintptr_t, IListener*>::iterator it = _listeners.find(listener->get_raw_fd());
+    if (it == _listeners.end()) {
+        return;
+    }
     struct kevent evSet;
     bzero(&evSet, sizeof(struct kevent));
     EV_SET(&evSet, listener->get_raw_fd(), EVFILT_READ | EVFILT_WRITE,
            EV_DELETE, 0, 0, 0);
     kevent(_kdata, &evSet, 1, NULL, 0, 0);
-    _listeners.erase(_listeners.find(listener->get_raw_fd()));
+    _listeners.erase(it);
 };
 
 std::pair<int, struct kevent*> Kqueue::get_kevents() {
@@ -41,6 +46,7 @@ std::pair<int, struct kevent*> Kqueue::get_kevents() {
     memset(ev.data(), 0, ev.size() * sizeof(struct kevent));
     int number_of_events =
         kevent(_kdata, NULL, 0, ev.data(), _listeners.size(), NULL);
+    
     std::cerr << "number_of_events ASSSD " << number_of_events << '\n';
     if (number_of_events == -1) {
         perror("Error");
@@ -61,6 +67,7 @@ std::vector<IListener*> Kqueue::get_events() {
         exit(11);
     }
     for (int i = 0; i < number_of_events; i++) {
+        std::cout << "[SAAAD] " << events.second[i].udata << '\n';
         ret.push_back(_listeners[events.second[i].ident]);
     }
     return ret;

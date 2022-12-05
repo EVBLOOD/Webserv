@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstdio>
 #include <iostream>
 #include <set>
 #include "Request.hpp"
@@ -81,6 +83,9 @@ serverInfo get_the_server_info_for_the_client(
     if (it == server_infos.end())
         return server_infos.at(make_pair(port, ""));
     return it->second;
+}
+void printc(char c) {
+    printf("[%c] [%u] [%d]\n", c, c, c);
 }
 
 int main() {
@@ -169,7 +174,7 @@ void handle_requests(Kqueue& event_queue,
     ssize_t ret = 0;
     loop {
         buffer.fill(0);
-        if ((ret = client.read(buffer.data(), buffer.size()) <= 0)) {
+        if (((ret = client.read(buffer.data(), buffer.size())) <= 4096)) {
             break;
         }
         request_str += string(buffer.data());
@@ -184,7 +189,8 @@ void handle_requests(Kqueue& event_queue,
     }
     cout << "[DEBUG] return value is " << ret << " size of the request is "
          << request_str.size() << '\n';
-    if ((request_str.size() == 0 && ret == 0) || ret < 0) {
+    if (ret <= 0) {
+        cerr << "[ERRRO] read <= 0\n";
         if (ret < 0) {
             cerr << "[ERRRO] read error\n";
         }
@@ -192,7 +198,10 @@ void handle_requests(Kqueue& event_queue,
         delete &client;
     } else {
         cout << "[DEBUG] request start\n";
-        cout << buffer.data();
+        for (int i = 0;i < ret;++i) {
+            printc(buffer.data()[i]);
+        }
+        cout << "{" <<buffer.data() << "}" << '\n';
         cout << "[DEBUG] request end\n";
 
         cout << "[INFO] parsing the request" << endl;
