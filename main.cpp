@@ -26,13 +26,13 @@ using std::set;
 using std::string;
 using std::vector;
 
-void print(std::string& type, std::string msg) {
-    cout << "[" << type << "] " << msg << '\n';
-}
+// void print(std::string& type, std::string msg) {
+//     cout << "[" << type << "] " << msg << '\n';
+// }
 
-void print(std::string msg) {
-    cout << msg << '\n';
-}
+// void print(std::string msg) {
+//     cout << msg << '\n';
+// }
 
 void handle_new_connection(Kqueue& kq,
                            TcpListener* server,
@@ -84,9 +84,9 @@ serverInfo get_the_server_info_for_the_client(
         return server_infos.at(make_pair(port, ""));
     return it->second;
 }
-void printc(char c) {
-    printf("[%c] [%u] [%d]\n", c, c, c);
-}
+// void printc(char c) {
+//     printf("[%c] [%u] [%d]\n", c, c, c);
+// }
 
 int main() {
 #ifdef FAST
@@ -198,68 +198,78 @@ void handle_requests(Kqueue& event_queue,
         delete &client;
     } else {
         cout << "[DEBUG] request start\n";
-        for (int i = 0;i < ret;++i) {
-            printc(buffer.data()[i]);
-        }
-        cout << "{" <<buffer.data() << "}" << '\n';
+        // for (int i = 0; i < ret; ++i) {
+        //     printc(buffer.data()[i]);
+        // }
+        cout << "{" << buffer.data() << "}" << '\n';
         cout << "[DEBUG] request end\n";
 
         cout << "[INFO] parsing the request" << endl;
-        HttpRequest request = HttpRequest(buffer.data());
-
-        {
-            if (request.getHeaderValue("Content-Length") != "") {
-                cerr << "[TODO] handling request with a body -- checking "
-                        "if the body size is equal to Content-Length\n";
-                assert(false);
-            }
-        }
-
-        string HostHeader = request.getHeaderValue("Host");
-        serverInfo info =
-            get_the_server_info_for_the_client(HostHeader, client, infos);
-
-        // TODO ////////////////////////////////////////////////////
-        // then responde with the proper thing after checking if  //
-        // the methode is allowed using the Location class        //
-        ////////////////////////////////////////////////////////////
 
         string response;
-        string root = info.root;
-        string const& loc = request.getLocation();
-        map<string, Location>& locations = info.locations;
-        map<string, Location>::const_iterator it = locations.find(loc);
-
-        if (it == locations.end()) {
-            response = HttpResponse::send_file(loc, info.root, info.error_page)
+        HttpRequest request = HttpRequest(buffer.data());
+        if (request.error()) {
+            response = HttpResponse(403, "1.1", "Forbiden")
+                           .add_content_type(".html")
+                           .add_to_body("<h>404</h>")
                            .build();
+            cout << "SAAD SSAD" << response << '\n';
         } else {
-            Location route = it->second;
-            const string& method = request.getMethod();
+            {
+                if (request.getHeaderValue("Content-Length") != "") {
+                    cerr << "[TODO] handling request with a body -- checking "
+                            "if the body size is equal to Content-Length\n";
+                    assert(false);
+                }
+            }
 
-            if (is_part_of_root(root, loc) &&
-                is_dir(tools::url_path_correction(root, loc)) &&
-                route.autoindex) {
-                response = HttpResponse::generate_indexing(
-                               tools::url_path_correction(root, loc), loc)
-                               .build();
+            string HostHeader = request.getHeaderValue("Host");
+            serverInfo info =
+                get_the_server_info_for_the_client(HostHeader, client, infos);
+
+            // TODO ////////////////////////////////////////////////////
+            // then responde with the proper thing after checking if  //
+            // the methode is allowed using the Location class        //
+            ////////////////////////////////////////////////////////////
+
+            string root = info.root;
+            string const& loc = request.getLocation();
+            map<string, Location>& locations = info.locations;
+            map<string, Location>::const_iterator it = locations.find(loc);
+
+            if (it == locations.end()) {
+                response =
+                    HttpResponse::send_file(loc, info.root, info.error_page)
+                        .build();
             } else {
-                if (route.index.size() >= 1) {
-                    cout << "[DEBUG] handle indexes\n";
-                    response = HttpResponse::index_response(
-                                   route.index, info.root, info.error_page)
-                                   .build();
-                } else if (route.index.empty() && route.ret_rn.size() == 1) {
-                    assert(route.ret_rn.size() == 1);
-                    pair<int, string> ret = *route.ret_rn.begin();
-                    cout << "[DEBUG] redirect " << ret.first << " "
-                         << ret.second << '\n';
+                Location route = it->second;
+                const string& method = request.getMethod();
 
-                    response =
-                        handle_redirection(ret.first, ret.second).build();
+                if (is_part_of_root(root, loc) &&
+                    is_dir(tools::url_path_correction(root, loc)) &&
+                    route.autoindex) {
+                    response = HttpResponse::generate_indexing(
+                                   tools::url_path_correction(root, loc), loc)
+                                   .build();
                 } else {
-                    cerr << "[ERROR] no index + no return \n";
-                    exit(1);
+                    if (route.index.size() >= 1) {
+                        cout << "[DEBUG] handle indexes\n";
+                        response = HttpResponse::index_response(
+                                       route.index, info.root, info.error_page)
+                                       .build();
+                    } else if (route.index.empty() &&
+                               route.ret_rn.size() == 1) {
+                        assert(route.ret_rn.size() == 1);
+                        pair<int, string> ret = *route.ret_rn.begin();
+                        cout << "[DEBUG] redirect " << ret.first << " "
+                             << ret.second << '\n';
+
+                        response =
+                            handle_redirection(ret.first, ret.second).build();
+                    } else {
+                        cerr << "[ERROR] no index + no return \n";
+                        exit(1);
+                    }
                 }
             }
         }
@@ -268,6 +278,8 @@ void handle_requests(Kqueue& event_queue,
         // cout << "[DEBUG] response end\n";
         client.write(response.data(), response.size());
         {
+            if (request.error())
+                return;
             if (request.getHeaderValue("Connection") == "keep-alive") {
                 cout << "[INFO] keep-alive request\n";
                 event_queue.attach(&client);

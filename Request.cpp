@@ -16,16 +16,28 @@
 // std::vector<std::string> _body;
 
 HttpRequest::HttpRequest(std::string request)
-    : _raw(), _method(), _location(), _version(), _headers(), _body() {
+    : _raw(),
+      _method(),
+      _location(),
+      _version(),
+      _headers(),
+      _body(),
+      _error(false) {
     assert(trim(" abc ", " ") == "abc");
     assert(trim("\nabc\n", "\n") == "abc");
     assert(trim("\rabc\r", "\r") == "abc");
     assert(trim("\rabc\n", "\r\n") == "abc");
     _raw = request;
+    if (request[0] == '\0' || request.size() == 0) {
+        _error = true;
+        return;
+    }
     std::vector<std::string> splited = split(request, "\n");
-
     std::vector<std::string> first_line = split(splited[0], " ");
-    assert(first_line.size() == 3);
+    if (first_line.size() != 3) {
+        _error = true;
+        return;
+    }
     _method = first_line[0];
     _location = first_line[1];
     _version = first_line[2];
@@ -64,6 +76,10 @@ void HttpRequest::dump() {
          iter != _body.end(); ++iter) {
         std::cout << *iter << "\n";
     }
+}
+
+bool HttpRequest::error() {
+    return _error;
 }
 
 std::string HttpRequest::getRawData() {

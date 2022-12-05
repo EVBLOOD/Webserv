@@ -3,3 +3,4 @@ per
 *.o
 Webserver
 a.out
+conf

@@ -3,8 +3,8 @@
 #include "socket_header.hpp"
 #include "tools.hpp"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace tools;
 
@@ -16,20 +16,21 @@ using namespace tools;
 //     "<ul><li>13</li>\r\n"
 //     "<li>37</li></ul>\r\n";
 
-//enum Method {
-//    GET, POST, PUT, DELETE
-//};
+// enum Method {
+//     GET, POST, PUT, DELETE
+// };
 
 class HttpRequest {
-private:
+   private:
     std::string _raw;
     std::string _method;
     std::string _location;
     std::string _version;
-    std::map <std::string, std::string> _headers;
-    std::vector <std::string> _body;
+    std::map<std::string, std::string> _headers;
+    std::vector<std::string> _body;
+    bool _error;
 
-public:
+   public:
     explicit HttpRequest(std::string request);
 
     std::string getMethod();
@@ -40,9 +41,11 @@ public:
 
     std::string getHeaderValue(std::string key);
 
-    std::vector <std::string> getBody();
+    std::vector<std::string> getBody();
 
     std::string getRawData();
+
+    bool error();
 
     void dump();
 };
