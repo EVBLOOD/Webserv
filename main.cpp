@@ -208,8 +208,7 @@ void handle_requests(Kqueue& event_queue,
         HttpRequest request = HttpRequest(request_str);
         if (request.error()) {
             cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
-            event_queue.detach(&client);
-            delete &client;
+         
             response = HttpResponse(403, "1.1", "Forbiden")
                            .add_content_type(".html")
                            .add_to_body("<h>404</h>")
@@ -280,7 +279,9 @@ void handle_requests(Kqueue& event_queue,
         client.write(response.data(), response.size());
         {
             if (request.error())
-                return;
+             {  event_queue.detach(&client);
+            delete &client;
+                return;}
             if (request.getHeaderValue("Connection") == "keep-alive") {
                 cout << G(INFO) << " keep-alive request\n";
                 event_queue.attach(&client);
