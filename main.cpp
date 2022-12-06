@@ -129,12 +129,20 @@ int main() {
     loop {
         cout << G(INFO) << " waiting for events ....\n";
         pair<IListener&, Kevent> event = event_queue.get_event();
+        IListener& listener = event.first;
         Kevent kv = event.second;
 
+        if (kv.flags & EV_EOF) {
+            event_queue.detach(&listener);
+            if (dynamic_cast<TcpListener*>(&listener)) {
+                delete dynamic_cast<TcpListener*>(&listener);
+            } else {
+                delete dynamic_cast<TcpStream*>(&listener);
+            }
+            continue;
+        }
         IF_NOT(kv.flags & (EVFILT_READ | EVFILT_WRITE)) continue;
 
-        IListener& listener = event.first;
-        // Kevent kv = event.second;
         cout << G(INFO) << " handling events\n";
         if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
@@ -167,7 +175,7 @@ void handle_requests(Kqueue& event_queue,
     cout << "       ---> is ready for IO\n";
     cout << G(INFO) << " reading the request .." << endl;
     array<char, 4096> buffer;
-    string request_str = std::string();
+    string request_str;
     ssize_t ret = 0;
     loop {
         buffer.fill(0);
@@ -180,7 +188,7 @@ void handle_requests(Kqueue& event_queue,
              << " size of the request is " << request_str.size() << '\n';
         cout << G(INFO) << " still reading the request ..." << endl;
     }
-    cout << G(DEBUG) << "  " << G(DEBUG) << " return value is " << ret << " size of the request is "
+    cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret << " size of the request is "
          << request_str.size() << '\n';
     if (ret <= 0) {
         cerr << G(ERROR) << " read glob errors\n";
@@ -199,6 +207,9 @@ void handle_requests(Kqueue& event_queue,
         string response;
         HttpRequest request = HttpRequest(request_str);
         if (request.error()) {
+            cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
+            event_queue.detach(&client);
+            delete &client;
             response = HttpResponse(403, "1.1", "Forbiden")
                            .add_content_type(".html")
                            .add_to_body("<h>404</h>")

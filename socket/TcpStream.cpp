@@ -5,15 +5,12 @@
 TcpStream::TcpStream(int fd, const TcpListener& owner)
     : _fd(fd), _owner(owner){};
 
-void shutdown_helper(int fd) {
-    shutdown(fd, SHUT_RDWR);
-    close(fd);
-}
+
 
 size_t TcpStream::read(char* buff, size_t size) const {
     assert(_fd != -1);
     // MSG_TRUNC | MSG_DONTWAIT
-    return recv(_fd, buff, size, MSG_CONNTERM);
+    return recv(_fd, buff, size, MSG_CONNTERM | MSG_DONTWAIT);
 };
 
 size_t TcpStream::write(const char* const buff, size_t size) const {
@@ -25,6 +22,10 @@ int TcpStream::get_raw_fd() const {
     return _fd;
 }
 
+static void shutdown_helper(int fd) {
+    shutdown(fd, SHUT_RDWR);
+    close(fd);
+}
 TcpStream::~TcpStream() {
     shutdown_helper(_fd);
 }

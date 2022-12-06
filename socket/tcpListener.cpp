@@ -3,6 +3,16 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
+
+static void shutdown_helper(int fd) {
+    shutdown(fd, SHUT_RDWR);
+    close(fd);
+}
+
+TcpListener::~TcpListener() {
+    shutdown_helper(_fd);
+}
+
 // EX :: TcpListener("localhost", "8080")
 TcpListener::TcpListener(std::string host, std::string port)
     : _port(port), _host(host) {
@@ -56,8 +66,6 @@ TcpStream& TcpListener::accept() const {
     TcpStream* new_client = new TcpStream(client_sockfd, *this);
     return *(new_client);
 };
-
-TcpListener::~TcpListener() {}
 
 std::string TcpListener::get_port() const {
     return _port;
