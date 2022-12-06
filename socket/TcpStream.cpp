@@ -1,6 +1,7 @@
 #include "TcpStream.hpp"
 #include <sys/socket.h>
 
+#define MSG_CONNTERM  0x80
 TcpStream::TcpStream(int fd, const TcpListener& owner)
     : _fd(fd), _owner(owner){};
 
@@ -11,7 +12,8 @@ void shutdown_helper(int fd) {
 
 size_t TcpStream::read(char* buff, size_t size) const {
     assert(_fd != -1);
-    return recv(_fd, buff, size, 0);
+    // MSG_TRUNC | MSG_DONTWAIT
+    return recv(_fd, buff, size, MSG_CONNTERM);
 };
 
 size_t TcpStream::write(const char* const buff, size_t size) const {

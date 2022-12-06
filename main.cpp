@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 #include <set>
+#include <string>
 #include "Request.hpp"
 #include "Response.hpp"
 #include "parsing/location.hpp"
@@ -164,46 +165,39 @@ void handle_requests(Kqueue& event_queue,
     cout << G(INFO) << " the client comming from {host, port} == {"
          << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
-    cout << G(INFO) << " reading the request ..." << endl;
+    cout << G(INFO) << " reading the request .." << endl;
     array<char, 4096> buffer;
-    string request_str;
+    string request_str = std::string();
     ssize_t ret = 0;
     loop {
         buffer.fill(0);
-        if (((ret = client.read(buffer.data(), buffer.size())) <= 4096)) {
+        if ((ret = client.read(buffer.data(), buffer.size())) < 4096) {
+            request_str += string(buffer.data());
             break;
         }
         request_str += string(buffer.data());
         cout << G(DEBUG) << " return value of read is " << ret
              << " size of the request is " << request_str.size() << '\n';
-        if (request_str.size() > 2 &&
-            request_str.substr(request_str.size() - 2, request_str.size()) ==
-                "\r\n") {
-            break;
-        }
-        cout << G(INFO) << " reading the request ..." << endl;
+        cout << G(INFO) << " still reading the request ..." << endl;
     }
-    cout << G(DEBUG) << " return value is " << ret << " size of the request is "
+    cout << G(DEBUG) << "  " << G(DEBUG) << " return value is " << ret << " size of the request is "
          << request_str.size() << '\n';
     if (ret <= 0) {
-        cerr << G(ERROR) << " read <= 0\n";
+        cerr << G(ERROR) << " read glob errors\n";
         if (ret < 0) {
-            cerr << G(ERROR) << " read error\n";
+            cerr << G(ERROR) << " read error !\n";
         }
         event_queue.detach(&client);
         delete &client;
     } else {
-        cout << G(DEBUG) << " request start\n";
-        // for (int i = 0; i < ret; ++i) {
-        //     printc(buffer.data()[i]);
-        // }
-        cout << "{" << buffer.data() << "}" << '\n';
-        cout << G(DEBUG) << " request end\n";
+        // cout << G(DEBUG) << " request start\n";
+        // cout << "----\n" << request_str << "-----\n" << '\n';
+        // cout << G(DEBUG) << " request end\n";
 
-        cout << G(INFO) << " parsing the request " << endl;
+        cout << G(INFO) << " parsing the request started " << endl;
 
         string response;
-        HttpRequest request = HttpRequest(buffer.data());
+        HttpRequest request = HttpRequest(request_str);
         if (request.error()) {
             response = HttpResponse(403, "1.1", "Forbiden")
                            .add_content_type(".html")

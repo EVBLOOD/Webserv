@@ -33,6 +33,11 @@ HttpRequest::HttpRequest(std::string request)
         return;
     }
     std::vector<std::string> splited = split(request, "\n");
+    if (splited.size() == 0)
+    {
+        _error = true;
+        return;
+    }
     std::vector<std::string> first_line = split(splited[0], " ");
     if (first_line.size() != 3) {
         _error = true;
