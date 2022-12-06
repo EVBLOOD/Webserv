@@ -29,7 +29,8 @@ void Kqueue::attach(IListener* listener) {
 
 void Kqueue::detach(IListener* listener) {
     assert(listener != NULL);
-    std::map<uintptr_t, IListener*>::iterator it = _listeners.find(listener->get_raw_fd());
+    std::map<uintptr_t, IListener*>::iterator it =
+        _listeners.find(listener->get_raw_fd());
     if (it == _listeners.end()) {
         return;
     }
@@ -46,7 +47,7 @@ std::pair<int, struct kevent*> Kqueue::get_kevents() {
     memset(ev.data(), 0, ev.size() * sizeof(struct kevent));
     int number_of_events =
         kevent(_kdata, NULL, 0, ev.data(), _listeners.size(), NULL);
-    
+
     std::cerr << "number_of_events ASSSD " << number_of_events << '\n';
     if (number_of_events == -1) {
         perror("Error");
@@ -70,5 +71,42 @@ std::vector<IListener*> Kqueue::get_events() {
         std::cout << "[SAAAD] " << events.second[i].udata << '\n';
         ret.push_back(_listeners[events.second[i].ident]);
     }
+    return ret;
+};
+
+std::pair<IListener&, Kevent> Kqueue::get_event() {
+    Kevent kv;
+    memset(&kv, 0, sizeof(Kevent));
+    if (kevent(_kdata, NULL, 0, &kv, 1, NULL) == -1) {
+        std::cerr << "Error : " << strerror(errno) << '\n';
+        exit(1);
+    }
+    {
+        // TODO SHOULD BE REMOVED FOR TESTING ONLY
+        std::cout << "{DEBUG} THE FFLAGS IS " << kv.fflags << '\n';
+        std::cout << "{DEBUG} THE FILTER IS " << kv.filter << '\n';
+        std::cout << "{DEBUG} THE FLAGS IS " << kv.flags << '\n';
+        std::cout << "{DEBUG} THE DATA IS " << kv.data << '\n';
+
+        if (kv.flags & EV_EOF) {
+            std::cerr << "EV_EOF\n";
+            assert(false);
+        }
+
+        if (kv.flags & (EVFILT_READ | EVFILT_WRITE)) {
+            std::cerr << "(EVFILT_READ | EVFILT_WRITE)\n";
+        }
+
+        if (kv.flags & EVFILT_READ) {
+            std::cerr << "EVFILT_READ\n";
+        }
+
+        if (kv.flags & EVFILT_WRITE) {
+            std::cerr << "EVFILT_WRITE\n";
+            assert(false);
+        }
+    }
+
+    std::pair<IListener&, Kevent> ret(get_listener(kv.ident), kv);
     return ret;
 };

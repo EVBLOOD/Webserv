@@ -9,6 +9,8 @@
 #include <vector>
 #include "listener_interface.hpp"
 
+typedef struct kevent Kevent;
+
 class Kqueue {
     int _kdata;
     std::map<uintptr_t, IListener*> _listeners;
@@ -21,6 +23,7 @@ class Kqueue {
    public:
     Kqueue();
     std::vector<IListener*> get_events();
+    std::pair<IListener&, Kevent> get_event();
     void attach(IListener* listener);
     void detach(IListener* listener);
 };

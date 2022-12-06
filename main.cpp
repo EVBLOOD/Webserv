@@ -14,6 +14,7 @@
 #include "tools.hpp"
 
 #define loop for (;;)
+#define IF_NOT(cond) if (!(cond))
 using namespace tools;
 using std::array;
 using std::cerr;
@@ -126,25 +127,20 @@ int main() {
     }
     loop {
         cout << "[INFO] waiting for events ....\n";
-        vector<IListener*> events = event_queue.get_events();
-        assert(events.size() != 0);
-        cerr << "first " << events[0]->get_raw_fd() << '\n';
-        if (events.size() == 2) {
-            cerr << "second " << events[1]->get_raw_fd() << '\n';
-        }
+        pair<IListener&, Kevent> event = event_queue.get_event();
+        Kevent kv = event.second;
+
+        IF_NOT(kv.flags & (EVFILT_READ | EVFILT_WRITE)) continue;
+
+        IListener& listener = event.first;
+        // Kevent kv = event.second;
         cout << "[INFO] handling events\n";
-        cerr << "       ---> number of events ready for IO : " << events.size()
-             << '\n';
-        while (events.size() != 0) {
-            IListener* event = events.back();
-            if (dynamic_cast<TcpListener*>(event)) {
-                handle_new_connection(event_queue,
-                                      dynamic_cast<TcpListener*>(event), infos);
-            } else {
-                handle_requests(event_queue, *dynamic_cast<TcpStream*>(event),
-                                infos);
-            }
-            events.pop_back();
+        if (dynamic_cast<TcpListener*>(&listener)) {
+            handle_new_connection(event_queue,
+                                  dynamic_cast<TcpListener*>(&listener), infos);
+        } else {
+            handle_requests(event_queue, *dynamic_cast<TcpStream*>(&listener),
+                            infos);
         }
     }
 }
