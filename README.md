@@ -2,11 +2,12 @@
 This project is about writing an HTTP server.
 # TODO
 - [X]  every array pointer should be a vector
-- [ ]  should check the list of hosts for response if the port have multiple owners
-- [ ]  take location turn it into ===> route
-- [ ]  auto index
-- [ ]  multiple ports
-- [ ]  multiple index file
+- [X]  should check the list of hosts for response if the port have multiple owners
+- [X]  take location turn it into ===> route
+- [X]  auto index
+- [X]  multiple ports
+- [X]  multiple index file
 - [ ]  changing root
-- [ ]  adding content - length
+- [X]  adding content - length
+- [ ]  URL - correction should take one string (ex : "/url//test///" => "/url/test")
 

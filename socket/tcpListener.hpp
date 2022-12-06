@@ -27,6 +27,8 @@ typedef struct sockaddr_storage storage;
 #define SOMAXCONN 128
 #endif
 
+#include "../tools.hpp"
+using namespace tools;
 #include "TcpStream.hpp"
 #include "listener_interface.hpp"
 class TcpStream;

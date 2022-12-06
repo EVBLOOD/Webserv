@@ -17,6 +17,15 @@
 
 namespace tools {
 
+enum {
+    DEBUG,
+    INFO,
+    ERROR,
+    TODO,
+};
+
+std::string G(int level);
+
 std::vector<std::string> list_files_in_dir(std::string path);
 
 std::string url_path_correction(std::string a, std::string b);

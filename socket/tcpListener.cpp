@@ -21,7 +21,6 @@ TcpListener::TcpListener(std::string host, std::string port)
         exit(1);
     }
     _fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-    std::cout << "{SAAD IS A LIER} " << _fd << '\n';
     int enable = 1;
     if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) ==
         -1) {
@@ -50,7 +49,7 @@ int accept_helper(int fd) {
 TcpStream& TcpListener::accept() const {
     int client_sockfd = accept_helper(_fd);
     if (client_sockfd == -1) {
-        std::cerr << "[ERROR] accept function failed : " << strerror(errno)
+        std::cerr << G(ERROR) << " accept function failed : " << strerror(errno)
                   << '\n';
         exit(1);
     }

@@ -83,10 +83,10 @@ std::pair<IListener&, Kevent> Kqueue::get_event() {
     }
     {
         // TODO SHOULD BE REMOVED FOR TESTING ONLY
-        std::cout << "{DEBUG} THE FFLAGS IS " << kv.fflags << '\n';
-        std::cout << "{DEBUG} THE FILTER IS " << kv.filter << '\n';
-        std::cout << "{DEBUG} THE FLAGS IS " << kv.flags << '\n';
-        std::cout << "{DEBUG} THE DATA IS " << kv.data << '\n';
+        // std::cout << "{DEBUG} THE FFLAGS IS " << kv.fflags << '\n';
+        // std::cout << "{DEBUG} THE FILTER IS " << kv.filter << '\n';
+        // std::cout << "{DEBUG} THE FLAGS IS " << kv.flags << '\n';
+        // std::cout << "{DEBUG} THE DATA IS " << kv.data << '\n';
 
         if (kv.flags & EV_EOF) {
             std::cerr << "EV_EOF\n";

@@ -107,8 +107,8 @@ int main() {
             string& host = ser.host;
             string& port = ser.port[j];
             if (already_bounded.insert(make_pair(host, port)).second) {
-                cout << "[INFO] binding and attaching {host, port} == {" << host
-                     << "," << port << "}" << '\n';
+                cout << G(INFO) << " binding and attaching {host, port} == {"
+                     << host << "," << port << "}" << '\n';
                 IListener* server = new TcpListener(host, port);
                 event_queue.attach(server);
             }
@@ -126,7 +126,7 @@ int main() {
         }
     }
     loop {
-        cout << "[INFO] waiting for events ....\n";
+        cout << G(INFO) << " waiting for events ....\n";
         pair<IListener&, Kevent> event = event_queue.get_event();
         Kevent kv = event.second;
 
@@ -134,7 +134,7 @@ int main() {
 
         IListener& listener = event.first;
         // Kevent kv = event.second;
-        cout << "[INFO] handling events\n";
+        cout << G(INFO) << " handling events\n";
         if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
                                   dynamic_cast<TcpListener*>(&listener), infos);
@@ -149,10 +149,10 @@ void handle_new_connection(Kqueue& event_queue,
                            TcpListener* server,
                            map<pair<string, string>, serverInfo>& infos) {
     TcpStream& client = server->accept();
-    cout << "[INFO] the server with {host, port} == {" << server->get_host()
-         << "," << server->get_port() << "}" << '\n';
+    cout << G(INFO) << " the server with {host, port} == {"
+         << server->get_host() << "," << server->get_port() << "}" << '\n';
     cout << "       ---> is accepting a new connection\n";
-    cout << "[INFO] attaching the newly accepted client\n";
+    cout << G(INFO) << " attaching the newly accepted client\n";
     // kq.attach(&client);
     handle_requests(event_queue, client, infos);
 }
@@ -161,10 +161,10 @@ void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo>& infos) {
     cout << "----------------------------------------------------\n";
-    cout << "[INFO] the client comming from {host, port} == {"
+    cout << G(INFO) << " the client comming from {host, port} == {"
          << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
-    cout << "[INFO] reading the request ..." << endl;
+    cout << G(INFO) << " reading the request ..." << endl;
     array<char, 4096> buffer;
     string request_str;
     ssize_t ret = 0;
@@ -174,33 +174,33 @@ void handle_requests(Kqueue& event_queue,
             break;
         }
         request_str += string(buffer.data());
-        cout << "[DEBUG] return value of read is " << ret
+        cout << G(DEBUG) << " return value of read is " << ret
              << " size of the request is " << request_str.size() << '\n';
         if (request_str.size() > 2 &&
             request_str.substr(request_str.size() - 2, request_str.size()) ==
                 "\r\n") {
             break;
         }
-        cout << "[INFO] reading the request ..." << endl;
+        cout << G(INFO) << " reading the request ..." << endl;
     }
-    cout << "[DEBUG] return value is " << ret << " size of the request is "
+    cout << G(DEBUG) << " return value is " << ret << " size of the request is "
          << request_str.size() << '\n';
     if (ret <= 0) {
-        cerr << "[ERRRO] read <= 0\n";
+        cerr << G(ERROR) << " read <= 0\n";
         if (ret < 0) {
-            cerr << "[ERRRO] read error\n";
+            cerr << G(ERROR) << " read error\n";
         }
         event_queue.detach(&client);
         delete &client;
     } else {
-        cout << "[DEBUG] request start\n";
+        cout << G(DEBUG) << " request start\n";
         // for (int i = 0; i < ret; ++i) {
         //     printc(buffer.data()[i]);
         // }
         cout << "{" << buffer.data() << "}" << '\n';
-        cout << "[DEBUG] request end\n";
+        cout << G(DEBUG) << " request end\n";
 
-        cout << "[INFO] parsing the request" << endl;
+        cout << G(INFO) << " parsing the request " << endl;
 
         string response;
         HttpRequest request = HttpRequest(buffer.data());
@@ -209,11 +209,11 @@ void handle_requests(Kqueue& event_queue,
                            .add_content_type(".html")
                            .add_to_body("<h>404</h>")
                            .build();
-            cout << "SAAD SSAD" << response << '\n';
         } else {
             {
                 if (request.getHeaderValue("Content-Length") != "") {
-                    cerr << "[TODO] handling request with a body -- checking "
+                    cerr << G(TODO)
+                         << " handling request with a body -- checking "
                             "if the body size is equal to Content-Length\n";
                     assert(false);
                 }
@@ -249,7 +249,7 @@ void handle_requests(Kqueue& event_queue,
                                    .build();
                 } else {
                     if (route.index.size() >= 1) {
-                        cout << "[DEBUG] handle indexes\n";
+                        cout << G(DEBUG) << "handle indexes\n";
                         response = HttpResponse::index_response(
                                        route.index, info.root, info.error_page)
                                        .build();
@@ -257,13 +257,13 @@ void handle_requests(Kqueue& event_queue,
                                route.ret_rn.size() == 1) {
                         assert(route.ret_rn.size() == 1);
                         pair<int, string> ret = *route.ret_rn.begin();
-                        cout << "[DEBUG] redirect " << ret.first << " "
+                        cout << G(DEBUG) << " redirect " << ret.first << " "
                              << ret.second << '\n';
 
                         response =
                             handle_redirection(ret.first, ret.second).build();
                     } else {
-                        cerr << "[ERROR] no index + no return \n";
+                        cerr << G(ERROR) << " no index + no return \n";
                         exit(1);
                     }
                 }
@@ -277,7 +277,7 @@ void handle_requests(Kqueue& event_queue,
             if (request.error())
                 return;
             if (request.getHeaderValue("Connection") == "keep-alive") {
-                cout << "[INFO] keep-alive request\n";
+                cout << G(INFO) << " keep-alive request\n";
                 event_queue.attach(&client);
             } else {
                 delete &client;

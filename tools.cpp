@@ -1,12 +1,26 @@
 #include "tools.hpp"
 
+std::string tools::G(int level) {
+    switch (level) {
+        case DEBUG:
+            return "\033[1;32m[DEBUG]\033[0m";
+        case INFO:
+            return "\033[1;36m[INFO]\033[0m";
+        case ERROR:
+            return "\033[1;31m[ERROR]\033[0m";
+        case TODO:
+            return "\033[1;34m[ERROR]\033[0m";
+    }
+    return "\033[1;32m[DEBUG]\033[0m";
+}
+
 std::vector<std::string> tools::list_files_in_dir(std::string path) {
     assert(is_dir(path));
     DIR* dir = opendir(path.c_str());
 
     if (dir == NULL) {
         // TODO think about it
-        std::cerr << "[ERROR] open dir function failed\n";
+        std::cerr << G(ERROR) << " open dir function failed\n";
         assert(false);
         return std::vector<std::string>();
     }
