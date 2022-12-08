@@ -166,13 +166,7 @@ void handle_new_connection(Kqueue& event_queue,
     handle_requests(event_queue, client, infos);
 }
 
-void handle_requests(Kqueue& event_queue,
-                     TcpStream& client,
-                     map<pair<string, string>, serverInfo>& infos) {
-    cout << G(INFO) << " the client comming from {host, port} == {"
-         << client.get_host() << "," << client.get_port() << "}" << '\n';
-    cout << "       ---> is ready for IO\n";
-    cout << G(INFO) << " reading the request .." << endl;
+pair<string, ssize_t> read_request(const TcpStream& client) {
     array<char, 4096> buffer;
     string request_str;
     ssize_t ret = 0;
@@ -187,10 +181,24 @@ void handle_requests(Kqueue& event_queue,
              << " size of the request is " << request_str.size() << '\n';
         cout << G(INFO) << " still reading the request ..." << endl;
     }
+    return make_pair(request_str, ret);
+}
+
+void handle_requests(Kqueue& event_queue,
+                     TcpStream& client,
+                     map<pair<string, string>, serverInfo>& infos) {
+    cout << G(INFO) << " the client comming from {host, port} == {"
+         << client.get_host() << "," << client.get_port() << "}" << '\n';
+    cout << "       ---> is ready for IO\n";
+    cout << G(INFO) << " reading the request .." << endl;
+
+    pair<string, ssize_t> p = read_request(client);
+    const string& request_str = p.first;
+    ssize_t ret = p.second;
     cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret
          << " size of the request is " << request_str.size() << '\n';
+
     if (ret <= 0) {
-        cerr << G(ERROR) << " read glob errors\n";
         if (ret < 0) {
             cerr << G(ERROR) << " read error !\n";
         }
@@ -198,7 +206,7 @@ void handle_requests(Kqueue& event_queue,
         delete &client;
     } else {
         cout << G(DEBUG) << " request start\n";
-        cout << "----\n" << request_str << "-----\n" << '\n';
+        cout << "----\n" << request_str << "\n-----\n" << '\n';
         cout << G(DEBUG) << " request end\n";
 
         cout << G(INFO) << " parsing the request started " << endl;
@@ -213,15 +221,6 @@ void handle_requests(Kqueue& event_queue,
                            .add_to_body("<h>404</h>")
                            .build();
         } else {
-            {
-                if (request.getHeaderValue("Content-Length") != "") {
-                    cerr << G(TODO)
-                         << " handling request with a body -- checking "
-                            "if the body size is equal to Content-Length\n";
-                    assert(false);
-                }
-            }
-
             string HostHeader = request.getHeaderValue("Host");
             serverInfo info =
                 get_the_server_info_for_the_client(HostHeader, client, infos);
@@ -250,59 +249,79 @@ void handle_requests(Kqueue& event_queue,
                 }
             } else {
                 Location route = it->second;
-                if (find(route.allow_methods.begin(), route.allow_methods.end(),
-                         method) == route.allow_methods.end()) {
-                    response =
-                        HttpResponse::error_response(405, info.error_page[405])
-                            .build();
-
-                } else {
-                    if (is_part_of_root(root, loc) &&
-                        is_dir(tools::url_path_correction(root, loc)) &&
-                        route.autoindex) {
-                        response =
-                            HttpResponse::generate_indexing(
-                                tools::url_path_correction(root, loc), loc)
-                                .build();
-                    } else {
-                        if (route.index.size() >= 1) {
-                            cout << G(DEBUG) << "handle indexes\n";
-                            response =
-                                HttpResponse::index_response(
-                                    route.index, info.root, info.error_page)
-                                    .build();
-                        } else if (route.index.empty() &&
-                                   route.ret_rn.size() == 1) {
-                            assert(route.ret_rn.size() == 1);
-                            pair<int, string> ret = *route.ret_rn.begin();
-                            cout << G(DEBUG) << " redirect " << ret.first << " "
-                                 << ret.second << '\n';
-
-                            response = handle_redirection(ret.first, ret.second)
+                if (request.getHeaderValue("Content-Length") != "") {
+                    if (request.getMethod() == "POST" && route.upload_enable) {
+                        if (find(route.allow_methods.begin(),
+                                 route.allow_methods.end(),
+                                 method) == route.allow_methods.end()) {
+                            response = HttpResponse::error_response(
+                                           405, info.error_page[405])
                                            .build();
                         } else {
-                            cerr << G(ERROR) << " no index + no return \n";
-                            exit(1);
+                            return;
+                        }
+                    } else {
+                        if (find(route.allow_methods.begin(),
+                                 route.allow_methods.end(),
+                                 method) == route.allow_methods.end()) {
+                            response = HttpResponse::error_response(
+                                           405, info.error_page[405])
+                                           .build();
+
+                        } else {
+                            if (is_part_of_root(root, loc) &&
+                                is_dir(tools::url_path_correction(root, loc)) &&
+                                route.autoindex) {
+                                response =
+                                    HttpResponse::generate_indexing(
+                                        tools::url_path_correction(root, loc),
+                                        loc)
+                                        .build();
+                            } else {
+                                if (route.index.size() >= 1) {
+                                    cout << G(DEBUG) << "handle indexes\n";
+                                    response = HttpResponse::index_response(
+                                                   route.index, info.root,
+                                                   info.error_page)
+                                                   .build();
+                                } else if (route.index.empty() &&
+                                           route.ret_rn.size() == 1) {
+                                    assert(route.ret_rn.size() == 1);
+                                    pair<int, string> ret =
+                                        *route.ret_rn.begin();
+                                    cout << G(DEBUG) << " redirect "
+                                         << ret.first << " " << ret.second
+                                         << '\n';
+
+                                    response = handle_redirection(ret.first,
+                                                                  ret.second)
+                                                   .build();
+                                } else {
+                                    cerr << G(ERROR)
+                                         << " no index + no return \n";
+                                    exit(1);
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-        // cout << "[DEBUG] response start\n";
-        // cout << response << '\n';
-        // cout << "[DEBUG] response end\n";
-        client.write(response.data(), response.size());
-        {
-            if (request.error()) {
-                event_queue.detach(&client);
-                delete &client;
-                return;
-            }
-            if (request.getHeaderValue("Connection") == "keep-alive") {
-                cout << G(INFO) << " keep-alive request\n";
-                event_queue.attach(&client);
-            } else {
-                delete &client;
+            // cout << "[DEBUG] response start\n";
+            // cout << response << '\n';
+            // cout << "[DEBUG] response end\n";
+            client.write(response.data(), response.size());
+            {
+                if (request.error()) {
+                    event_queue.detach(&client);
+                    delete &client;
+                    return;
+                }
+                if (request.getHeaderValue("Connection") == "keep-alive") {
+                    cout << G(INFO) << " keep-alive request\n";
+                    event_queue.attach(&client);
+                } else {
+                    delete &client;
+                }
             }
         }
     }
