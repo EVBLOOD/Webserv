@@ -10,4 +10,5 @@ This project is about writing an HTTP server.
 - [ ]  changing root
 - [X]  adding content - length
 - [ ]  URL - correction should take one string (ex : "/url//test///" => "/url/test")
+- [ ]  make everything in request and response (headers) case insensitive
 

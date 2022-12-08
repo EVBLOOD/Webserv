@@ -171,6 +171,8 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
         action = "Not Found";
     } else if (status == 403) {
         action = "Forbidden";
+    } else if (status == 405) {
+        action = "Method Not Allowed";
     } else {
         std::cerr << "[ERROR] unknown status code\n";
         exit(1);
