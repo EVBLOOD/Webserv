@@ -188,8 +188,8 @@ void handle_requests(Kqueue& event_queue,
              << " size of the request is " << request_str.size() << '\n';
         cout << G(INFO) << " still reading the request ..." << endl;
     }
-    cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret << " size of the request is "
-         << request_str.size() << '\n';
+    cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret
+         << " size of the request is " << request_str.size() << '\n';
     if (ret <= 0) {
         cerr << G(ERROR) << " read glob errors\n";
         if (ret < 0) {
@@ -205,10 +205,10 @@ void handle_requests(Kqueue& event_queue,
         cout << G(INFO) << " parsing the request started " << endl;
 
         string response;
-        HttpRequest request = HttpRequest(request_str);
+        HttpRequest request(request_str);
         if (request.error()) {
             cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
-         
+
             response = HttpResponse(403, "1.1", "Forbiden")
                            .add_content_type(".html")
                            .add_to_body("<h>404</h>")
@@ -278,10 +278,11 @@ void handle_requests(Kqueue& event_queue,
         // cout << "[DEBUG] response end\n";
         client.write(response.data(), response.size());
         {
-            if (request.error())
-             {  event_queue.detach(&client);
-            delete &client;
-                return;}
+            if (request.error()) {
+                event_queue.detach(&client);
+                delete &client;
+                return;
+            }
             if (request.getHeaderValue("Connection") == "keep-alive") {
                 cout << G(INFO) << " keep-alive request\n";
                 event_queue.attach(&client);
