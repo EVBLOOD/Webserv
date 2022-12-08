@@ -17,7 +17,7 @@ server
 	error_page 502 /errors/502.html;
 
 
-	root /Users/sakllam/Desktop/weserv1/public;
+	root /Users/sakllam/Desktop/Webserv/public;
 
 	location /
 	{
@@ -25,7 +25,7 @@ server
 		index hi index.html;
 
 		autoindex off;
-		allow_methods GET POST DELETE;
+		allow_methods GET;
 	}
 
     location /dir {
@@ -40,27 +40,27 @@ server
 
 	location /return
 	{
-		allow_methods GET POST DELETE;
+		allow_methods GET;
 		return 302 /;
 	}
 
 	location *.php
 	{
-		allow_methods GET POST;
+		allow_methods GET;
 
 		fastcgi_pass /Users/orahmoun/.brew/bin/php-cgi;
 	}
 
 	location *.py
 	{
-		allow_methods GET POST;
+		allow_methods GET;
 
 		fastcgi_pass /usr/bin/python;
 	}
 
 	location /upload
 	{
-		allow_methods POST GET;
+		allow_methods GET;
 		upload_enable on;
 		upload_store /upload;
 	}
@@ -82,10 +82,11 @@ server
 
 	error_page 403 /public/errors/403.html;
 	error_page 404 /public/errors/404.html;
+	error_page 405 /public/errors/404.html;
 	error_page 500 /public/errors/500.html;
 	error_page 502 /public/errors/502.html;
 
-	root /Users/sakllam/Desktop/weserv1;
+	root /Users/sakllam/Desktop/Webserv;
 
 	location /
 	{

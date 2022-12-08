@@ -161,15 +161,14 @@ void handle_new_connection(Kqueue& event_queue,
     cout << G(INFO) << " the server with {host, port} == {"
          << server->get_host() << "," << server->get_port() << "}" << '\n';
     cout << "       ---> is accepting a new connection\n";
-    cout << G(INFO) << " attaching the newly accepted client\n";
-    // kq.attach(&client);
+    cout << "----------------------------------------------------\n";
+    cout << G(INFO) << " handling the newly accepted client\n";
     handle_requests(event_queue, client, infos);
 }
 
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo>& infos) {
-    cout << "----------------------------------------------------\n";
     cout << G(INFO) << " the client comming from {host, port} == {"
          << client.get_host() << "," << client.get_port() << "}" << '\n';
     cout << "       ---> is ready for IO\n";
@@ -188,8 +187,8 @@ void handle_requests(Kqueue& event_queue,
              << " size of the request is " << request_str.size() << '\n';
         cout << G(INFO) << " still reading the request ..." << endl;
     }
-    cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret << " size of the request is "
-         << request_str.size() << '\n';
+    cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret
+         << " size of the request is " << request_str.size() << '\n';
     if (ret <= 0) {
         cerr << G(ERROR) << " read glob errors\n";
         if (ret < 0) {
@@ -198,9 +197,9 @@ void handle_requests(Kqueue& event_queue,
         event_queue.detach(&client);
         delete &client;
     } else {
-        // cout << G(DEBUG) << " request start\n";
-        // cout << "----\n" << request_str << "-----\n" << '\n';
-        // cout << G(DEBUG) << " request end\n";
+        cout << G(DEBUG) << " request start\n";
+        cout << "----\n" << request_str << "-----\n" << '\n';
+        cout << G(DEBUG) << " request end\n";
 
         cout << G(INFO) << " parsing the request started " << endl;
 
@@ -208,7 +207,7 @@ void handle_requests(Kqueue& event_queue,
         HttpRequest request = HttpRequest(request_str);
         if (request.error()) {
             cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
-         
+
             response = HttpResponse(403, "1.1", "Forbiden")
                            .add_content_type(".html")
                            .add_to_body("<h>404</h>")
@@ -236,39 +235,55 @@ void handle_requests(Kqueue& event_queue,
             string const& loc = request.getLocation();
             map<string, Location>& locations = info.locations;
             map<string, Location>::const_iterator it = locations.find(loc);
+            const string& method = request.getMethod();
+            cout << G(INFO) << " " << method << "\n";
 
             if (it == locations.end()) {
-                response =
-                    HttpResponse::send_file(loc, info.root, info.error_page)
-                        .build();
+                if (method == "GET") {
+                    response =
+                        HttpResponse::send_file(loc, info.root, info.error_page)
+                            .build();
+                } else {
+                    response =
+                        HttpResponse::error_response(405, info.error_page[405])
+                            .build();
+                }
             } else {
                 Location route = it->second;
-                const string& method = request.getMethod();
+                if (find(route.allow_methods.begin(), route.allow_methods.end(),
+                         method) == route.allow_methods.end()) {
+                    response =
+                        HttpResponse::error_response(405, info.error_page[405])
+                            .build();
 
-                if (is_part_of_root(root, loc) &&
-                    is_dir(tools::url_path_correction(root, loc)) &&
-                    route.autoindex) {
-                    response = HttpResponse::generate_indexing(
-                                   tools::url_path_correction(root, loc), loc)
-                                   .build();
                 } else {
-                    if (route.index.size() >= 1) {
-                        cout << G(DEBUG) << "handle indexes\n";
-                        response = HttpResponse::index_response(
-                                       route.index, info.root, info.error_page)
-                                       .build();
-                    } else if (route.index.empty() &&
-                               route.ret_rn.size() == 1) {
-                        assert(route.ret_rn.size() == 1);
-                        pair<int, string> ret = *route.ret_rn.begin();
-                        cout << G(DEBUG) << " redirect " << ret.first << " "
-                             << ret.second << '\n';
-
+                    if (is_part_of_root(root, loc) &&
+                        is_dir(tools::url_path_correction(root, loc)) &&
+                        route.autoindex) {
                         response =
-                            handle_redirection(ret.first, ret.second).build();
+                            HttpResponse::generate_indexing(
+                                tools::url_path_correction(root, loc), loc)
+                                .build();
                     } else {
-                        cerr << G(ERROR) << " no index + no return \n";
-                        exit(1);
+                        if (route.index.size() >= 1) {
+                            cout << G(DEBUG) << "handle indexes\n";
+                            response =
+                                HttpResponse::index_response(
+                                    route.index, info.root, info.error_page)
+                                    .build();
+                        } else if (route.index.empty() &&
+                                   route.ret_rn.size() == 1) {
+                            assert(route.ret_rn.size() == 1);
+                            pair<int, string> ret = *route.ret_rn.begin();
+                            cout << G(DEBUG) << " redirect " << ret.first << " "
+                                 << ret.second << '\n';
+
+                            response = handle_redirection(ret.first, ret.second)
+                                           .build();
+                        } else {
+                            cerr << G(ERROR) << " no index + no return \n";
+                            exit(1);
+                        }
                     }
                 }
             }
@@ -278,10 +293,11 @@ void handle_requests(Kqueue& event_queue,
         // cout << "[DEBUG] response end\n";
         client.write(response.data(), response.size());
         {
-            if (request.error())
-             {  event_queue.detach(&client);
-            delete &client;
-                return;}
+            if (request.error()) {
+                event_queue.detach(&client);
+                delete &client;
+                return;
+            }
             if (request.getHeaderValue("Connection") == "keep-alive") {
                 cout << G(INFO) << " keep-alive request\n";
                 event_queue.attach(&client);
