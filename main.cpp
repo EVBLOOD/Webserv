@@ -206,7 +206,7 @@ void handle_requests(Kqueue& event_queue,
         delete &client;
     } else {
         cout << G(DEBUG) << " request start\n";
-        cout << "----\n" << request_str << "\n-----\n" << '\n';
+        cout << "[" << request_str << "]" << '\n';
         cout << G(DEBUG) << " request end\n";
 
         cout << G(INFO) << " parsing the request started " << endl;
@@ -224,11 +224,6 @@ void handle_requests(Kqueue& event_queue,
             string HostHeader = request.getHeaderValue("Host");
             serverInfo info =
                 get_the_server_info_for_the_client(HostHeader, client, infos);
-
-            // TODO ////////////////////////////////////////////////////
-            // then responde with the proper thing after checking if  //
-            // the methode is allowed using the Location class        //
-            ////////////////////////////////////////////////////////////
 
             string root = info.root;
             string const& loc = request.getLocation();
@@ -258,6 +253,40 @@ void handle_requests(Kqueue& event_queue,
                                            405, info.error_page[405])
                                            .build();
                         } else {
+                            if (request.getHeaderValue("Content-Type")
+                                    .empty()) {
+                                response = HttpResponse::error_response(
+                                               400, info.error_page[405])
+                                               .build();
+                            } else {
+                                vector<string> content_type = split(
+                                    request.getHeaderValue("Content-Type"),
+                                    ";");
+                                if (content_type.size() != 2) {
+                                    cerr << "[ERROR] no boundry in content "
+                                            "type !!\n";
+                                    assert(false);
+                                } else {
+                                    // TODO SAAD
+                                    string multi_part = content_type.at(0);
+                                    string boundry = content_type.at(1);
+                                    cout << "[INFO] " << multi_part << " "
+                                         << boundry << '\n';
+                                    string boundry_value =
+                                        split(boundry, "=").at(1);
+                                    cout << "[INFO] "
+                                         << "boundry key " << boundry << '\n';
+                                    {
+                                        // TODO check if the body have the
+                                        // needed info
+                                    }
+                                    response =
+                                        HttpResponse::redirect_moved_response(
+                                            "upload.html")
+                                            .build();
+                                    // SAAD
+                                }
+                            }
                             return;
                         }
                     } else {
@@ -287,15 +316,16 @@ void handle_requests(Kqueue& event_queue,
                                 } else if (route.index.empty() &&
                                            route.ret_rn.size() == 1) {
                                     assert(route.ret_rn.size() == 1);
-                                    pair<int, string> ret =
+                                    pair<int, string> redirect =
                                         *route.ret_rn.begin();
                                     cout << G(DEBUG) << " redirect "
-                                         << ret.first << " " << ret.second
-                                         << '\n';
+                                         << redirect.first << " "
+                                         << redirect.second << '\n';
 
-                                    response = handle_redirection(ret.first,
-                                                                  ret.second)
-                                                   .build();
+                                    response =
+                                        handle_redirection(redirect.first,
+                                                           redirect.second)
+                                            .build();
                                 } else {
                                     cerr << G(ERROR)
                                          << " no index + no return \n";
