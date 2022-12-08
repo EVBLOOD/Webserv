@@ -289,69 +289,66 @@ void handle_requests(Kqueue& event_queue,
                             }
                             return;
                         }
+                    }
+                } else {
+                    if (find(route.allow_methods.begin(),
+                             route.allow_methods.end(),
+                             method) == route.allow_methods.end()) {
+                        response = HttpResponse::error_response(
+                                       405, info.error_page[405])
+                                       .build();
+
                     } else {
-                        if (find(route.allow_methods.begin(),
-                                 route.allow_methods.end(),
-                                 method) == route.allow_methods.end()) {
-                            response = HttpResponse::error_response(
-                                           405, info.error_page[405])
-                                           .build();
-
+                        if (is_part_of_root(root, loc) &&
+                            is_dir(tools::url_path_correction(root, loc)) &&
+                            route.autoindex) {
+                            response =
+                                HttpResponse::generate_indexing(
+                                    tools::url_path_correction(root, loc), loc)
+                                    .build();
                         } else {
-                            if (is_part_of_root(root, loc) &&
-                                is_dir(tools::url_path_correction(root, loc)) &&
-                                route.autoindex) {
+                            if (route.index.size() >= 1) {
+                                cout << G(DEBUG) << "handle indexes\n";
                                 response =
-                                    HttpResponse::generate_indexing(
-                                        tools::url_path_correction(root, loc),
-                                        loc)
+                                    HttpResponse::index_response(
+                                        route.index, info.root, info.error_page)
                                         .build();
-                            } else {
-                                if (route.index.size() >= 1) {
-                                    cout << G(DEBUG) << "handle indexes\n";
-                                    response = HttpResponse::index_response(
-                                                   route.index, info.root,
-                                                   info.error_page)
-                                                   .build();
-                                } else if (route.index.empty() &&
-                                           route.ret_rn.size() == 1) {
-                                    assert(route.ret_rn.size() == 1);
-                                    pair<int, string> redirect =
-                                        *route.ret_rn.begin();
-                                    cout << G(DEBUG) << " redirect "
-                                         << redirect.first << " "
-                                         << redirect.second << '\n';
+                            } else if (route.index.empty() &&
+                                       route.ret_rn.size() == 1) {
+                                assert(route.ret_rn.size() == 1);
+                                pair<int, string> redirect =
+                                    *route.ret_rn.begin();
+                                cout << G(DEBUG) << " redirect "
+                                     << redirect.first << " " << redirect.second
+                                     << '\n';
 
-                                    response =
-                                        handle_redirection(redirect.first,
-                                                           redirect.second)
-                                            .build();
-                                } else {
-                                    cerr << G(ERROR)
-                                         << " no index + no return \n";
-                                    exit(1);
-                                }
+                                response = handle_redirection(redirect.first,
+                                                              redirect.second)
+                                               .build();
+                            } else {
+                                cerr << G(ERROR) << " no index + no return \n";
+                                exit(1);
                             }
                         }
                     }
                 }
             }
-            // cout << "[DEBUG] response start\n";
-            // cout << response << '\n';
-            // cout << "[DEBUG] response end\n";
-            client.write(response.data(), response.size());
-            {
-                if (request.error()) {
-                    event_queue.detach(&client);
-                    delete &client;
-                    return;
-                }
-                if (request.getHeaderValue("Connection") == "keep-alive") {
-                    cout << G(INFO) << " keep-alive request\n";
-                    event_queue.attach(&client);
-                } else {
-                    delete &client;
-                }
+        }
+        // cout << "[DEBUG] response start\n";
+        // cout << response << '\n';
+        // cout << "[DEBUG] response end\n";
+        client.write(response.data(), response.size());
+        {
+            if (request.error()) {
+                event_queue.detach(&client);
+                delete &client;
+                return;
+            }
+            if (request.getHeaderValue("Connection") == "keep-alive") {
+                cout << G(INFO) << " keep-alive request\n";
+                event_queue.attach(&client);
+            } else {
+                delete &client;
             }
         }
     }
