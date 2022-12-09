@@ -90,6 +90,16 @@ serverInfo get_the_server_info_for_the_client(
 //     printf("[%c] [%u] [%d]\n", c, c, c);
 // }
 
+pair<string, ssize_t> read_request(const TcpStream& client) {
+    array<char, 1024> buffer;
+    ssize_t ret = 0;
+
+    ret = client.read(buffer.data(), buffer.size());
+
+    cout << G(DEBUG) << " return value of read is " << ret << '\n';
+    return make_pair(std::string(buffer.data()), ret);
+}
+
 int main() {
 #ifdef FAST
     cout.rdbuf(NULL);
@@ -128,9 +138,8 @@ int main() {
     }
     loop {
         cout << G(INFO) << " waiting for events ....\n";
-        pair<IListener&, Kevent> event = event_queue.get_event();
-        IListener& listener = event.first;
-        Kevent kv = event.second;
+        IListener& listener = event_queue.get_event();
+        Kevent kv = listener.get_kevent();
 
         if (kv.flags & EV_EOF) {
             event_queue.detach(&listener);
@@ -143,13 +152,42 @@ int main() {
         }
         IF_NOT(kv.flags & (EVFILT_READ | EVFILT_WRITE)) continue;
 
+        ssize_t ret = 0;
         cout << G(INFO) << " handling events\n";
         if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
                                   dynamic_cast<TcpListener*>(&listener), infos);
         } else {
-            handle_requests(event_queue, *dynamic_cast<TcpStream*>(&listener),
-                            infos);
+            TcpStream& client = dynamic_cast<TcpStream&>(listener);
+            cout << G(INFO) << " data == " << kv.data << endl;
+            if (kv.data != 0) {
+                cout << G(INFO) << " the client comming from {host, port} == {"
+                     << client.get_host() << "," << client.get_port() << "}"
+                     << '\n';
+                cout << "       ---> is ready for IO\n";
+                cout << G(INFO) << " reading the request .." << endl;
+
+                pair<string, ssize_t> p = read_request(client);
+                const string& request_str = p.first;
+                ret = p.second;
+                cout << G(DEBUG) << " + " << G(DEBUG) << " return value is "
+                     << ret << " size of the request is " << request_str.size()
+                     << '\n';
+
+                if (ret <= 0) {
+                    if (ret < 0) {
+                        cerr << G(ERROR) << " read error !\n";
+                    }
+                    event_queue.detach(&client);
+                    delete &client;
+                } else {
+                    client.add_to_buffer(request_str);
+                }
+            }
+            if (kv.data - ret == 0) {
+                handle_requests(event_queue,
+                                *dynamic_cast<TcpStream*>(&listener), infos);
+            }
         }
     }
 }
@@ -162,194 +200,149 @@ void handle_new_connection(Kqueue& event_queue,
          << server->get_host() << "," << server->get_port() << "}" << '\n';
     cout << "       ---> is accepting a new connection\n";
     cout << "----------------------------------------------------\n";
-    cout << G(INFO) << " handling the newly accepted client\n";
-    handle_requests(event_queue, client, infos);
-}
-
-pair<string, ssize_t> read_request(const TcpStream& client) {
-    array<char, 4096> buffer;
-    string request_str;
-    ssize_t ret = 0;
-    loop {
-        buffer.fill(0);
-        if ((ret = client.read(buffer.data(), buffer.size())) < 4096) {
-            request_str += string(buffer.data());
-            break;
-        }
-        request_str += string(buffer.data());
-        cout << G(DEBUG) << " return value of read is " << ret
-             << " size of the request is " << request_str.size() << '\n';
-        cout << G(INFO) << " still reading the request ..." << endl;
-    }
-    return make_pair(request_str, ret);
+    cout << G(INFO) << " attaching the newly accepted client to the Kqueue\n";
+    event_queue.attach(&client);
 }
 
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo>& infos) {
-    cout << G(INFO) << " the client comming from {host, port} == {"
-         << client.get_host() << "," << client.get_port() << "}" << '\n';
-    cout << "       ---> is ready for IO\n";
-    cout << G(INFO) << " reading the request .." << endl;
+    cout << G(DEBUG) << " request start\n";
+    cout << "[" << client.get_buffer() << "]" << '\n';
+    cout << G(DEBUG) << " request end\n";
 
-    pair<string, ssize_t> p = read_request(client);
-    const string& request_str = p.first;
-    ssize_t ret = p.second;
-    cout << G(DEBUG) << " + " << G(DEBUG) << " return value is " << ret
-         << " size of the request is " << request_str.size() << '\n';
+    cout << G(INFO) << " parsing the request started " << endl;
 
-    if (ret <= 0) {
-        if (ret < 0) {
-            cerr << G(ERROR) << " read error !\n";
-        }
-        event_queue.detach(&client);
-        delete &client;
+    string response;
+    HttpRequest request(client.get_buffer());
+
+    if (request.error()) {
+        cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
+
+        response = HttpResponse(403, "1.1", "Forbiden")
+                       .add_content_type(".html")
+                       .add_to_body("<h>404</h>")
+                       .build();
     } else {
-        cout << G(DEBUG) << " request start\n";
-        cout << "[" << request_str << "]" << '\n';
-        cout << G(DEBUG) << " request end\n";
+        string HostHeader = request.getHeaderValue("Host");
+        serverInfo info =
+            get_the_server_info_for_the_client(HostHeader, client, infos);
 
-        cout << G(INFO) << " parsing the request started " << endl;
+        string root = info.root;
+        string const& loc = request.getLocation();
+        map<string, Location>& locations = info.locations;
+        map<string, Location>::const_iterator it = locations.find(loc);
+        const string& method = request.getMethod();
+        cout << G(INFO) << " " << method << "\n";
 
-        string response;
-        HttpRequest request(request_str);
-        if (request.error()) {
-            cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
-
-            response = HttpResponse(403, "1.1", "Forbiden")
-                           .add_content_type(".html")
-                           .add_to_body("<h>404</h>")
-                           .build();
-        } else {
-            string HostHeader = request.getHeaderValue("Host");
-            serverInfo info =
-                get_the_server_info_for_the_client(HostHeader, client, infos);
-
-            string root = info.root;
-            string const& loc = request.getLocation();
-            map<string, Location>& locations = info.locations;
-            map<string, Location>::const_iterator it = locations.find(loc);
-            const string& method = request.getMethod();
-            cout << G(INFO) << " " << method << "\n";
-
-            if (it == locations.end()) {
-                if (method == "GET") {
-                    response =
-                        HttpResponse::send_file(loc, info.root, info.error_page)
-                            .build();
-                } else {
-                    response =
-                        HttpResponse::error_response(405, info.error_page[405])
-                            .build();
-                }
+        if (it == locations.end()) {
+            if (method == "GET") {
+                response =
+                    HttpResponse::send_file(loc, info.root, info.error_page)
+                        .build();
             } else {
-                Location route = it->second;
-                if (request.getHeaderValue("Content-Length") != "") {
-                    if (request.getMethod() == "POST" && route.upload_enable) {
-                        if (find(route.allow_methods.begin(),
-                                 route.allow_methods.end(),
-                                 method) == route.allow_methods.end()) {
-                            response = HttpResponse::error_response(
-                                           405, info.error_page[405])
-                                           .build();
-                        } else {
-                            if (request.getHeaderValue("Content-Type")
-                                    .empty()) {
-                                response = HttpResponse::error_response(
-                                               400, info.error_page[405])
-                                               .build();
-                            } else {
-                                vector<string> content_type = split(
-                                    request.getHeaderValue("Content-Type"),
-                                    ";");
-                                if (content_type.size() != 2) {
-                                    cerr << "[ERROR] no boundry in content "
-                                            "type !!\n";
-                                    assert(false);
-                                } else {
-                                    // TODO SAAD
-                                    string multi_part = content_type.at(0);
-                                    string boundry = content_type.at(1);
-                                    cout << "[INFO] " << multi_part << " "
-                                         << boundry << '\n';
-                                    string boundry_value =
-                                        split(boundry, "=").at(1);
-                                    cout << "[INFO] "
-                                         << "boundry key " << boundry << '\n';
-                                    {
-                                        // TODO check if the body have the
-                                        // needed info
-                                    }
-                                    response =
-                                        HttpResponse::redirect_moved_response(
-                                            "upload.html")
-                                            .build();
-                                    // SAAD
-                                }
-                            }
-                            return;
-                        }
-                    }
-                } else {
+                response =
+                    HttpResponse::error_response(405, info.error_page[405])
+                        .build();
+            }
+        } else {
+            Location route = it->second;
+            if (request.getHeaderValue("Content-Length") != "") {
+                if (request.getMethod() == "POST" && route.upload_enable) {
                     if (find(route.allow_methods.begin(),
                              route.allow_methods.end(),
                              method) == route.allow_methods.end()) {
                         response = HttpResponse::error_response(
                                        405, info.error_page[405])
                                        .build();
-
                     } else {
-                        if (is_part_of_root(root, loc) &&
-                            is_dir(tools::url_path_correction(root, loc)) &&
-                            route.autoindex) {
-                            response =
-                                HttpResponse::generate_indexing(
-                                    tools::url_path_correction(root, loc), loc)
-                                    .build();
+                        if (request.getHeaderValue("Content-Type").empty()) {
+                            response = HttpResponse::error_response(
+                                           400, info.error_page[405])
+                                           .build();
                         } else {
-                            if (route.index.size() >= 1) {
-                                cout << G(DEBUG) << "handle indexes\n";
-                                response =
-                                    HttpResponse::index_response(
-                                        route.index, info.root, info.error_page)
-                                        .build();
-                            } else if (route.index.empty() &&
-                                       route.ret_rn.size() == 1) {
-                                assert(route.ret_rn.size() == 1);
-                                pair<int, string> redirect =
-                                    *route.ret_rn.begin();
-                                cout << G(DEBUG) << " redirect "
-                                     << redirect.first << " " << redirect.second
-                                     << '\n';
-
-                                response = handle_redirection(redirect.first,
-                                                              redirect.second)
-                                               .build();
+                            vector<string> content_type = split(
+                                request.getHeaderValue("Content-Type"), ";");
+                            if (content_type.size() != 2) {
+                                cerr << "[ERROR] no boundry in content "
+                                        "type !!\n";
+                                assert(false);
                             } else {
-                                cerr << G(ERROR) << " no index + no return \n";
-                                exit(1);
+                                // TODO SAAD
+                                string multi_part = content_type.at(0);
+                                string boundry = content_type.at(1);
+                                cout << "[INFO] " << multi_part << " "
+                                     << boundry << '\n';
+                                string boundry_value =
+                                    split(boundry, "=").at(1);
+                                cout << "[INFO] "
+                                     << "boundry key " << boundry << '\n';
+                                {
+                                    // TODO check if the body have the
+                                    // needed info
+                                }
+                                response =
+                                    HttpResponse::redirect_moved_response(
+                                        "upload.html")
+                                        .build();
+                                // SAAD
                             }
+                        }
+                        return;
+                    }
+                }
+            } else {
+                if (find(route.allow_methods.begin(), route.allow_methods.end(),
+                         method) == route.allow_methods.end()) {
+                    response =
+                        HttpResponse::error_response(405, info.error_page[405])
+                            .build();
+
+                } else {
+                    if (is_part_of_root(root, loc) &&
+                        is_dir(tools::url_path_correction(root, loc)) &&
+                        route.autoindex) {
+                        response =
+                            HttpResponse::generate_indexing(
+                                tools::url_path_correction(root, loc), loc)
+                                .build();
+                    } else {
+                        if (route.index.size() >= 1) {
+                            cout << G(DEBUG) << "handle indexes\n";
+                            response =
+                                HttpResponse::index_response(
+                                    route.index, info.root, info.error_page)
+                                    .build();
+                        } else if (route.index.empty() &&
+                                   route.ret_rn.size() == 1) {
+                            assert(route.ret_rn.size() == 1);
+                            pair<int, string> redirect = *route.ret_rn.begin();
+                            cout << G(DEBUG) << " redirect " << redirect.first
+                                 << " " << redirect.second << '\n';
+
+                            response = handle_redirection(redirect.first,
+                                                          redirect.second)
+                                           .build();
+                        } else {
+                            cerr << G(ERROR) << " no index + no return \n";
+                            exit(1);
                         }
                     }
                 }
             }
         }
-        // cout << "[DEBUG] response start\n";
-        // cout << response << '\n';
-        // cout << "[DEBUG] response end\n";
-        client.write(response.data(), response.size());
-        {
-            if (request.error()) {
-                event_queue.detach(&client);
-                delete &client;
-                return;
-            }
-            if (request.getHeaderValue("Connection") == "keep-alive") {
-                cout << G(INFO) << " keep-alive request\n";
-                event_queue.attach(&client);
-            } else {
-                delete &client;
-            }
-        }
+    }
+    client.clear_buffer();
+    cout << "[DEBUG] response start\n";
+    cout << response << '\n';
+    cout << "[DEBUG] response end\n";
+
+    client.write(response.data(), response.size());
+    if (request.error() || request.getHeaderValue("Connection") == "" ||
+        request.getHeaderValue("Connection") == "close") {
+        cout << G(INFO) << " client detached from Kqueue\n";
+        event_queue.detach(&client);
+        delete &client;
+        return;
     }
 }

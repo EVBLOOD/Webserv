@@ -2,7 +2,7 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <sys/socket.h>
-
+#include <cstring>
 
 static void shutdown_helper(int fd) {
     shutdown(fd, SHUT_RDWR);
@@ -51,6 +51,15 @@ TcpListener::TcpListener(std::string host, std::string port)
 int TcpListener::get_raw_fd() const {
     return _fd;
 };
+
+Kevent TcpListener::get_kevent() const {
+    return _event;
+};
+
+void TcpListener::set_kevent(Kevent kv) {
+    memset(&_event, 0, sizeof(Kevent));
+    _event = kv;
+}
 
 int accept_helper(int fd) {
     return accept(fd, NULL, NULL);

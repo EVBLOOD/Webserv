@@ -17,7 +17,7 @@ server
 	error_page 502 /errors/502.html;
 
 
-	root /Users/sakllam/Desktop/Webserv/public;
+	root /Users/sakllam/Webserv0/public;
 
 	location /
 	{
@@ -86,7 +86,7 @@ server
 	error_page 500 /public/errors/500.html;
 	error_page 502 /public/errors/502.html;
 
-	root /Users/sakllam/Desktop/Webserv;
+	root /Users/sakllam/Webserv0;
 
 	location /
 	{

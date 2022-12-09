@@ -74,7 +74,7 @@ std::vector<IListener*> Kqueue::get_events() {
     return ret;
 };
 
-std::pair<IListener&, Kevent> Kqueue::get_event() {
+IListener& Kqueue::get_event() {
     Kevent kv;
     memset(&kv, 0, sizeof(Kevent));
     if (kevent(_kdata, NULL, 0, &kv, 1, NULL) == -1) {
@@ -82,12 +82,6 @@ std::pair<IListener&, Kevent> Kqueue::get_event() {
         exit(1);
     }
     {
-        // TODO SHOULD BE REMOVED FOR TESTING ONLY
-        // std::cout << "{DEBUG} THE FFLAGS IS " << kv.fflags << '\n';
-        // std::cout << "{DEBUG} THE FILTER IS " << kv.filter << '\n';
-        // std::cout << "{DEBUG} THE FLAGS IS " << kv.flags << '\n';
-        // std::cout << "{DEBUG} THE DATA IS " << kv.data << '\n';
-
         if (kv.flags & EV_EOF) {
             std::cerr << "EV_EOF\n";
             assert(false);
@@ -106,7 +100,7 @@ std::pair<IListener&, Kevent> Kqueue::get_event() {
             assert(false);
         }
     }
-
-    std::pair<IListener&, Kevent> ret(get_listener(kv.ident), kv);
+    IListener& ret = get_listener(kv.ident);
+    ret.set_kevent(kv);
     return ret;
 };
