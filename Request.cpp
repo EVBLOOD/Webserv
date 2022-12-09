@@ -1,4 +1,5 @@
 #include "Request.hpp"
+#include "tools.hpp"
 
 // char resp[] =
 //         "HTTP/1.0 200 OK\r\n"
@@ -32,9 +33,14 @@ HttpRequest::HttpRequest(std::string request)
         _error = true;
         return;
     }
-    std::vector<std::string> splited = split(request, "\n");
-    if (splited.size() == 0)
-    {
+    std::vector<std::string> header_and_body = split(request, "\r\n\r\n");
+    if (header_and_body.size() == 0 || header_and_body.size() > 2) {
+        _error = true;
+        return;
+    }
+    std::vector<std::string> splited = split(header_and_body[0], "\n");
+    // std::vector<std::string> splited = split(request, "\n");
+    if (splited.size() == 0) {
         _error = true;
         return;
     }
@@ -62,8 +68,9 @@ HttpRequest::HttpRequest(std::string request)
 
         _headers[key] = value;
     }
-
-    for (size_t j = i; j < splited.size(); ++j) {
+    // _body = header_and_body[0] // this is the new body, maybe! as a new string without parsing it at first!
+    for (size_t j = i; j < splited.size();
+         ++j) {  // triming all the body may cause some big delay!
         std::string trimed = trim(splited[j], "\n\r ");
         if (!trimed.empty())
             _body.push_back(trimed);
