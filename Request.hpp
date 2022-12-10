@@ -27,7 +27,7 @@ class HttpRequest {
     std::string _location;
     std::string _version;
     std::map<std::string, std::string> _headers;
-    std::vector<std::string> _body;
+    std::string _body;
     bool _error;
 
    public:
@@ -41,7 +41,7 @@ class HttpRequest {
 
     std::string getHeaderValue(std::string key);
 
-    std::vector<std::string> getBody();
+    std::string getBody();
 
     std::string getRawData();
 

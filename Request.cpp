@@ -52,10 +52,9 @@ HttpRequest::HttpRequest(std::string request)
     _method = first_line[0];
     _location = first_line[1];
     _version = first_line[2];
-    splited.erase(splited.begin());
-    size_t i = 0;
-    for (i = 0; i < splited.size() && splited[i] != "\r"; ++i) {
+    for (size_t i = 1; i < splited.size() && splited[i] != "\r"; ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
+        // TODO: make key lower case
         std::string key = trim(tmp[0], "\n\r ");
         std::string value;
         if (tmp.size() > 2) {
@@ -68,13 +67,10 @@ HttpRequest::HttpRequest(std::string request)
 
         _headers[key] = value;
     }
-    // _body = header_and_body[0] // this is the new body, maybe! as a new string without parsing it at first!
-    for (size_t j = i; j < splited.size();
-         ++j) {  // triming all the body may cause some big delay!
-        std::string trimed = trim(splited[j], "\n\r ");
-        if (!trimed.empty())
-            _body.push_back(trimed);
-    }
+    if (header_and_body.size() > 2)
+        _body = header_and_body[1];
+    else
+        _body = "";
 }
 
 void HttpRequest::dump() {
@@ -84,10 +80,10 @@ void HttpRequest::dump() {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
-    for (std::vector<std::string>::iterator iter = _body.begin();
-         iter != _body.end(); ++iter) {
-        std::cout << *iter << "\n";
-    }
+    // for (std::vector<std::string>::iterator iter = _body.begin();
+    //      iter != _body.end(); ++iter) {
+    //     std::cout << *iter << "\n";
+    // }
 }
 
 bool HttpRequest::error() {
@@ -98,11 +94,12 @@ std::string HttpRequest::getRawData() {
     return _raw;
 }
 
-std::vector<std::string> HttpRequest::getBody() {
+std::string HttpRequest::getBody() {
     return _body;
 }
 
 std::string HttpRequest::getHeaderValue(std::string key) {
+    // TODO: make key lowercase
     return _headers[key];
 }
 
