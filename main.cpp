@@ -115,7 +115,7 @@ int main() {
     cout.rdbuf(NULL);
     cerr.rdbuf(NULL);
 #endif
-    parser file("conf");
+    parser file("config");
     list<tokengen> tokens = file.generate();
     vector<serverInfo> servers_info = file.lexer_to_data(tokens);
     Kqueue event_queue;
@@ -221,6 +221,7 @@ int main() {
                 cout << G(INFO) << " reading the request .." << endl;
 
                 pair<string, ssize_t> p = read_request(client);
+                cout << G(INFO) << " finished reading the request\n";
                 const string& request_str = p.first;
                 ret = p.second;
                 cout << G(DEBUG) << " + " << G(DEBUG) << " return value is "
@@ -391,9 +392,9 @@ void handle_requests(Kqueue& event_queue,
         }
     }
     client.clear_buffer();
-    // cout << "[DEBUG] response start\n";
-    // cout << response << '\n';
-    // cout << "[DEBUG] response end\n";
+    cout << "[DEBUG] response start\n";
+    cout << response << '\n';
+    cout << "[DEBUG] response end\n";
 
     errno = 0;
     cout << G(DEBUG) << " size of buffer == " << response.size() << '\n';
@@ -405,7 +406,6 @@ void handle_requests(Kqueue& event_queue,
     }
     cerr << "****************************\n";
     if (ret > 0 && static_cast<size_t>(ret) < response.size()) {
-        assert(false);
         struct kevent evSet;
         bzero(&evSet, sizeof(struct kevent));
         EV_SET(&evSet, client.get_raw_fd(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);

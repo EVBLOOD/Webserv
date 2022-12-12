@@ -39,7 +39,7 @@ HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
 
 HttpResponse& HttpResponse::add_to_body(std::string line) {
     _body.push_back(line);
-    _content_length += line.length() + 2;
+    _content_length += line.length();
     return *this;
 };
 
@@ -62,7 +62,7 @@ std::string HttpResponse::build() {
     res += "HTTP/" + _version + " " + std::to_string(_status) + " " + _action +
            "\r\n";
 
-    _headers["Content-Length"] = std::to_string(_content_length);
+    _headers["Content-Length"] = std::to_string(_content_length + _body.size());
     {
         std::map<std::string, std::string>::iterator iter = _headers.begin();
         while (iter != _headers.end()) {
@@ -74,10 +74,11 @@ std::string HttpResponse::build() {
     {
         std::vector<std::string>::iterator iter = _body.begin();
         while (iter != _body.end()) {
-            res += *iter + "\r\n";
+            res += *iter + '\n';
             iter++;
         }
     }
+    res += "\r\n";
     return res;
 }
 
