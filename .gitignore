@@ -2,7 +2,5 @@ file
 per
 *.o
 Webserver
-Webserver_fast
-Webserver_extra
 a.out
-config
+conf
