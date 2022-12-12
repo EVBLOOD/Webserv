@@ -98,7 +98,16 @@ pair<string, ssize_t> read_request(const TcpStream& client) {
     ret = client.read(buffer.data(), buffer.size());
 
     cout << G(DEBUG) << " return value of read is " << ret << '\n';
-    return make_pair(std::string(buffer.data()), ret);
+    //////
+    std::string tmp;
+    for (ssize_t s = 0; s < ret; s++) {
+        tmp.push_back(buffer.data()[s]);
+    }
+    if (ret >= 0) {
+        assert(static_cast<size_t>(ret) == tmp.size());
+    }
+    //////
+    return make_pair(tmp, ret);
 }
 
 int main() {
@@ -138,11 +147,14 @@ int main() {
         }
     }
     loop {
+        cout << G(INFO) << " Kqueue size == " << event_queue.size() << '\n';
         cout << G(INFO) << " waiting for events ....\n";
         IListener& listener = event_queue.get_event();
+        cout << G(INFO) << " event fired\n";
         Kevent kv = listener.get_kevent();
 
-        if (kv.flags & EV_EOF) {
+        if (kv.filter == EVFILT_EXCEPT) {
+            cout << G(INFO) << " EOF event\n";
             event_queue.detach(&listener);
             if (dynamic_cast<TcpListener*>(&listener)) {
                 delete dynamic_cast<TcpListener*>(&listener);
@@ -151,7 +163,7 @@ int main() {
             }
             continue;
         }
-        IF_NOT(kv.flags & (EVFILT_READ | EVFILT_WRITE)) continue;
+        // IF_NOT(kv.filter & (EVFILT_READ | EVFILT_WRITE)) continue;
 
         ssize_t ret = 0;
         cout << G(INFO) << " handling events\n";
@@ -160,6 +172,46 @@ int main() {
                                   dynamic_cast<TcpListener*>(&listener), infos);
         } else {
             TcpStream& client = dynamic_cast<TcpStream&>(listener);
+            cerr << G(DEBUG) << "request buffer size == "
+                 << client.get_buffer_request().size() << '\n';
+            cerr << G(DEBUG) << "response buffer size == "
+                 << client.get_response_buffer().size() << '\n';
+
+            if (kv.filter == EVFILT_WRITE) {
+                if (client.is_response_not_finished()) {
+                    cerr << G(DEBUG) << " handling big write\n";
+                    ssize_t ret = 0;
+                    std::string response = client.get_response_buffer();
+                    if ((ret = client.write(
+                             response.data(), response.size() > 1024 * 100
+                                                  ? 1024 * 100
+                                                  : response.size()
+
+                                 )) <= 0
+
+                    ) {
+                        cerr << G(ERROR) << " " << strerror(errno) << '\n';
+                    }
+                    if (ret > 0 &&
+                        static_cast<size_t>(ret) <= response.size()) {
+                        client.set_reponse_buffer(
+                            response.substr(ret, response.size()));
+                    } else {
+                        struct kevent evSet;
+                        bzero(&evSet, sizeof(struct kevent));
+                        EV_SET(&evSet, client.get_raw_fd(), EVFILT_READ, EV_ADD,
+                               0, 0, NULL);
+                        if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0,
+                                   NULL) == -1) {
+                            std::cerr << "kevent is joking!\n";
+                            exit(1);
+                        }
+                        client.set_kevent(evSet);
+                        client.set_reponse_buffer("");
+                    }
+                    continue;
+                }
+            }
             cout << G(INFO) << " data == " << kv.data << endl;
             if (kv.data != 0) {
                 cout << G(INFO) << " the client comming from {host, port} == {"
@@ -182,7 +234,7 @@ int main() {
                     event_queue.detach(&client);
                     delete &client;
                 } else {
-                    client.add_to_buffer(request_str);
+                    client.add_to_request_buffer(request_str);
                 }
             }
             if (kv.data - ret == 0) {
@@ -203,19 +255,24 @@ void handle_new_connection(Kqueue& event_queue,
     cout << "----------------------------------------------------\n";
     cout << G(INFO) << " attaching the newly accepted client to the Kqueue\n";
     event_queue.attach(&client);
+    cout << G(INFO) << " attaching the newly accepted client to the Kqueue"
+         << std::endl;
 }
 
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo>& infos) {
     cout << G(DEBUG) << " request start\n";
-    cout << "[" << client.get_buffer() << "]" << '\n';
+    cout << "[" << client.get_buffer_request() << "]" << '\n';
     cout << G(DEBUG) << " request end\n";
 
     cout << G(INFO) << " parsing the request started " << endl;
 
     string response;
-    HttpRequest request(client.get_buffer());
+
+    cerr << "****************************\n";
+    HttpRequest request(client.get_buffer_request());
+    cerr << "****************************\n";
 
     if (request.error()) {
         cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
@@ -318,14 +375,14 @@ void handle_requests(Kqueue& event_queue,
                                    route.ret_rn.size() == 1) {
                             assert(route.ret_rn.size() == 1);
                             pair<int, string> redirect = *route.ret_rn.begin();
-                            cout << G(DEBUG) << " redirect " << redirect.first
+                            cout << G(DEBUG) << "redirect " << redirect.first
                                  << " " << redirect.second << '\n';
 
                             response = handle_redirection(redirect.first,
                                                           redirect.second)
                                            .build();
                         } else {
-                            cerr << G(ERROR) << " no index + no return \n";
+                            cerr << G(ERROR) << " no index + no return\n ";
                             exit(1);
                         }
                     }
@@ -334,11 +391,34 @@ void handle_requests(Kqueue& event_queue,
         }
     }
     client.clear_buffer();
-    cout << "[DEBUG] response start\n";
-    cout << response << '\n';
-    cout << "[DEBUG] response end\n";
+    // cout << "[DEBUG] response start\n";
+    // cout << response << '\n';
+    // cout << "[DEBUG] response end\n";
 
-    client.write(response.data(), response.size());
+    errno = 0;
+    cout << G(DEBUG) << " size of buffer == " << response.size() << '\n';
+    ssize_t ret = 0;
+    if ((ret = client.write(response.data(), response.size() > 1024 * 100
+                                                 ? 1024 * 100
+                                                 : response.size())) <= 0) {
+        cerr << G(ERROR) << " " << strerror(errno) << '\n';
+    }
+    cerr << "****************************\n";
+    if (ret > 0 && static_cast<size_t>(ret) < response.size()) {
+        assert(false);
+        struct kevent evSet;
+        bzero(&evSet, sizeof(struct kevent));
+        EV_SET(&evSet, client.get_raw_fd(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+        if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0, NULL) == -1) {
+            std::cerr << "kevent is joking!\n";
+            exit(1);
+        }
+        client.set_kevent(evSet);
+        client.set_reponse_buffer(response.substr(ret, response.size()));
+    }
+    cerr << "****************************\n";
+    cerr << G(DEBUG) << " return from send() == " << ret << '\n';
+    cerr << G(DEBUG) << " handling request error " << ret << '\n';
     if (request.error() || request.getHeaderValue("Connection") == "" ||
         request.getHeaderValue("Connection") == "close") {
         cout << G(INFO) << " client detached from Kqueue\n";
@@ -346,4 +426,5 @@ void handle_requests(Kqueue& event_queue,
         delete &client;
         return;
     }
+    cerr << G(DEBUG) << " end of handling" << ret << '\n';
 }

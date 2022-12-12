@@ -1,7 +1,7 @@
 NAME = Webserver
 
 CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98
-CXXFLAGS_EXTRA = -Wall -Wextra -Wshadow -std=c++98 -Wuninitialized -Wconversion -fsanitize=address,undefined
+CXXFLAGS_EXTRA = -Wall -Wextra -Wshadow -std=c++98 -Wuninitialized -fsanitize=address,undefined
 
 CXX = c++
 
@@ -36,7 +36,7 @@ SRCS_TEST =  tests.cpp\
 all: $(NAME)
 
 extra: 
-	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra
+	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra
 
 test: $(TEST)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test

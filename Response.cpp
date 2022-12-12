@@ -82,6 +82,7 @@ std::string HttpResponse::build() {
 }
 
 void HttpResponse::dump() {
+    _headers["Content-Length"] = std::to_string(_content_length);
     std::cout << "HTTP/" + _version + " " + std::to_string(_status) + " " +
                      _action + "\n";
     for (std::map<std::string, std::string>::iterator iter = _headers.begin();
@@ -89,10 +90,10 @@ void HttpResponse::dump() {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
-    for (std::vector<std::string>::iterator iter = _body.begin();
-         iter != _body.end(); ++iter) {
-        std::cout << *iter << "\n";
-    }
+    // for (std::vector<std::string>::iterator iter = _body.begin();
+    //      iter != _body.end(); ++iter) {
+    //     std::cout << *iter << "\n";
+    // }
 }
 
 std::string HttpResponse::get_content_type(std::string location) {
@@ -107,6 +108,12 @@ std::string HttpResponse::get_content_type(std::string location) {
             content_type = "text/css";
         } else if (ext == ".ico") {
             content_type = "image/x-icon";
+        } else if (ext == ".jpeg" || ext == ".jpg") {
+            content_type = "image/jpeg";
+        } else if (ext == ".png") {
+            content_type = "image/png";
+        } else if (ext == ".mp4") {
+            content_type = "video/mp4";
         }
     }
     // application/EDI-X12

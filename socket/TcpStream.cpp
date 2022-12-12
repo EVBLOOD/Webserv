@@ -3,7 +3,7 @@
 
 #define MSG_CONNTERM 0x80
 TcpStream::TcpStream(int fd, const TcpListener& owner)
-    : _fd(fd), _owner(owner) {
+    : _fd(fd), _owner(owner), _request_buffer(), _response_buffer() {
     memset(&_event, 0, sizeof(Kevent));
 };
 
@@ -31,17 +31,27 @@ void TcpStream::set_kevent(Kevent kv) {
     _event = kv;
 }
 
-
-std::string TcpStream::get_buffer() const {
-    return _buffer;
+std::string TcpStream::get_buffer_request() const {
+    return _request_buffer;
 };
 
-void TcpStream::add_to_buffer(std::string tail) {
-    _buffer = _buffer + tail;
+void TcpStream::set_reponse_buffer(std::string buffer) {
+    _response_buffer = buffer;
+};
+bool TcpStream::is_response_not_finished() {
+    return _response_buffer.size() != 0;
+};
+
+void TcpStream::add_to_request_buffer(std::string tail) {
+    _request_buffer = _request_buffer + tail;
+};
+
+std::string TcpStream::get_response_buffer() {
+    return _response_buffer;
 };
 
 void TcpStream::clear_buffer() {
-    _buffer = std::string("");
+    _request_buffer = std::string("");
 };
 
 static void shutdown_helper(int fd) {

@@ -15,10 +15,13 @@ int Kqueue::get_kdata() {
 };
 
 void Kqueue::attach(IListener* listener) {
+    assert(listener->get_raw_fd() != -1);
+    if (_listeners.find(listener->get_raw_fd()) != _listeners.end()) {
+        assert(false);
+    }
     struct kevent evSet;
     bzero(&evSet, sizeof(struct kevent));
-    EV_SET(&evSet, listener->get_raw_fd(), EVFILT_READ | EVFILT_WRITE, EV_ADD,
-           0, 0, NULL);
+    EV_SET(&evSet, listener->get_raw_fd(), EVFILT_READ, EV_ADD, 0, 0, NULL);
     if (kevent(_kdata, &evSet, 1, NULL, 0, NULL) == -1) {
         std::cerr << "kevent is joking!\n";
         exit(1);
@@ -40,6 +43,10 @@ void Kqueue::detach(IListener* listener) {
            EV_DELETE, 0, 0, 0);
     kevent(_kdata, &evSet, 1, NULL, 0, 0);
     _listeners.erase(it);
+};
+
+size_t Kqueue::size() const {
+    return _listeners.size();
 };
 
 std::pair<int, struct kevent*> Kqueue::get_kevents() {
@@ -82,22 +89,23 @@ IListener& Kqueue::get_event() {
         exit(1);
     }
     {
-        if (kv.flags & EV_EOF) {
-            std::cerr << "EV_EOF\n";
-            assert(false);
-        }
+        // I THINK WE DID HANDLE THIS
+        // if (kv.flags & EV_EOF) {
+        //     std::cerr << "EV_EOF\n";
+        //     assert(false);
+        // }
 
-        if (kv.flags & (EVFILT_READ | EVFILT_WRITE)) {
+        std::cout << kv.filter << " " << kv.data << '\n';
+        if (kv.filter & (EVFILT_READ | EVFILT_WRITE)) {
             std::cerr << "(EVFILT_READ | EVFILT_WRITE)\n";
         }
 
-        if (kv.flags & EVFILT_READ) {
+        if (kv.filter == EVFILT_READ) {
             std::cerr << "EVFILT_READ\n";
         }
 
-        if (kv.flags & EVFILT_WRITE) {
+        if (kv.filter == EVFILT_WRITE) {
             std::cerr << "EVFILT_WRITE\n";
-            assert(false);
         }
     }
     IListener& ret = get_listener(kv.ident);

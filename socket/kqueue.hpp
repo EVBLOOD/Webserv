@@ -16,14 +16,15 @@ class Kqueue {
     std::map<uintptr_t, IListener*> _listeners;
 
    private:
-    int get_kdata();
     IListener& get_listener(int ident);
     std::pair<int, struct kevent*> get_kevents();
 
    public:
     Kqueue();
+    int get_kdata();
     std::vector<IListener*> get_events();
-    IListener&get_event();
+    IListener& get_event();
     void attach(IListener* listener);
     void detach(IListener* listener);
+    size_t size() const;
 };

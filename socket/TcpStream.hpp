@@ -10,7 +10,8 @@ class TcpStream : public IListener {
     const int _fd;
     const TcpListener& _owner;
     Kevent _event;
-    std::string _buffer;
+    std::string _request_buffer;
+    std::string _response_buffer;
 
    public:
     TcpStream(int fd, const TcpListener& owner);
@@ -21,9 +22,12 @@ class TcpStream : public IListener {
     Kevent get_kevent() const;
     void set_kevent(Kevent kv);
     void shutdown();
-    std::string get_buffer() const;
+    std::string get_buffer_request() const;
     size_t read(char* buff, size_t size) const;
     size_t write(const char* const buff, size_t size) const;
-    void add_to_buffer(std::string tail);
+    void add_to_request_buffer(std::string tail);
+    void set_reponse_buffer(std::string tail);
+    bool is_response_not_finished();
+    std::string get_response_buffer();
     void clear_buffer();
 };
