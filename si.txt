@@ -1,9 +1,7 @@
 http://localhost:8080
-http://localhost:8081
-http://localhost:9090
-http://localhost:9091
-http://localhost:8080/dir
-http://localhost:9090/oussama
-http://localhost:9091
-http://localhost:9999
-http://localhost:2565
+http://localhost:8080/video.mp4
+http://localhost:8080/image_test.html
+http://localhost:8080/oussama
+http://localhost:8080/saad
+http://localhost:8080/index.html
+http://localhost:8080/trash

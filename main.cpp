@@ -1,4 +1,7 @@
+#include <sys/event.h>
+#include <sys/signal.h>
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -12,6 +15,7 @@
 #include "parsing/tokengen.hpp"
 #include "socket/TcpStream.hpp"
 #include "socket/kqueue.hpp"
+#include "socket/listener_interface.hpp"
 #include "socket/tcpListener.hpp"
 #include "tools.hpp"
 
@@ -37,9 +41,7 @@ using std::vector;
 //     cout << msg << '\n';
 // }
 
-void handle_new_connection(Kqueue& kq,
-                           TcpListener* server,
-                           map<pair<string, string>, serverInfo>& infos);
+void handle_new_connection(Kqueue& kq, TcpListener* server);
 
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
@@ -110,7 +112,15 @@ pair<string, ssize_t> read_request(const TcpStream& client) {
     return make_pair(tmp, ret);
 }
 
+#include <csignal>
+// #include <sys/signal.h>
+
+// void handler(int sig) {
+//     cout << G(ERROR) << " " << sig << " fuck tou pipe\n";
+// }
+
 int main() {
+    signal(SIGPIPE, SIG_IGN);
 #ifdef FAST
     cout.rdbuf(NULL);
     cerr.rdbuf(NULL);
@@ -118,6 +128,8 @@ int main() {
     parser file("config");
     list<tokengen> tokens = file.generate();
     vector<serverInfo> servers_info = file.lexer_to_data(tokens);
+
+    ////////////////////////////////////////////////////////////////////////
     Kqueue event_queue;
 
     set<pair<string, string> > already_bounded;
@@ -146,6 +158,8 @@ int main() {
             }
         }
     }
+    std::cout << "-------------------------------------------------------------"
+                 "------------------\n";
     loop {
         cout << G(INFO) << " Kqueue size == " << event_queue.size() << '\n';
         cout << G(INFO) << " waiting for events ....\n";
@@ -163,13 +177,12 @@ int main() {
             }
             continue;
         }
-        // IF_NOT(kv.filter & (EVFILT_READ | EVFILT_WRITE)) continue;
 
         ssize_t ret = 0;
         cout << G(INFO) << " handling events\n";
         if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
-                                  dynamic_cast<TcpListener*>(&listener), infos);
+                                  dynamic_cast<TcpListener*>(&listener));
         } else {
             TcpStream& client = dynamic_cast<TcpStream&>(listener);
             cerr << G(DEBUG) << "request buffer size == "
@@ -178,46 +191,45 @@ int main() {
                  << client.get_response_buffer().size() << '\n';
 
             if (kv.filter == EVFILT_WRITE) {
-                if (client.is_response_not_finished()) {
-                    cerr << G(DEBUG) << " handling big write\n";
-                    ssize_t ret = 0;
-                    std::string response = client.get_response_buffer();
-                    if ((ret = client.write(
-                             response.data(), response.size() > 1024 * 100
-                                                  ? 1024 * 100
-                                                  : response.size()
-
-                                 )) <= 0
-
-                    ) {
-                        cerr << G(ERROR) << " " << strerror(errno) << '\n';
-                    }
-                    if (ret > 0 &&
-                        static_cast<size_t>(ret) <= response.size()) {
-                        client.set_reponse_buffer(
-                            response.substr(ret, response.size()));
-                    } else {
-                        struct kevent evSet;
-                        bzero(&evSet, sizeof(struct kevent));
-                        EV_SET(&evSet, client.get_raw_fd(), EVFILT_READ, EV_ADD,
-                               0, 0, NULL);
-                        if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0,
-                                   NULL) == -1) {
-                            std::cerr << "kevent is joking!\n";
-                            exit(1);
-                        }
-                        client.set_kevent(evSet);
-                        client.set_reponse_buffer("");
-                    }
+                // assert(client.is_response_not_finished() != 0);
+                cerr << G(DEBUG) << " handling big write\n";
+                ret = 0;
+                std::string response = client.get_response_buffer();
+                size_t towrite = 1000 * 1000;
+                ;
+                if (towrite > response.size())
+                    towrite = response.size();
+                if ((ret = client.write(response.data(), towrite)) <= 0) {
+                    cerr << G(ERROR) << " " << strerror(errno) << '\n';
+                    event_queue.detach(&client);
+                    delete &client;
                     continue;
                 }
+                if (static_cast<size_t>(ret) <= response.size()) {
+                    client.set_reponse_buffer(
+                        response.substr(ret, response.size()));
+                } else {
+                    struct kevent evSet;
+                    bzero(&evSet, sizeof(struct kevent));
+                    EV_SET(&evSet, client.get_raw_fd(),
+                           EVFILT_READ | EVFILT_WRITE | EVFILT_EXCEPT, EV_ADD,
+                           0, 0, NULL);
+                    if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0,
+                               NULL) == -1) {
+                        std::cerr << "kevent is joking!\n";
+                        exit(1);
+                    }
+                    client.set_reponse_buffer("");
+                }
+                continue;
             }
             cout << G(INFO) << " data == " << kv.data << endl;
             if (kv.data != 0) {
                 cout << G(INFO) << " the client comming from {host, port} == {"
                      << client.get_host() << "," << client.get_port() << "}"
                      << '\n';
-                cout << "       ---> is ready for IO\n";
+                cout << G(INFO) << " client x: " << client.get_raw_fd()
+                     << "       ---> is ready for IO\n";
                 cout << G(INFO) << " reading the request .." << endl;
 
                 pair<string, ssize_t> p = read_request(client);
@@ -234,9 +246,9 @@ int main() {
                     }
                     event_queue.detach(&client);
                     delete &client;
-                } else {
-                    client.add_to_request_buffer(request_str);
+                    continue;
                 }
+                client.add_to_request_buffer(request_str);
             }
             if (kv.data - ret == 0) {
                 handle_requests(event_queue,
@@ -246,9 +258,7 @@ int main() {
     }
 }
 
-void handle_new_connection(Kqueue& event_queue,
-                           TcpListener* server,
-                           map<pair<string, string>, serverInfo>& infos) {
+void handle_new_connection(Kqueue& event_queue, TcpListener* server) {
     TcpStream& client = server->accept();
     cout << G(INFO) << " the server with {host, port} == {"
          << server->get_host() << "," << server->get_port() << "}" << '\n';
@@ -256,156 +266,149 @@ void handle_new_connection(Kqueue& event_queue,
     cout << "----------------------------------------------------\n";
     cout << G(INFO) << " attaching the newly accepted client to the Kqueue\n";
     event_queue.attach(&client);
-    cout << G(INFO) << " attaching the newly accepted client to the Kqueue"
-         << std::endl;
 }
 
-void handle_requests(Kqueue& event_queue,
-                     TcpStream& client,
-                     map<pair<string, string>, serverInfo>& infos) {
-    cout << G(DEBUG) << " request start\n";
-    cout << "[" << client.get_buffer_request() << "]" << '\n';
-    cout << G(DEBUG) << " request end\n";
-
-    cout << G(INFO) << " parsing the request started " << endl;
-
-    string response;
-
-    cerr << "****************************\n";
-    HttpRequest request(client.get_buffer_request());
-    cerr << "****************************\n";
-
+std::string get_response(HttpRequest request,
+                         TcpStream& client,
+                         map<pair<string, string>, serverInfo>& infos) {
+    // TODO:
+    //  HttpRequest request();
     if (request.error()) {
-        cout << G(ERROR) << " failed to parse request(not HTTP 1.1)\n";
+        cout << G(ERROR) << " failed to parse request!\n";
 
-        response = HttpResponse(403, "1.1", "Forbiden")
-                       .add_content_type(".html")
-                       .add_to_body("<h>404</h>")
-                       .build();
-    } else {
-        string HostHeader = request.getHeaderValue("Host");
-        serverInfo info =
-            get_the_server_info_for_the_client(HostHeader, client, infos);
+        return HttpResponse(403, "1.1", "Forbiden")
+            .add_content_type(".html")
+            .add_to_body("<h>404</h>")
+            .build();
+    }
+    string HostHeader = request.getHeaderValue("Host");
+    serverInfo info =
+        get_the_server_info_for_the_client(HostHeader, client, infos);
 
-        string root = info.root;
-        string const& loc = request.getLocation();
-        map<string, Location>& locations = info.locations;
-        map<string, Location>::const_iterator it = locations.find(loc);
-        const string& method = request.getMethod();
-        cout << G(INFO) << " " << method << "\n";
+    string root = info.root;
+    string const& loc = request.getLocation();
+    map<string, Location>& locations = info.locations;
+    map<string, Location>::const_iterator it = locations.find(loc);
+    const string& method = request.getMethod();
+    cout << G(INFO) << " " << method << "\n";
 
-        if (it == locations.end()) {
-            if (method == "GET") {
-                response =
-                    HttpResponse::send_file(loc, info.root, info.error_page)
-                        .build();
+    if (it == locations.end()) {
+        if (method == "GET") {
+            return HttpResponse::send_file(loc, info.root, info.error_page)
+                .build();
+        }
+        return HttpResponse::error_response(405, info.error_page[405]).build();
+    }
+    Location route = it->second;
+    if (request.getHeaderValue("Content-Length") != "") {
+        if (request.getMethod() == "POST" && route.upload_enable) {
+            if (find(route.allow_methods.begin(), route.allow_methods.end(),
+                     method) == route.allow_methods.end()) {
+                return HttpResponse::error_response(405, info.error_page[405])
+                    .build();
             } else {
-                response =
-                    HttpResponse::error_response(405, info.error_page[405])
+                if (request.getHeaderValue("Content-Type").empty()) {
+                    return HttpResponse::error_response(400,
+                                                        info.error_page[405])
                         .build();
-            }
-        } else {
-            Location route = it->second;
-            if (request.getHeaderValue("Content-Length") != "") {
-                if (request.getMethod() == "POST" && route.upload_enable) {
-                    if (find(route.allow_methods.begin(),
-                             route.allow_methods.end(),
-                             method) == route.allow_methods.end()) {
-                        response = HttpResponse::error_response(
-                                       405, info.error_page[405])
-                                       .build();
-                    } else {
-                        if (request.getHeaderValue("Content-Type").empty()) {
-                            response = HttpResponse::error_response(
-                                           400, info.error_page[405])
-                                           .build();
-                        } else {
-                            vector<string> content_type = split(
-                                request.getHeaderValue("Content-Type"), ";");
-                            if (content_type.size() != 2) {
-                                cerr << "[ERROR] no boundry in content "
-                                        "type !!\n";
-                                assert(false);
-                            } else {
-                                // TODO SAAD
-                                string multi_part = content_type.at(0);
-                                string boundry = content_type.at(1);
-                                cout << "[INFO] " << multi_part << " "
-                                     << boundry << '\n';
-                                string boundry_value =
-                                    split(boundry, "=").at(1);
-                                cout << "[INFO] "
-                                     << "boundry key " << boundry << '\n';
-                                {
-                                    // TODO check if the body have the
-                                    // needed info
-                                }
-                                response =
-                                    HttpResponse::redirect_moved_response(
-                                        "upload.html")
-                                        .build();
-                                // SAAD
-                            }
-                        }
-                        return;
-                    }
                 }
-            } else {
-                if (find(route.allow_methods.begin(), route.allow_methods.end(),
-                         method) == route.allow_methods.end()) {
-                    response =
-                        HttpResponse::error_response(405, info.error_page[405])
-                            .build();
-
+                vector<string> content_type =
+                    split(request.getHeaderValue("Content-Type"), ";");
+                if (content_type.size() != 2) {
+                    cerr << "[ERROR] no boundry in content "
+                            "type !!\n";
+                    assert(false);
                 } else {
-                    if (is_part_of_root(root, loc) &&
-                        is_dir(tools::url_path_correction(root, loc)) &&
-                        route.autoindex) {
-                        response =
-                            HttpResponse::generate_indexing(
-                                tools::url_path_correction(root, loc), loc)
-                                .build();
-                    } else {
-                        if (route.index.size() >= 1) {
-                            cout << G(DEBUG) << "handle indexes\n";
-                            response =
-                                HttpResponse::index_response(
-                                    route.index, info.root, info.error_page)
-                                    .build();
-                        } else if (route.index.empty() &&
-                                   route.ret_rn.size() == 1) {
-                            assert(route.ret_rn.size() == 1);
-                            pair<int, string> redirect = *route.ret_rn.begin();
-                            cout << G(DEBUG) << "redirect " << redirect.first
-                                 << " " << redirect.second << '\n';
-
-                            response = handle_redirection(redirect.first,
-                                                          redirect.second)
-                                           .build();
-                        } else {
-                            cerr << G(ERROR) << " no index + no return\n ";
-                            exit(1);
-                        }
+                    // TODO SAAD
+                    string multi_part = content_type.at(0);
+                    string boundry = content_type.at(1);
+                    cout << "[INFO] " << multi_part << " " << boundry << '\n';
+                    string boundry_value = split(boundry, "=").at(1);
+                    cout << "[INFO] "
+                         << "boundry key " << boundry << '\n';
+                    {
+                        // TODO check if the body have the
+                        // needed info
                     }
+                    return HttpResponse::redirect_moved_response("upload.html")
+                        .build();
+                    // SAAD
                 }
             }
         }
     }
-    client.clear_buffer();
-    cout << "[DEBUG] response start\n";
-    cout << response << '\n';
-    cout << "[DEBUG] response end\n";
+    if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
+        route.allow_methods.end()) {
+        return HttpResponse::error_response(405, info.error_page[405]).build();
+    }
+    if (is_part_of_root(root, loc) &&
+        is_dir(tools::url_path_correction(root, loc)) && route.autoindex) {
+        return HttpResponse::generate_indexing(
+                   tools::url_path_correction(root, loc), loc)
+            .build();
+    }
+    if (route.index.size() >= 1) {
+        cout << G(DEBUG) << "handle indexes\n";
+        return HttpResponse::index_response(route.index, info.root,
+                                            info.error_page)
+            .build();
+    } else if (route.index.empty() && route.ret_rn.size() == 1) {
+        assert(route.ret_rn.size() == 1);
+        pair<int, string> redirect = *route.ret_rn.begin();
+        cout << G(DEBUG) << "redirect " << redirect.first << " "
+             << redirect.second << '\n';
 
-    errno = 0;
+        return handle_redirection(redirect.first, redirect.second).build();
+    }
+    cerr << G(ERROR) << " no index + no return\n ";
+    exit(1);
+};
+
+void handle_requests(Kqueue& event_queue,
+                     TcpStream& client,
+                     map<pair<string, string>, serverInfo>& infos) {
+    // cout << G(DEBUG) << " request start\n";
+    // cout << "[" << client.get_buffer_request() << "]" << '\n';
+    // cout << G(DEBUG) << " request end\n";
+
+    if (client.get_buffer_request().size() == 0){
+        cout << G(INFO) << " client detached from Kqueue\n";
+        event_queue.detach(&client);
+        delete &client;
+        return;
+    }
+        // return;
+    cout << G(INFO) << " parsing request..." << endl;
+    HttpRequest request(client.get_buffer_request());
+    string response = get_response(request, client, infos);
+
+    client.clear_buffer();
+    // cout << "[DEBUG] response start\n";
+    // cout << response << '\n';
+    // cout << "[DEBUG] response end\n";
+
     cout << G(DEBUG) << " size of buffer == " << response.size() << '\n';
     ssize_t ret = 0;
-    if ((ret = client.write(response.data(), response.size() > 1024 * 100
-                                                 ? 1024 * 100
-                                                 : response.size())) <= 0) {
-        cerr << G(ERROR) << " " << strerror(errno) << '\n';
+    size_t towrite = 1000 * 1000;
+
+    // NOTE: this is called clamp
+    if (towrite > response.size())
+        towrite = response.size();
+
+    // if (request.error()) {
+    //     loop;
+    // }
+    cerr << G(INFO) << " responsing\n";
+    if ((ret = client.write(response.data(), towrite)) <= 0) {
+        if (ret < 0)
+            cerr << G(ERROR) << " " << strerror(errno) << '\n';
+        cout << G(INFO) << " client detached from Kqueue\n";
+        event_queue.detach(&client);
+        delete &client;
+        return;
     }
-    cerr << "****************************\n";
-    if (ret > 0 && static_cast<size_t>(ret) < response.size()) {
+
+    if (static_cast<size_t>(ret) < response.size()) {
         struct kevent evSet;
         bzero(&evSet, sizeof(struct kevent));
         EV_SET(&evSet, client.get_raw_fd(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
@@ -413,18 +416,17 @@ void handle_requests(Kqueue& event_queue,
             std::cerr << "kevent is joking!\n";
             exit(1);
         }
-        client.set_kevent(evSet);
         client.set_reponse_buffer(response.substr(ret, response.size()));
+        return;
     }
-    cerr << "****************************\n";
     cerr << G(DEBUG) << " return from send() == " << ret << '\n';
-    cerr << G(DEBUG) << " handling request error " << ret << '\n';
-    if (request.error() || request.getHeaderValue("Connection") == "" ||
+    if (request.error())
+        return;
+    if (request.getHeaderValue("Connection") == "" ||
         request.getHeaderValue("Connection") == "close") {
         cout << G(INFO) << " client detached from Kqueue\n";
         event_queue.detach(&client);
         delete &client;
-        return;
     }
     cerr << G(DEBUG) << " end of handling" << ret << '\n';
 }

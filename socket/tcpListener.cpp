@@ -5,6 +5,7 @@
 #include <cstring>
 
 static void shutdown_helper(int fd) {
+    // return;
     shutdown(fd, SHUT_RDWR);
     close(fd);
 }

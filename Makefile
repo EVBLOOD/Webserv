@@ -44,7 +44,7 @@ test: $(TEST)
 
 
 fast: $(NAME) $(SRCS)
-	c++ $(CXXFLAGS) $(SRCS) -O2 -DFAST -o $(NAME)_fast
+	c++ $(CXXFLAGS) $(SRCS) -O3 -DFAST -o $(NAME)_fast
 	./$(NAME)_fast 
 
 

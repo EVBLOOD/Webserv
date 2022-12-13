@@ -1,7 +1,6 @@
 #include "TcpStream.hpp"
 #include <sys/socket.h>
 
-#define MSG_CONNTERM 0x80
 TcpStream::TcpStream(int fd, const TcpListener& owner)
     : _fd(fd), _owner(owner), _request_buffer(), _response_buffer() {
     memset(&_event, 0, sizeof(Kevent));

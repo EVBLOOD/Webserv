@@ -17,12 +17,11 @@ class Kqueue {
 
    private:
     IListener& get_listener(int ident);
-    std::pair<int, struct kevent*> get_kevents();
+
 
    public:
     Kqueue();
     int get_kdata();
-    std::vector<IListener*> get_events();
     IListener& get_event();
     void attach(IListener* listener);
     void detach(IListener* listener);

@@ -100,6 +100,7 @@ std::string HttpRequest::getBody() {
 
 std::string HttpRequest::getHeaderValue(std::string key) {
     // TODO: make key lowercase
+    // struct cmp {}
     return _headers[key];
 }
 
