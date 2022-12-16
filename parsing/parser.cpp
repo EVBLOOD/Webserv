@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/15 18:45:03 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/12/16 14:05:16 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,8 +172,9 @@ void parser::separating<simpledir>(
 template <>
 void parser::separating<context_location>(std::list<tokengen>::iterator& begin,
                                           std::list<tokengen>::iterator& end,
-                                          bool server) {
+                                          bool serv) {
     //    std::cout << "context location\n";
+    (void)serv;
     tmploc = Location();
     std::string name;
     begin++;

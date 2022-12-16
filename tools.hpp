@@ -45,5 +45,5 @@ std::vector<std::string> open_to_serve(std::ifstream& file);
 bool is_file_readable(const std::string& path);
 
 bool is_file_exists(const std::string& path);
-
+std::string dealwithchuncked_buff(std::string primary, ssize_t& limit, bool x = false);
 };  // namespace tools

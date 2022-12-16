@@ -1,4 +1,5 @@
 #include "Request.hpp"
+#include <iterator>
 #include "tools.hpp"
 
 // char resp[] =
@@ -29,6 +30,7 @@ HttpRequest::HttpRequest(std::string request)
     assert(trim("\rabc\r", "\r") == "abc");
     assert(trim("\rabc\n", "\r\n") == "abc");
     _raw = request;
+    std::cout << "[" << request << "]" << std::endl;
     if (request[0] == '\0' || request.size() == 0) {
         _error = true;
         return;

@@ -12,6 +12,8 @@ class TcpStream : public IListener {
     Kevent _event;
     std::string _request_buffer;
     std::string _response_buffer;
+    int chunked;
+    ssize_t len_chunked;
 
    public:
     TcpStream(int fd, const TcpListener& owner);

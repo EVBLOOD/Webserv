@@ -1,0 +1,1 @@
+c++ -Wall -Wextra -Wshadow -std=c++98   -c -o main.o main.cpp

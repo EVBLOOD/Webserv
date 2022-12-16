@@ -36,7 +36,7 @@ SRCS_TEST =  tests.cpp\
 all: $(NAME)
 
 extra: 
-	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra
+	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra &&./$(NAME)_extra 
 
 test: $(TEST)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
@@ -48,7 +48,7 @@ fast: $(NAME) $(SRCS)
 	./$(NAME)_fast 
 
 
-run: all 
+run: fclean all 
 	@./$(NAME)
 
 $(NAME) : $(OBJS)
