@@ -48,8 +48,10 @@ bool TcpStream::is_response_not_finished() {
 };
 
 void TcpStream::add_to_request_buffer(std::string tail) {
+    // std::cout << "[start]\n";
+    // std::cout << "[" << tail << "]\n";
     if (chunked == -1) {
-        std::cout << "[" << tail << "]";
+        // std::cout << "[" << tail << "]";
         if (tail.find("Transfer-Encoding: chunked") != std::string::npos) {
             tail = tools::dealwithchuncked_buff(tail, len_chunked, true);
             chunked = 1;
@@ -61,6 +63,8 @@ void TcpStream::add_to_request_buffer(std::string tail) {
         // assert(false);
         tail = tools::dealwithchuncked_buff(tail, len_chunked);
     }
+    // std::cout << "[after]\n";
+    // std::cout << "[" << tail << "]\n";
     _request_buffer = _request_buffer + tail;
 };
 
@@ -69,8 +73,8 @@ std::string TcpStream::get_response_buffer() {
 };
 
 void TcpStream::clear_buffer() {
-    chunked = -1;
     len_chunked = 0;
+    chunked = -1;
     _request_buffer = std::string("");
 };
 

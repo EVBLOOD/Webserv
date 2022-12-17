@@ -154,40 +154,39 @@ std::string tools::dealwithchuncked_buff(std::string primary,
                                          bool x) {
     std::string ret = "";
     std::string number = "";
-    long long bodystart = 0;  // or header end
-    long long hexdel = 0;
+    ssize_t header_end = 0;  // or header end
+    ssize_t hexdel = 0;
     if (limit == 0) {
         if (x) {  // consider a long header after making stuff stable
-            bodystart = primary.find("\r\n\r\n");
-            if (static_cast<size_t>(bodystart) == std::string::npos)
+            header_end = primary.find("\r\n\r\n");
+            if (static_cast<size_t>(header_end) == std::string::npos)
                 return primary;
-            bodystart += 4;
-            ret = primary.substr(0, bodystart);
+            header_end += 4;
+            ret = primary.substr(0, header_end);
             if (ret == primary)
                 return ret;
-        }
-        while (number.empty()) {
-            hexdel = primary.find("\r\n", bodystart);
-            if (static_cast<size_t>(hexdel) == std::string::npos)
-                assert(false);
-            number = primary.substr(bodystart, hexdel - bodystart);
-            bodystart += 1;
-        }
+        } else
+            header_end = 2;
+        hexdel = primary.find("\r\n", header_end);
+        if (static_cast<size_t>(hexdel) == std::string::npos)
+            return "";
+        number = primary.substr(header_end, hexdel - header_end);  //[]
+        std::cout << "Number => [" << number << "]\n";
         std::stringstream StringStream;
         StringStream << std::hex << number;
         StringStream >> limit;
         if (limit == 0)
-            return "\r\n\r\n";
+            return "";
         hexdel += 2;
     }
-    long long size = primary.length() - hexdel -
-                     limit;  // left_from_primary - all_well_be_removed
+    ssize_t size = static_cast<ssize_t>(primary.length()) - hexdel -
+                   limit;  // left_from_primary - all_well_be_removed 5 - 10
     if (size > 0) {
-        std::cout << "in =<  " << std::endl;
+        // std::cout << "in =<  " << std::endl;
         ret += primary.substr(hexdel, limit);
-        std::cout << "size : " << size << " | limit: " << limit
-                  << " | limit + hexdel: " << hexdel + limit
-                  << " | tot: " << primary.length() << std::endl;
+        // std::cout << "size : " << size << " | limit: " << limit
+        //           << " | limit + hexdel: " << hexdel + limit
+        //           << " | tot: " << primary.length() << std::endl;
         ssize_t tmp = 0;
         ret += dealwithchuncked_buff(primary.substr(hexdel + limit, size), tmp);
         limit = tmp;

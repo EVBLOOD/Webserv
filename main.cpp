@@ -94,7 +94,7 @@ serverInfo get_the_server_info_for_the_client(
 // }
 
 pair<string, ssize_t> read_request(const TcpStream& client) {
-    array<char, 1024> buffer;
+    array<char, 1000 * 1000> buffer;
     ssize_t ret = 0;
 
     ret = client.read(buffer.data(), buffer.size());
@@ -371,15 +371,26 @@ void handle_requests(Kqueue& event_queue,
     // cout << "[" << client.get_buffer_request() << "]" << '\n';
     // cout << G(DEBUG) << " request end\n";
 
-    if (client.get_buffer_request().size() == 0){
+    if (client.get_buffer_request().size() == 0) {
         cout << G(INFO) << " client detached from Kqueue\n";
         event_queue.detach(&client);
         delete &client;
         return;
     }
-        // return;
+    // return;
     cout << G(INFO) << " parsing request..." << endl;
     HttpRequest request(client.get_buffer_request());
+
+    cout << "ABC " << request.getHeaderValue("Content-Length") << '\n';
+    cout << "ABC " << request.getBody().length() << '\n';
+    // cout << G(INFO) << " " << request.getBody().length() << " "
+    //      << std::stoul((request.getHeaderValue("Content-Length"))) << '\n';
+    if (!request.error() && request.getHeaderValue("Content-Length") != "" &&
+        request.getBody().length() + 4 <
+            std::stoul((request.getHeaderValue("Content-Length")))) {
+        return;
+    }
+
     string response = get_response(request, client, infos);
 
     client.clear_buffer();

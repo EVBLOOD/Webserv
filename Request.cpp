@@ -1,4 +1,6 @@
 #include "Request.hpp"
+#include <cassert>
+#include <iostream>
 #include <iterator>
 #include "tools.hpp"
 
@@ -25,36 +27,46 @@ HttpRequest::HttpRequest(std::string request)
       _headers(),
       _body(),
       _error(false) {
-    assert(trim(" abc ", " ") == "abc");
-    assert(trim("\nabc\n", "\n") == "abc");
-    assert(trim("\rabc\r", "\r") == "abc");
-    assert(trim("\rabc\n", "\r\n") == "abc");
     _raw = request;
     std::cout << "[" << request << "]" << std::endl;
     if (request[0] == '\0' || request.size() == 0) {
         _error = true;
         return;
     }
+    std::cout << "A" << '\n';
     std::vector<std::string> header_and_body = split(request, "\r\n\r\n");
-    if (header_and_body.size() == 0 || header_and_body.size() > 2) {
+    std::cout << "split: " << header_and_body.size() << "\n";
+    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[0] == "abcd");
+    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[1] == "wxyz");
+    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n").size() == 2);
+
+    std::cout << "A" << '\n';
+    if (header_and_body.size() == 0) {
         _error = true;
         return;
     }
+    std::cout << "A" << '\n';
     std::vector<std::string> splited = split(header_and_body[0], "\n");
     // std::vector<std::string> splited = split(request, "\n");
+    std::cout << "A" << '\n';
     if (splited.size() == 0) {
         _error = true;
         return;
     }
+    std::cout << "A" << '\n';
     std::vector<std::string> first_line = split(splited[0], " ");
+    std::cout << "A" << '\n';
     if (first_line.size() != 3) {
         _error = true;
         return;
     }
+    std::cout << "A" << '\n';
     _method = first_line[0];
     _location = first_line[1];
     _version = first_line[2];
+    std::cout << "A" << '\n';
     for (size_t i = 1; i < splited.size() && splited[i] != "\r"; ++i) {
+        std::cout << "A" << '\n';
         std::vector<std::string> tmp = split(splited[i], ":");
         // TODO: make key lower case
         std::string key = trim(tmp[0], "\n\r ");
@@ -66,13 +78,18 @@ HttpRequest::HttpRequest(std::string request)
         } else {
             value = trim(tmp[1], "\n\r ");
         }
+        std::cout << "A" << '\n';
 
         _headers[key] = value;
     }
-    if (header_and_body.size() > 2)
-        _body = header_and_body[1];
-    else
-        _body = "";
+    std::cout << "A" << '\n';
+    if (header_and_body.size() >= 2) {
+        // std::cout << "body" << header_and_body[1];
+        for (size_t s = 1; s < header_and_body.size(); ++s) {
+            _body += header_and_body[s];
+        }
+    }
+    std::cout << "A" << '\n';
 }
 
 void HttpRequest::dump() {

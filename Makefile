@@ -48,7 +48,7 @@ fast: $(NAME) $(SRCS)
 	./$(NAME)_fast 
 
 
-run: fclean all 
+run:  all 
 	@./$(NAME)
 
 $(NAME) : $(OBJS)
