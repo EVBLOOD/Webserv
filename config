@@ -17,7 +17,7 @@ server
 	error_page 502 /errors/502.html;
 
 
-	root /Users/sakllam/Webserv/public;
+	root /Users/sakllam/1/public;
 
 	location /
 	{

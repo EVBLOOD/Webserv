@@ -1,3 +1,4 @@
+#include <sys/_types/_size_t.h>
 #include <sys/event.h>
 #include <sys/signal.h>
 #include <algorithm>
@@ -6,7 +7,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <set>
+#include <sstream>
 #include <string>
+#include <vector>
 #include "Request.hpp"
 #include "Response.hpp"
 #include "parsing/location.hpp"
@@ -55,6 +58,102 @@ HttpResponse handle_redirection(int status, string location) {
     cerr << "[ERROR] invalid status for "
             "redirection\n";
     exit(1);
+}
+// fileuploading
+
+std::vector<std::string> linespliting(std::string line) {
+    size_t x;
+    std::vector<std::string> data;
+    size_t pos_start = 0;
+    line += ";";
+    while ((x = line.find(";", pos_start)) != std::string::npos) {
+        data.push_back(line.substr(pos_start, x - pos_start));
+        pos_start = x + 1;
+    }
+    return data;
+}
+
+std::map<std::string, std::string> grepdata(std::vector<std::string> data) {
+    std::map<std::string, std::string> key_val;
+    std::string trimed;
+    size_t x;
+    for (size_t i = 0; i < data.size(); i++) {
+        trimed = tools::trim(data[i], " ");
+        if (i == 0) {
+            x = trimed.find(":");
+            key_val[tools::trim(trimed.substr(0, x), " ")] =
+                tools::trim(trimed.substr(x + 1, trimed.length() - x), " ");
+            continue;
+        }
+        x = trimed.find("=");
+        key_val[tools::trim(trimed.substr(0, x), " ")] =
+            tools::trim(trimed.substr(x + 1, trimed.length() - x), " ");
+    }
+    return key_val;
+}
+
+std::map<std::string, std::string> get_fileinfo(std::string infos) {
+    size_t x = 0;
+    size_t pos_start = 0;
+    std::map<std::string, std::string> ret;
+    std::map<std::string, std::string> ret_;
+    std::map<std::string, std::string>::iterator big;
+    std::map<std::string, std::string>::iterator end;
+    infos += "\r\n";
+    while (1) {
+        x = infos.find("\r\n", pos_start);
+        if (x == std::string::npos)
+            break;
+        ret_ = grepdata(linespliting(infos.substr(pos_start, x - pos_start)));
+        pos_start = x + 2;
+        big = ret_.begin();
+        end = ret_.end();
+        while (big != end) {
+            ret.insert(*big);
+            big++;
+        }
+        if (pos_start >= infos.length())
+            break;
+    }
+    return (ret);
+}
+
+int file_handling(std::string part, std::string location) {
+    size_t x = part.find("\r\n\r\n");
+    if (x == std::string::npos)
+        return (1);
+    std::map<std::string, std::string> fileinfo =
+        get_fileinfo(part.substr(0, x));
+    std::string filename =
+        tools::url_path_correction(location, trim(fileinfo["filename"], "\""));
+    std::ofstream outfile(filename.c_str());
+    // size_t y = part.find("\r\n", x + 4);
+    outfile << part.substr(x + 4, (part.length() - 2) - (x + 4));
+    outfile.close();
+
+    return (0);
+}
+
+int extract_files(std::string body, std::string limit, std::string location) {
+    size_t y;
+    string part;
+    size_t x = body.find(limit);
+    if (x == std::string::npos)
+        return (1);
+    size_t position = x + limit.length();
+    while (1) {
+        y = body.find(limit, position);  // end of text
+        if (x == std::string::npos)
+            break;
+        part = body.substr(
+            position + 2,
+            y - 4 - position);  // + 4 for the /r/n.. in the end of file! and +
+                                // 2 for /r/n in the end of line
+        position = y + limit.length();
+        if (file_handling(part, location))
+            break;
+    }
+    return (0);
 }
 
 serverInfo get_the_server_info_for_the_client(
@@ -319,20 +418,21 @@ std::string get_response(HttpRequest request,
                             "type !!\n";
                     assert(false);
                 } else {
-                    // TODO SAAD
                     string multi_part = content_type.at(0);
                     string boundry = content_type.at(1);
                     cout << "[INFO] " << multi_part << " " << boundry << '\n';
                     string boundry_value = split(boundry, "=").at(1);
                     cout << "[INFO] "
                          << "boundry key " << boundry << '\n';
-                    {
-                        // TODO check if the body have the
-                        // needed info
+                    if ("multipart/form-data" == multi_part)
+                        extract_files(
+                            request.getBody(), boundry_value,
+                            tools::url_path_correction(root, it->first));
+                    else {
+                        assert(false);
                     }
                     return HttpResponse::redirect_moved_response("upload.html")
                         .build();
-                    // SAAD
                 }
             }
         }
@@ -383,6 +483,7 @@ void handle_requests(Kqueue& event_queue,
 
     cout << "ABC " << request.getHeaderValue("Content-Length") << '\n';
     cout << "ABC " << request.getBody().length() << '\n';
+    // std::cout << "[" << request.getBody() << "]\n";
     // cout << G(INFO) << " " << request.getBody().length() << " "
     //      << std::stoul((request.getHeaderValue("Content-Length"))) << '\n';
     if (!request.error() && request.getHeaderValue("Content-Length") != "" &&
@@ -392,6 +493,10 @@ void handle_requests(Kqueue& event_queue,
     }
 
     string response = get_response(request, client, infos);
+
+    // std::ofstream outfile("test.txt");
+    // outfile << client.get_buffer_request();
+    // outfile.close();
 
     client.clear_buffer();
     // cout << "[DEBUG] response start\n";

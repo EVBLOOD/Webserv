@@ -154,10 +154,10 @@ std::string tools::dealwithchuncked_buff(std::string primary,
                                          bool x) {
     std::string ret = "";
     std::string number = "";
-    ssize_t header_end = 0;  // or header end
+    ssize_t header_end = 0;
     ssize_t hexdel = 0;
     if (limit == 0) {
-        if (x) {  // consider a long header after making stuff stable
+        if (x) {
             header_end = primary.find("\r\n\r\n");
             if (static_cast<size_t>(header_end) == std::string::npos)
                 return primary;
@@ -170,8 +170,7 @@ std::string tools::dealwithchuncked_buff(std::string primary,
         hexdel = primary.find("\r\n", header_end);
         if (static_cast<size_t>(hexdel) == std::string::npos)
             return "";
-        number = primary.substr(header_end, hexdel - header_end);  //[]
-        std::cout << "Number => [" << number << "]\n";
+        number = primary.substr(header_end, hexdel - header_end);
         std::stringstream StringStream;
         StringStream << std::hex << number;
         StringStream >> limit;
@@ -180,18 +179,13 @@ std::string tools::dealwithchuncked_buff(std::string primary,
         hexdel += 2;
     }
     ssize_t size = static_cast<ssize_t>(primary.length()) - hexdel -
-                   limit;  // left_from_primary - all_well_be_removed 5 - 10
+                   limit;  // left_from_primary - all_well_be_removed
     if (size > 0) {
-        // std::cout << "in =<  " << std::endl;
         ret += primary.substr(hexdel, limit);
-        // std::cout << "size : " << size << " | limit: " << limit
-        //           << " | limit + hexdel: " << hexdel + limit
-        //           << " | tot: " << primary.length() << std::endl;
         ssize_t tmp = 0;
         ret += dealwithchuncked_buff(primary.substr(hexdel + limit, size), tmp);
         limit = tmp;
     } else {
-        std::cout << "in =>  " << std::endl;
         ret += primary.substr(hexdel, primary.length() - hexdel);
         limit = limit - (primary.length() - hexdel);
     }
