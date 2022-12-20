@@ -5,6 +5,7 @@
 #include <iterator>
 #include <ostream>
 #include <sstream>
+#include <string>
 
 std::string tools::G(int level) {
     switch (level) {
@@ -152,38 +153,58 @@ bool tools::is_file_exists(const std::string& path) {
 std::string tools::dealwithchuncked_buff(std::string primary,
                                          ssize_t& limit,
                                          bool x) {
-    std::string ret = "";
+    std::string ret;
     std::string number = "";
     ssize_t header_end = 0;
     ssize_t hexdel = 0;
+    // std::cout << "start\n";
+    // for (std::string::iterator b = primary.begin(); b != primary.end(); b++)
+    // {
+    //     if (*b == '\r')
+    //         std::cout << "[R]";
+    //     else if (*b == '\n')
+    //         std::cout << "[N]\n";
+    //     else
+    //         std::cout << *b;
+    // }
+    // std::cout << "\nend\n";
     if (limit == 0) {
         if (x) {
             header_end = primary.find("\r\n\r\n");
             if (static_cast<size_t>(header_end) == std::string::npos)
-                return primary;
+                assert(false);
             header_end += 4;
             ret = primary.substr(0, header_end);
             if (ret == primary)
                 return ret;
-        } else
-            header_end = 2;
+        } else {
+            if (primary.find("\r\n", 0) == 0)
+                header_end = 2;
+        }
         hexdel = primary.find("\r\n", header_end);
         if (static_cast<size_t>(hexdel) == std::string::npos)
-            return "";
+            assert(false);
         number = primary.substr(header_end, hexdel - header_end);
         std::stringstream StringStream;
         StringStream << std::hex << number;
         StringStream >> limit;
         if (limit == 0)
-            return "";
+            return ret;
         hexdel += 2;
     }
-    ssize_t size = static_cast<ssize_t>(primary.length()) - hexdel -
+    ssize_t size = static_cast<ssize_t>(primary.length()) - (hexdel + 2) -
                    limit;  // left_from_primary - all_well_be_removed
-    if (size > 0) {
+    ssize_t size_ = static_cast<ssize_t>(primary.length()) - hexdel -
+                    limit;  // left_from_primary - all_well_be_removed
+    if (size >= 0) {
         ret += primary.substr(hexdel, limit);
+        if (size == 0) {
+            limit = 0;
+            return ret;
+        }
         ssize_t tmp = 0;
-        ret += dealwithchuncked_buff(primary.substr(hexdel + limit, size), tmp);
+        ret +=
+            dealwithchuncked_buff(primary.substr(hexdel + limit, size_), tmp);
         limit = tmp;
     } else {
         ret += primary.substr(hexdel, primary.length() - hexdel);

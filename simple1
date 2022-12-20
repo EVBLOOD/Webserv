@@ -1,1 +1,0 @@
-part.substr(x + 4, part.length() - (x + 4))

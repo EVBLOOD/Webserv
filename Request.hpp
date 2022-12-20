@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sys/_types/_size_t.h>
 #include "socket_header.hpp"
 #include "tools.hpp"
 

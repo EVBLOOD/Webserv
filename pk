@@ -1,2 +1,0 @@
-c++ -Wall -Wextra -Wshadow -std=c++98   -c -o main.o main.cpp
-c++ -Wall -Wextra -Wshadow -std=c++98 -o Webserver main.o Request.o tools.o Response.o socket/TcpStream.o socket/kqueue.o socket/tcpListener.o parsing/location.o parsing/parser.o parsing/serverInfo.o parsing/tokengen.o

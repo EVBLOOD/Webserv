@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <string>
@@ -491,14 +492,15 @@ void handle_requests(Kqueue& event_queue,
             std::stoul((request.getHeaderValue("Content-Length")))) {
         return;
     }
-
+    if (client.get_buffer_request().size() <= 1024)
+        std::cout << client.get_buffer_request() << std::endl;
+    client.clear_buffer();
     string response = get_response(request, client, infos);
 
     // std::ofstream outfile("test.txt");
     // outfile << client.get_buffer_request();
     // outfile.close();
 
-    client.clear_buffer();
     // cout << "[DEBUG] response start\n";
     // cout << response << '\n';
     // cout << "[DEBUG] response end\n";

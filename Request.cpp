@@ -93,10 +93,8 @@ HttpRequest::HttpRequest(std::string request)
         _headers[key] = value;
     }
 
-    if (header_and_body.size() == 2)
-        _body += header_and_body[1];
-    else
-        _body = "";
+    for (size_t i = 1; i < header_and_body.size(); i++)
+        _body += header_and_body[i];
 }
 
 void HttpRequest::dump() {
