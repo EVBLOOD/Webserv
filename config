@@ -48,7 +48,7 @@ server
 	{
 		allow_methods GET;
 
-		fastcgi_pass /Users/orahmoun/.brew/bin/php-cgi;
+		fastcgi_pass /usr/bin/php;
 	}
 
 	location *.py

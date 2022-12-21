@@ -1,11 +1,14 @@
 #include <sys/_types/_size_t.h>
+#include <sys/_types/_ssize_t.h>
 #include <sys/event.h>
 #include <sys/signal.h>
+#include <unistd.h>
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <ostream>
 #include <set>
 #include <sstream>
@@ -22,7 +25,6 @@
 #include "socket/listener_interface.hpp"
 #include "socket/tcpListener.hpp"
 #include "tools.hpp"
-
 #define loop for (;;)
 #define IF_NOT(cond) if (!(cond))
 using namespace tools;
@@ -388,7 +390,13 @@ std::string get_response(HttpRequest request,
     string root = info.root;
     string const& loc = request.getLocation();
     map<string, Location>& locations = info.locations;
-    map<string, Location>::const_iterator it = locations.find(loc);
+    size_t _find;
+    std::string _loc = loc;
+    if ((_find = loc.find(".php")) != std::string::npos) {
+        if (loc.length() - _find == 4)
+            _loc = "*.php";
+    }
+    map<string, Location>::const_iterator it = locations.find(_loc);
     const string& method = request.getMethod();
     cout << G(INFO) << " " << method << "\n";
 
@@ -400,7 +408,35 @@ std::string get_response(HttpRequest request,
         return HttpResponse::error_response(405, info.error_page[405]).build();
     }
     Location route = it->second;
-    if (request.getHeaderValue("Content-Length") != "") {
+    std::cout << route.fastcgi_pass << "\n";
+    if (route.fastcgi_pass != "") {
+        int fd[2];
+        pipe(fd);
+        int pid = fork();
+        if (pid < 0)
+            assert(false);
+        if (pid == 0) {
+            std::string x = "/Users/sakllam/1/public/index.php";
+            const char* path = route.fastcgi_pass.c_str();
+            char* args[] = {(char*)path, (char*)x.c_str(), NULL};
+            close(fd[0]);
+            dup2(fd[1], 1);
+            close(fd[1]);
+            execve(path, args, NULL);
+        }
+        wait(NULL);
+        close(fd[1]);
+        char c;
+        std::string body;
+        while (read(fd[0], &c, 1) > 0) {
+            body.push_back(c);
+        }
+        close(fd[0]);
+        return HttpResponse(200, "1.1", "OK")
+            .add_to_body(body)
+            .add_content_type(".html")
+            .build();
+    } else if (request.getHeaderValue("Content-Length") != "") {
         if (request.getMethod() == "POST" && route.upload_enable) {
             if (find(route.allow_methods.begin(), route.allow_methods.end(),
                      method) == route.allow_methods.end()) {
