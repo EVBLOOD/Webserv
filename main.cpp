@@ -624,28 +624,51 @@ std::string get_response(HttpRequest request,
             }
         }
     }
+
     if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
         route.allow_methods.end()) {
         return HttpResponse::error_response(405, info.error_page[405]).build();
     }
+
     if (is_part_of_root(root, loc) &&
         is_dir(tools::url_path_correction(root, loc)) && route.autoindex) {
         return HttpResponse::generate_indexing(
                    tools::url_path_correction(root, loc), loc)
             .build();
     }
-    if (route.index.size() >= 1) {
-        cout << G(DEBUG) << "handle indexes\n";
-        return HttpResponse::index_response(route.index, info.root,
-                                            info.error_page)
-            .build();
-    } else if (route.index.empty() && route.ret_rn.size() == 1) {
-        assert(route.ret_rn.size() == 1);
-        pair<int, string> redirect = *route.ret_rn.begin();
-        cout << G(DEBUG) << "redirect " << redirect.first << " "
-             << redirect.second << '\n';
 
-        return handle_redirection(redirect.first, redirect.second).build();
+    if (method == "GET") {
+        if (route.index.size() >= 1) {
+            cout << G(DEBUG) << "handle indexes\n";
+            return HttpResponse::index_response(route.index, info.root,
+                                                info.error_page)
+                .build();
+        } else if (route.index.empty() && route.ret_rn.size() == 1) {
+            assert(route.ret_rn.size() == 1);
+            pair<int, string> redirect = *route.ret_rn.begin();
+            cout << G(DEBUG) << "redirect " << redirect.first << " "
+                 << redirect.second << '\n';
+
+            return handle_redirection(redirect.first, redirect.second).build();
+        }
+    }
+    if (method == "DELETE") {
+        if (is_part_of_root(root, loc)) {
+            char actualpath[PATH_MAX + 1];
+            realpath(url_path_correction(root, loc).c_str(), actualpath);
+            string cmd = "rm -rf " + string(actualpath);
+            system(cmd.c_str());
+            return HttpResponse(200, "1.1", "OK")
+                .add_to_body("<h1>The file was deleted.</h1>")
+                .add_content_type(".html")
+                .build();
+            ;
+        }
+        if (is_dir(url_path_correction(root, loc)) ||
+            is_file(url_path_correction(root, loc)))
+            return HttpResponse::error_response(405, info.error_page[405])
+                .build();
+        return HttpResponse::error_response(404, info.error_page[404]).build();
     }
     cerr << G(ERROR) << " no index + no return\n ";
     exit(1);

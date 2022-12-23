@@ -28,6 +28,11 @@ server
 		allow_methods GET;
 	}
 
+	location /delete
+	{
+		allow_methods DELETE;
+	}
+
     location /dir {
         autoindex on;
         allow_methods GET;
