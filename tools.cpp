@@ -7,6 +7,16 @@
 #include <sstream>
 #include <string>
 
+std::vector<std::string> tools::split_(std::string request, std::string lims) {
+    std::vector<std::string> end;
+    size_t x = request.find(lims);
+    if (x == std::string::npos)
+        return (end.push_back(request), end);
+    end.push_back(request.substr(0, x));
+    end.push_back(request.substr(x, request.length() - x));
+    return end;
+}
+
 std::string tools::G(int level) {
     switch (level) {
         case DEBUG:

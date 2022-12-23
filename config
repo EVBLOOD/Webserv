@@ -38,6 +38,12 @@ server
         allow_methods GET;
     }
 
+	# location post.html
+	# {
+	# 	allow_methods GET POST;
+	# 	return 200 get.php;
+	# }
+
 	location /return
 	{
 		allow_methods GET;
@@ -46,9 +52,9 @@ server
 
 	location *.php
 	{
-		allow_methods GET;
+		allow_methods GET POST;
 
-		fastcgi_pass /usr/bin/php;
+		fastcgi_pass /Users/sakllam/.brew/opt/php@8.1/bin/php-cgi;
 	}
 
 	location *.py
