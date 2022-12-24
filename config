@@ -64,9 +64,9 @@ server
 
 	location *.py
 	{
-		allow_methods GET;
+		allow_methods GET POST;
 
-		fastcgi_pass /usr/bin/python;
+		fastcgi_pass /usr/local/bin/python3;
 	}
 
 	location /upload

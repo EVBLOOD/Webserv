@@ -490,9 +490,12 @@ std::string get_response(HttpRequest request,
     map<string, Location>& locations = info.locations;
     size_t _find;
     std::string _loc = loc;
-    if ((_find = loc.find(".php")) != std::string::npos) {
+    if ((_find = loc.find(".php")) != std::string::npos ||
+        (_find = loc.find(".py")) != std::string::npos) {
         if (loc.length() - _find == 4)
             _loc = "*.php";
+        if (loc.length() - _find == 3)
+            _loc = "*.py";
     }
     map<string, Location>::const_iterator it = locations.find(_loc);
     const string& method = request.getMethod();
@@ -508,6 +511,12 @@ std::string get_response(HttpRequest request,
     Location route = it->second;
     std::cout << route.fastcgi_pass << "\n";
     if (route.fastcgi_pass != "") {
+        // if (_loc == "*.py") {
+        // }
+        // else
+        // {
+
+        // }
         char c;
         std::string x = tools::url_path_correction(root, loc);
         std::string body;
@@ -581,7 +590,10 @@ std::string get_response(HttpRequest request,
             body.push_back(c);
         }
         close(fd[0]);
-        body = tools::split_(body, "\r\n\r\n")[1];
+        std::cout << "[" << body << "]"
+                  << "\n";
+        std::vector<std::string> the_hole = tools::split_(body, "\r\n\r\n");
+        body = the_hole[the_hole.size() - 1];
         return HttpResponse(200, "1.1", "OK")
             .add_to_body(body)
             .add_content_type(".html")

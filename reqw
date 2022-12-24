@@ -1,0 +1,11 @@
+POST /post.py HTTP/1.1
+User-Agent: PostmanRuntime/7.25.0
+Accept: */*
+Postman-Token: 1619a5bb-f439-4997-80e5-7068e63df4d7
+Host: localhost:8080
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 27
+
+name=hello&email=abdeljalil
