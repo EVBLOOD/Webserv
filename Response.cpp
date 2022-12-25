@@ -3,6 +3,7 @@
 //
 
 #include "Response.hpp"
+#include <sys/syslimits.h>
 #include <iostream>
 #include <string>
 #include "tools.hpp"
@@ -48,10 +49,6 @@ HttpResponse::HttpResponse(int status,
 }
 
 std::string HttpResponse::build(HttpRequest& request) {
-    std::cout << "**********************************************\n";
-    std::cout << request.getHeaderValue("Cookie") << '\n';
-    std::cout << this->getHeaderValue("Set-Cookie") << '\n';
-    std::cout << "**********************************************\n";
     if (request.getHeaderValue("Cookie") != "" ||
         this->getHeaderValue("Set-Cookie") != "")
         add_header("Set-Cookie",
@@ -59,9 +56,6 @@ std::string HttpResponse::build(HttpRequest& request) {
                         ? ""
                         : (request.getHeaderValue("Cookie") + ";")) +
                        this->getHeaderValue("Set-Cookie"));
-    std::cout << "**********************************************\n";
-    std::cout << this->getHeaderValue("Set-Cookie") << '\n';
-    std::cout << "**********************************************\n";
     return build();
 };
 
@@ -225,7 +219,13 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
         action = "Conflict";
     } else if (status == 413) {
         action = "Payload Too Large";
-    } else {
+    } else if (status == 502) {
+        action = "Bad Gateway";
+    } else if (status == 503)
+    {
+        action = "Service Unavailable";
+    }
+    else {
         std::cerr << "[ERROR] unknown status code\n";
         exit(1);
     }

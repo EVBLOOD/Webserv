@@ -401,7 +401,7 @@ std::string get_response(HttpRequest request,
 
     if (it == locations.end()) {
         if (method == "GET") {
-            return HttpResponse::send_file(loc, info.root, info.error_page)
+            return HttpResponse::send_file(loc, info.root, info.error_page) /// cout
                 .build(request);
         }
         return HttpResponse::error_response(405, info.error_page[405])
@@ -425,14 +425,14 @@ std::string get_response(HttpRequest request,
             }
             if (pipe(fd) < 0) {
                 // TODO:
-                return HttpResponse::error_response(409, info.error_page[405])
+                return HttpResponse::error_response(503, info.error_page[405])
                     .build();
             }
 
             int pid = fork();
             if (pid < 0) {
                 // TODO:
-                return HttpResponse::error_response(409, info.error_page[405])
+                return HttpResponse::error_response(503, info.error_page[405])
                     .build();
             }
 
@@ -471,16 +471,19 @@ std::string get_response(HttpRequest request,
                     std::cerr << "ERROR EXECUTING CGI!\n";
                 exit(1);
             }
-            // wait(NULL);
         } else if (request.getMethod() == "GET" &&
                    std::find(route.allow_methods.begin(),
                              route.allow_methods.end(),
                              "GET") != route.allow_methods.end()) {
-            pipe(fd);
+            if (pipe(fd) < 0) {
+                //TODO:
+                return HttpResponse::error_response(503, info.error_page[405])
+                    .build();
+            }
             int pid = fork();
             if (pid < 0) {
-                // TODO:
-                return HttpResponse::error_response(409, info.error_page[405])
+                //TODO:
+                return HttpResponse::error_response(503, info.error_page[405])
                     .build();
             }
             if (pid == 0) {
@@ -507,8 +510,9 @@ std::string get_response(HttpRequest request,
         unlink("/tmp/.Webcgi");
         pid_t error_status = 0;
         wait(&error_status);
-        if (error_status == 1) {
+        if (error_status != 0) {
             close(fd[0]);
+            // TODO:
             return HttpResponse::error_response(409, info.error_page[405])
                 .build();
         }
@@ -516,17 +520,20 @@ std::string get_response(HttpRequest request,
             body.push_back(c);
         }
         close(fd[0]);
-        std::vector<std::string> the_hole = tools::split_(body, "\r\n\r\n");
-        body = the_hole[the_hole.size() - 1];
+        std::vector<std::string> cgi_result = tools::split_(body, "\r\n\r\n");
+        if (cgi_result.size() != 2) {
+            // TODO:
+            return HttpResponse::error_response(502, info.error_page[405])
+                .build();
+        }
+        body = cgi_result[cgi_result.size() - 1];
 
         // parse additional headers:
         HttpResponse http_response =
             HttpResponse(200, "1.1", "OK").add_to_body(body);
-        std::vector<string> headers = split(the_hole[0], "\n");
+        std::vector<string> headers = split(cgi_result[0], "\n");
         for (size_t i = 0; i < headers.size(); ++i) {
             std::vector<string> key_header = split_(headers[i], ":");
-            cout << "key " << key_header[0] << " value " << key_header[1]
-                 << '\n';
             if (key_header.size() == 1)
                 http_response.add_header(key_header[0], "");
             else
