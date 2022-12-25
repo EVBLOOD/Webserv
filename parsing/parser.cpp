@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/12/16 14:05:16 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/12/25 18:57:22 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,8 @@ enum KEYEGN { context_server, context_location, simpledir };
 #define M "upload_store"          // place to put your stuff in
 #define N "server_name"           // place to put your stuff in
 #include <stdio.h>
-parser::parser(const std::string& filename) {
-    config.open(filename);          // open file
+parser::parser(const std::string& filename)
+    : config(filename), servers(), tmploc(), tmpserv() {  // open file
     if (config.is_open() == false)  // protection mode: file opened?
     {                               // no ? okey
         //        std::cout << "Some respect please ! \n";
@@ -200,7 +200,6 @@ template <>
 void parser::separating<context_server>(std::list<tokengen>::iterator& begin,
                                         std::list<tokengen>::iterator& end,
                                         bool serv) {
-    //    std::cout << "context server \n";
     tmpserv = serverInfo();
     CURLWAIT(begin, end, true);
     if (begin == end || (begin->type != WORD && begin->content != A))

@@ -1,6 +1,7 @@
 #include "Request.hpp"
 #include <sys/_types/_size_t.h>
 #include <cassert>
+#include <exception>
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -24,27 +25,22 @@
 // std::vector<std::string> _body;
 
 HttpRequest::HttpRequest(std::string request)
-    : _raw(),
+    : _raw(request),
       _method(),
       _location(),
       _version(),
       _headers(),
       _body(),
       _error(false) {
-    _raw = request;
-    // std::cout << "[" << request << "]" << std::endl;
-    if (request[0] == '\0' || request.size() == 0) {
+    if (request.empty() || request[0] == '\0') {
         _error = true;
         return;
     }
-    std::cout << "-------------------------------\n";
-    std::cout << request << "\n";
-    std::cout << "-------------------------------\n";
+    // std::cout << "-------------------------------\n";
+    // std::cout << request << "\n";
+    // std::cout << "-------------------------------\n";
     std::vector<std::string> header_and_body =
         tools::split_(request, "\r\n\r\n");
-    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[0] == "abcd");
-    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[1] == "wxyz");
-    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n").size() == 2);
 
     if (header_and_body.size() == 0) {
         _error = true;
@@ -52,7 +48,6 @@ HttpRequest::HttpRequest(std::string request)
     }
 
     std::vector<std::string> splited = split(header_and_body[0], "\n");
-    // std::vector<std::string> splited = split(request, "\n");
 
     if (splited.size() == 0) {
         _error = true;
@@ -70,6 +65,11 @@ HttpRequest::HttpRequest(std::string request)
     _location = first_line[1];
     _version = first_line[2];
 
+    // if (_version != "HTTP/1.1") {
+    //     _error = true;
+    //     return;
+    // }
+
     for (size_t i = 1; i < splited.size() && splited[i] != "\r"; ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
         // TODO: make key lower case
@@ -84,6 +84,26 @@ HttpRequest::HttpRequest(std::string request)
         }
 
         _headers[key] = value;
+    }
+
+    if (getHeaderValue("Host").empty() ||
+        getHeaderValue("User-Agent").empty()) {
+        _error = true;
+        return;
+    }
+
+    if (getMethod() == "POST") {
+        if (getHeaderValue("Content-Type").empty() ||
+            getHeaderValue("Content-Length").empty()) {
+            _error = true;
+            return;
+        }
+        try {
+            std::stoull(getHeaderValue("Content-Length"));
+        } catch (std::exception& e) {
+            _error = true;
+            return;
+        }
     }
 
     for (size_t i = 1; i < header_and_body.size(); i++)

@@ -221,6 +221,10 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
         action = "Forbidden";
     } else if (status == 405) {
         action = "Method Not Allowed";
+    } else if (status == 409) {
+        action = "Conflict";
+    } else if (status == 413) {
+        action = "Payload Too Large";
     } else {
         std::cerr << "[ERROR] unknown status code\n";
         exit(1);

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <sys/_types/_pid_t.h>
 #include <sys/_types/_size_t.h>
 #include <sys/_types/_ssize_t.h>
 #include <sys/event.h>
@@ -26,6 +27,7 @@
 #include "socket/kqueue.hpp"
 #include "socket/listener_interface.hpp"
 #include "socket/tcpListener.hpp"
+#include "socket_header.hpp"
 #include "tools.hpp"
 
 #define loop for (;;)
@@ -41,14 +43,6 @@ using std::pair;
 using std::set;
 using std::string;
 using std::vector;
-
-// void print(std::string& type, std::string msg) {
-//     cout << "[" << type << "] " << msg << '\n';
-// }
-
-// void print(std::string msg) {
-//     cout << msg << '\n';
-// }
 
 void handle_new_connection(Kqueue& kq, TcpListener* server);
 
@@ -162,62 +156,6 @@ std::vector<std::string> extract_args(std::string body, std::string limit) {
     }
     return res;
 }
-// fileuploading
-
-// std::vector<std::string> linespliting(std::string line) {
-//     size_t x;
-//     std::vector<std::string> data;
-//     size_t pos_start = 0;
-//     line += ";";
-//     while ((x = line.find(";", pos_start)) != std::string::npos) {
-//         data.push_back(line.substr(pos_start, x - pos_start));
-//         pos_start = x + 1;
-//     }
-//     return data;
-// }
-
-// std::map<std::string, std::string> grepdata(std::vector<std::string> data) {
-//     std::map<std::string, std::string> key_val;
-//     std::string trimed;
-//     size_t x;
-//     for (size_t i = 0; i < data.size(); i++) {
-//         trimed = tools::trim(data[i], " ");
-//         if (i == 0) {
-//             x = trimed.find(":");
-//             key_val[tools::trim(trimed.substr(0, x), " ")] =
-//                 tools::trim(trimed.substr(x + 1, trimed.length() - x), " ");
-//             continue;
-//         }
-//         x = trimed.find("=");
-//         key_val[tools::trim(trimed.substr(0, x), " ")] =
-//             tools::trim(trimed.substr(x + 1, trimed.length() - x), " ");
-//     }
-//     return key_val;
-// }
-
-// std::map<std::string, std::string> get_fileinfo(std::string infos) {
-//     size_t x = 0;
-//     size_t pos_start = 0;
-//     std::map<std::string, std::string> ret;
-//     std::map<std::string, std::string> ret_;
-//     std::map<std::string, std::string>::iterator big;
-//     std::map<std::string, std::string>::iterator end;
-//     infos += "\r\n";
-//     while (1) {
-//         x = infos.find("\r\n", pos_start);
-//         if (x == std::string::npos)
-//             break;
-//         ret_ = grepdata(linespliting(infos.substr(pos_start, x -
-//         pos_start))); pos_start = x + 2; big = ret_.begin(); end =
-//         ret_.end(); while (big != end) {
-//             ret.insert(*big);
-//             big++;
-//         }
-//         if (pos_start >= infos.length())
-//             break;
-//     }
-//     return (ret);
-// }
 
 int file_handling(std::string part, std::string location) {
     size_t x = part.find("\r\n\r\n");
@@ -261,24 +199,16 @@ serverInfo get_the_server_info_for_the_client(
     string HostHeader,
     TcpStream& client,
     map<pair<string, string>, serverInfo>& server_infos) {
-    // PARSE HOST HEADER FROM THE REQUEST
-    // TODO handle empty Host
-    assert(!HostHeader.empty());
-    vector<string> tmp = split(HostHeader, ":");
+    vector<string> host_header = split_(HostHeader, ":");
 
-    // TODO handle not having both the host and port in Host
-    assert(tmp.size() <= 2);
-
-    string host = trim(tmp.at(0), " ");
+    string host = trim(host_header[0], " ");
     string port;
-    if (tmp.size() != 1)
-        port = trim(tmp.at(1), " ");
 
-    cout << "---> The request contains the Host header "
-            "with {host, port} == {"
-         << host << "," << port << "}" << '\n';
+    if (host_header.size() == 2) {
+        port = trim(host_header[1], " ");
+    }
 
-    if (client.get_port() != port) {
+    if (port.empty() || client.get_port() != port) {
         port = client.get_port();
         host = HostHeader;
     }
@@ -289,26 +219,17 @@ serverInfo get_the_server_info_for_the_client(
         return server_infos.at(make_pair(port, ""));
     return it->second;
 }
-// void printc(char c) {
-//     printf("[%c] [%u] [%d]\n", c, c, c);
-// }
 
 pair<string, ssize_t> read_request(const TcpStream& client) {
-    array<char, 1000 * 1000> buffer;
-    ssize_t ret = 0;
-
-    ret = client.read(buffer.data(), buffer.size());
-
-    cout << G(DEBUG) << " return value of read is " << ret << '\n';
-    //////
+    array<char, BUFFER_SIZE> buffer;
+    ssize_t ret = client.read(buffer.data(), buffer.size());
+    if (ret <= 0)
+        return make_pair(string(), ret);
     std::string tmp;
+    tmp.reserve(ret);
     for (ssize_t s = 0; s < ret; s++) {
         tmp.push_back(buffer.data()[s]);
     }
-    if (ret >= 0) {
-        assert(static_cast<size_t>(ret) == tmp.size());
-    }
-    //////
     return make_pair(tmp, ret);
 }
 
@@ -325,11 +246,14 @@ int main() {
     cout.rdbuf(NULL);
     cerr.rdbuf(NULL);
 #endif
+
+    cout << G(INFO) << " parsing\n";
     parser file("config");
     list<tokengen> tokens = file.generate();
     vector<serverInfo> servers_info = file.lexer_to_data(tokens);
-
     ////////////////////////////////////////////////////////////////////////
+
+    cout << G(INFO) << " creating the servers\n";
     Kqueue event_queue;
 
     set<pair<string, string> > already_bounded;
@@ -358,17 +282,17 @@ int main() {
             }
         }
     }
-    std::cout << "-------------------------------------------------------------"
-                 "------------------\n";
+
+    ////////////////////////////////////////////////////////////////////////
+
+    cout << G(INFO) << " start the main loop\n";
     loop {
-        cout << G(INFO) << " Kqueue size == " << event_queue.size() << '\n';
         cout << G(INFO) << " waiting for events ....\n";
         IListener& listener = event_queue.get_event();
         cout << G(INFO) << " event fired\n";
         Kevent kv = listener.get_kevent();
 
         if (kv.filter == EVFILT_EXCEPT) {
-            cout << G(INFO) << " EOF event\n";
             event_queue.detach(&listener);
             if (dynamic_cast<TcpListener*>(&listener)) {
                 delete dynamic_cast<TcpListener*>(&listener);
@@ -379,33 +303,24 @@ int main() {
         }
 
         ssize_t ret = 0;
-        cout << G(INFO) << " handling events\n";
         if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
                                   dynamic_cast<TcpListener*>(&listener));
         } else {
             TcpStream& client = dynamic_cast<TcpStream&>(listener);
-            cerr << G(DEBUG) << "request buffer size == "
-                 << client.get_buffer_request().size() << '\n';
-            cerr << G(DEBUG) << "response buffer size == "
-                 << client.get_response_buffer().size() << '\n';
 
             if (kv.filter == EVFILT_WRITE) {
-                // assert(client.is_response_not_finished() != 0);
-                cerr << G(DEBUG) << " handling big write\n";
-                ret = 0;
+                cerr << G(INFO) << " handling big write\n";
                 std::string response = client.get_response_buffer();
-                size_t towrite = 1000 * 1000;
-                ;
+                size_t towrite = BUFFER_SIZE;
                 if (towrite > response.size())
                     towrite = response.size();
                 if ((ret = client.write(response.data(), towrite)) <= 0) {
-                    cerr << G(ERROR) << " " << strerror(errno) << '\n';
                     event_queue.detach(&client);
                     delete &client;
                     continue;
                 }
-                if (static_cast<size_t>(ret) <= response.size()) {
+                if (static_cast<size_t>(ret) < response.size()) {
                     client.set_reponse_buffer(
                         response.substr(ret, response.size()));
                 } else {
@@ -416,38 +331,29 @@ int main() {
                            0, 0, NULL);
                     if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0,
                                NULL) == -1) {
-                        std::cerr << "kevent is joking!\n";
-                        exit(1);
+                        event_queue.detach(&client);
+                        delete &client;
+                        continue;
                     }
                     client.set_reponse_buffer("");
                 }
                 continue;
             }
-            cout << G(INFO) << " data == " << kv.data << endl;
+            if (kv.filter & EVFILT_READ && kv.data == 0) {
+                event_queue.detach(&client);
+                delete &client;
+                continue;
+            }
             if (kv.data != 0) {
-                cout << G(INFO) << " the client comming from {host, port} == {"
-                     << client.get_host() << "," << client.get_port() << "}"
-                     << '\n';
-                cout << G(INFO) << " client x: " << client.get_raw_fd()
-                     << "       ---> is ready for IO\n";
-                cout << G(INFO) << " reading the request .." << endl;
-
+                cout << G(INFO) << " client is ready for IO " << endl;
                 pair<string, ssize_t> p = read_request(client);
-                cout << G(INFO) << " finished reading the request\n";
-                const string& request_str = p.first;
                 ret = p.second;
-                cout << G(DEBUG) << " + " << G(DEBUG) << " return value is "
-                     << ret << " size of the request is " << request_str.size()
-                     << '\n';
-
                 if (ret <= 0) {
-                    if (ret < 0) {
-                        cerr << G(ERROR) << " read error !\n";
-                    }
                     event_queue.detach(&client);
                     delete &client;
                     continue;
                 }
+                const string& request_str = p.first;
                 client.add_to_request_buffer(request_str);
             }
             if (kv.data - ret == 0) {
@@ -460,22 +366,15 @@ int main() {
 
 void handle_new_connection(Kqueue& event_queue, TcpListener* server) {
     TcpStream& client = server->accept();
-    cout << G(INFO) << " the server with {host, port} == {"
-         << server->get_host() << "," << server->get_port() << "}" << '\n';
-    cout << "       ---> is accepting a new connection\n";
-    cout << "----------------------------------------------------\n";
-    cout << G(INFO) << " attaching the newly accepted client to the Kqueue\n";
+    cout << G(INFO) << "accepting a new connection\n";
     event_queue.attach(&client);
 }
 
 std::string get_response(HttpRequest request,
                          TcpStream& client,
                          map<pair<string, string>, serverInfo>& infos) {
-    // TODO:
-    //  HttpRequest request();
     if (request.error()) {
-        cout << G(ERROR) << " failed to parse request!\n";
-
+        // TODO:
         return HttpResponse(403, "1.1", "Forbiden")
             .add_content_type(".html")
             .add_to_body("<h>404</h>")
@@ -485,7 +384,7 @@ std::string get_response(HttpRequest request,
     serverInfo info =
         get_the_server_info_for_the_client(HostHeader, client, infos);
 
-    string root = info.root;
+    string const& root = info.root;
     string const& loc = request.getLocation();
     map<string, Location>& locations = info.locations;
     size_t _find;
@@ -494,12 +393,11 @@ std::string get_response(HttpRequest request,
         (_find = loc.find(".py")) != std::string::npos) {
         if (loc.length() - _find == 4)
             _loc = "*.php";
-        if (loc.length() - _find == 3)
+        else if (loc.length() - _find == 3)
             _loc = "*.py";
     }
     map<string, Location>::const_iterator it = locations.find(_loc);
     const string& method = request.getMethod();
-    cout << G(INFO) << " " << method << "\n";
 
     if (it == locations.end()) {
         if (method == "GET") {
@@ -510,34 +408,35 @@ std::string get_response(HttpRequest request,
             .build(request);
     }
     Location route = it->second;
-    std::cout << route.fastcgi_pass << "\n";
     if (route.fastcgi_pass != "") {
-        // if (_loc == "*.py") {
-        // }
-        // else
-        // {
-
-        // }
-
         char c;
-        std::string x = tools::url_path_correction(root, loc);
+        std::string script_path = tools::url_path_correction(root, loc);
         std::string body;
-        const char* path = route.fastcgi_pass.c_str();
+        const char* cgi_path = route.fastcgi_pass.c_str();
         int fd[2];
         if (request.getMethod() == "POST" &&
             std::find(route.allow_methods.begin(), route.allow_methods.end(),
                       "POST") != route.allow_methods.end()) {
-            pipe(fd);
+            if ((info.client_max_body_size * 1024) <
+                std::stoull(request.getHeaderValue("Content-Length"))) {
+                // TODO:
+                return HttpResponse::error_response(413, info.error_page[405])
+                    .build();
+            }
+            if (pipe(fd) < 0) {
+                // TODO:
+                return HttpResponse::error_response(409, info.error_page[405])
+                    .build();
+            }
 
             int pid = fork();
-            if (pid < 0)
-                assert(false);
-            if (pid == 0) {
-                cout << "REQUEST **********************\n";
-                request.dump();
-                cout << request.getBody() << '\n';
-                cout << "REQUEST END**********************\n";
+            if (pid < 0) {
+                // TODO:
+                return HttpResponse::error_response(409, info.error_page[405])
+                    .build();
+            }
 
+            if (pid == 0) {
                 if (!request.getHeaderValue("Cookie").empty())
                     setenv("HTTP_COOKIE",
                            request.getHeaderValue("Cookie").c_str(), 1);
@@ -550,12 +449,17 @@ std::string get_response(HttpRequest request,
                 setenv("REDIRECT_STATUS", "", 1);
                 setenv("CONTENT_TYPE",
                        request.getHeaderValue("Content-Type").c_str(), 1);
-                char* args[] = {(char*)path, (char*)x.c_str(), NULL};
-                std::ofstream tmpfile("/tmp/Webcgi");
+                char* args[] = {(char*)cgi_path, (char*)script_path.c_str(),
+                                NULL};
+                unlink("/tmp/.Webcgi");
+                std::ofstream tmpfile("/tmp/.Webcgi");
+                if (!tmpfile.is_open() || tmpfile.fail()) {
+                    exit(1);
+                }
                 tmpfile << tools::trim(request.getBody(), "\r\n\r\n");
                 tmpfile.close();
                 int fdf;
-                fdf = open("/tmp/Webcgi", O_RDWR);
+                fdf = open("/tmp/.Webcgi", O_RDWR);
                 dup2(fdf, 0);
                 extern char** environ;
                 char** env = environ;
@@ -563,7 +467,7 @@ std::string get_response(HttpRequest request,
                 close(fd[0]);
                 dup2(fd[1], 1);
                 close(fd[1]);
-                if (execve(path, args, env) == -1)
+                if (execve(cgi_path, args, env) == -1)
                     std::cerr << "ERROR EXECUTING CGI!\n";
                 exit(1);
             }
@@ -574,8 +478,11 @@ std::string get_response(HttpRequest request,
                              "GET") != route.allow_methods.end()) {
             pipe(fd);
             int pid = fork();
-            if (pid < 0)
-                assert(false);
+            if (pid < 0) {
+                // TODO:
+                return HttpResponse::error_response(409, info.error_page[405])
+                    .build();
+            }
             if (pid == 0) {
                 if (request.getHeaderValue("Cookie") != "")
                     setenv("HTTP_COOKIE",
@@ -587,26 +494,32 @@ std::string get_response(HttpRequest request,
                 setenv("REDIRECT_STATUS", "", 1);
                 extern char** environ;
                 char** env = environ;
-                char* args[] = {(char*)path, (char*)x.c_str(), NULL};
+                char* args[] = {(char*)cgi_path, (char*)script_path.c_str(),
+                                NULL};
                 close(fd[0]);
                 dup2(fd[1], 1);
                 close(fd[1]);
-                execve(path, args, env);
+                execve(cgi_path, args, env);
                 exit(1);
             }
         }
-        wait(NULL);
-        unlink("/tmp/Webcgi");
         close(fd[1]);
+        unlink("/tmp/.Webcgi");
+        pid_t error_status = 0;
+        wait(&error_status);
+        if (error_status == 1) {
+            close(fd[0]);
+            return HttpResponse::error_response(409, info.error_page[405])
+                .build();
+        }
         while (read(fd[0], &c, 1) > 0) {
             body.push_back(c);
         }
         close(fd[0]);
         std::vector<std::string> the_hole = tools::split_(body, "\r\n\r\n");
         body = the_hole[the_hole.size() - 1];
-        cout << the_hole[0] << '\n';
-        // parse additional headers
 
+        // parse additional headers:
         HttpResponse http_response =
             HttpResponse(200, "1.1", "OK").add_to_body(body);
         std::vector<string> headers = split(the_hole[0], "\n");
@@ -620,10 +533,15 @@ std::string get_response(HttpRequest request,
                 http_response.add_header(key_header[0], key_header[1]);
         }
 
-        //////////////////////////
         return http_response.build(request);
     } else if (request.getHeaderValue("Content-Length") != "") {
         if (request.getMethod() == "POST" && route.upload_enable) {
+            if ((info.client_max_body_size * 1024) <
+                std::stoull(request.getHeaderValue("Content-Length"))) {
+                // TODO:
+                return HttpResponse::error_response(413, info.error_page[405])
+                    .build();
+            }
             if (find(route.allow_methods.begin(), route.allow_methods.end(),
                      method) == route.allow_methods.end()) {
                 return HttpResponse::error_response(405, info.error_page[405])
@@ -716,61 +634,28 @@ std::string get_response(HttpRequest request,
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo>& infos) {
-    // cout << G(DEBUG) << " request start\n";
-    // cout << "[" << client.get_buffer_request() << "]" << '\n';
-    // cout << G(DEBUG) << " request end\n";
-
     if (client.get_buffer_request().size() == 0) {
-        cout << G(INFO) << " client detached from Kqueue\n";
         event_queue.detach(&client);
         delete &client;
         return;
     }
-    // return;
-    cout << G(INFO) << " parsing request..." << endl;
     HttpRequest request(client.get_buffer_request());
 
-    request.dump();
-    cout << "ABC " << request.getHeaderValue("Content-Length") << '\n';
-    // cout << "ABC " << request.getBody().length() << '\n';
-    // std::cout << "[" << request.getBody() << "]\n";
-    // cout << G(INFO) << " " << request.getBody().length() << " "
-    //      << std::stoul((request.getHeaderValue("Content-Length"))) << '\n';
-    if (!request.error() && request.getHeaderValue("Content-Length") != "" &&
+    if (!request.error() && request.getMethod() == "POST" &&
+        request.getHeaderValue("Content-Length") != "" &&
         request.getBody().length() <
-            std::stoul((request.getHeaderValue("Content-Length")))) {
+            std::stoull((request.getHeaderValue("Content-Length")))) {
         return;
-    }
-    if (client.get_buffer_request().size() <= 1024) {
-        std::cout << client.get_buffer_request() << std::endl;
     }
     client.clear_buffer();
     string response = get_response(request, client, infos);
 
-    // std::ofstream outfile("test.txt");
-    // outfile << client.get_buffer_request();
-    // outfile.close();
-
-    // cout << "[DEBUG] response start\n";
-    // cout << response << '\n';
-    // cout << "[DEBUG] response end\n";
-
-    cout << G(DEBUG) << " size of buffer == " << response.size() << '\n';
     ssize_t ret = 0;
-    size_t towrite = 1000 * 1000;
+    size_t towrite = BUFFER_SIZE;
 
-    // NOTE: this is called clamp
     if (towrite > response.size())
         towrite = response.size();
-
-    // if (request.error()) {
-    //     loop;
-    // }
-    cerr << G(INFO) << " responsing\n";
     if ((ret = client.write(response.data(), towrite)) <= 0) {
-        if (ret < 0)
-            cerr << G(ERROR) << " " << strerror(errno) << '\n';
-        cout << G(INFO) << " client detached from Kqueue\n";
         event_queue.detach(&client);
         delete &client;
         return;
@@ -781,20 +666,17 @@ void handle_requests(Kqueue& event_queue,
         bzero(&evSet, sizeof(struct kevent));
         EV_SET(&evSet, client.get_raw_fd(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
         if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0, NULL) == -1) {
-            std::cerr << "kevent is joking!\n";
-            exit(1);
+            event_queue.detach(&client);
+            delete &client;
+            return;
         }
         client.set_reponse_buffer(response.substr(ret, response.size()));
         return;
     }
-    cerr << G(DEBUG) << " return from send() == " << ret << '\n';
-    if (request.error())
-        return;
-    if (request.getHeaderValue("Connection") == "" ||
+
+    if (request.error() || request.getHeaderValue("Connection").empty() ||
         request.getHeaderValue("Connection") == "close") {
-        cout << G(INFO) << " client detached from Kqueue\n";
         event_queue.detach(&client);
         delete &client;
     }
-    cerr << G(DEBUG) << " end of handling" << ret << '\n';
 }

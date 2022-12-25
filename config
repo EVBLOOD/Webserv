@@ -1,8 +1,6 @@
 server
 {
 	listen          8080;
-	#listen          9090;
-	#listen          9091;
 
 	host localhost;
 
@@ -43,11 +41,6 @@ server
         allow_methods GET;
     }
 
-	# location post.html
-	# {
-	# 	allow_methods GET POST;
-	# 	return 200 get.php;
-	# }
 
 	location /return
 	{
@@ -76,61 +69,3 @@ server
 		upload_store /upload;
 	}
 }
-
-#server
-#{
-#	listen          8080;
-#	listen          8081;
-#	listen          9999;
-#	listen          2565;
-#
-#	host localhost;
-#
-#	server_name youtube.com;
-#	server_name     example.com;
-#
-#	client_max_body_size    1024;
-#
-#	error_page 403 /public/errors/403.html;
-#	error_page 404 /public/errors/404.html;
-#	error_page 405 /public/errors/404.html;
-#	error_page 500 /public/errors/500.html;
-#	error_page 502 /public/errors/502.html;
-#
-#	root /Users/sakllam/Webserv;
-#
-#	location /
-#	{
-#		index main.cpp;
-#
-#		autoindex off;
-#		allow_methods GET POST DELETE;
-#	}
-#
-#	location /saad
-#	{
-#		return 301 public/app.css;
-#	}
-#
-#	location *.php
-#	{
-#		allow_methods GET POST;
-#
-#		fastcgi_pass /Users/orahmoun/.brew/bin/php-cgi;
-#	}
-#
-#	location *.py
-#	{
-#		allow_methods GET POST;
-#
-#		fastcgi_pass /usr/bin/python;
-#	}
-#
-#	location /upload
-#	{
-#		allow_methods POST GET;
-#		upload_enable on;
-#		upload_store /upload;
-#	}
-#}
-#

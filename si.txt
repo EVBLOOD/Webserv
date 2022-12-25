@@ -1,4 +1,6 @@
 http://localhost:8080
+http://localhost:8080/index.php
+http://localhost:8080/hello_python.py
 http://localhost:8080/video.mp4
 http://localhost:8080/image_test.html
 http://localhost:8080/oussama

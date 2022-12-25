@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/30 15:38:10 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/12/25 21:34:27 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,15 @@ void serverInfo::setters<sethost>(std::list<tokengen>::iterator& big,
     big++;
 }
 
-serverInfo::serverInfo() {}
+serverInfo::serverInfo()
+    : index(),
+      host(),
+      port(),
+      server_name(),
+      error_page(),
+      root(),
+      locations(),
+      client_max_body_size(1024) {}
 
 serverInfo::~serverInfo() {}
 
