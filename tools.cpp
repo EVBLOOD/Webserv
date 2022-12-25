@@ -13,7 +13,7 @@ std::vector<std::string> tools::split_(std::string request, std::string lims) {
     if (x == std::string::npos)
         return (end.push_back(request), end);
     end.push_back(request.substr(0, x));
-    end.push_back(request.substr(x, request.length() - x));
+    end.push_back(request.substr(x + lims.length(), request.length() - x));
     return end;
 }
 
@@ -112,35 +112,56 @@ bool tools::is_file(std::string path) {
     return S_ISREG(path_stat.st_mode);
 }
 
-std::vector<std::string> tools::split(std::string str, std::string del) {
-    std::vector<std::string> res;
-    size_t pos = 0;
-    while ((pos = str.find(del)) != std::string::npos) {
-        res.push_back(str.substr(0, pos));
-        str = str.substr(pos + del.size(), str.size());
+// std::vector<std::string> tools::split(std::string str, std::string del) {
+//     std::vector<std::string> res;
+//     size_t pos = 0;
+//     while ((pos = str.find(del)) != std::string::npos) {
+//         res.push_back(str.substr(0, pos));
+//         str = str.substr(pos + del.size(), str.size());
+//     }
+//     if (str.empty())
+//         return res;
+//     res.push_back(str);
+//     return res;
+// }
+
+std::vector<std::string> tools::split(std::string s, std::string delimiter) {
+    std::vector<std::string> parts;
+    std::string::size_type start = 0;
+    std::string::size_type end = 0;
+    while ((end = s.find(delimiter, start)) != std::string::npos) {
+        parts.push_back(s.substr(start, end - start));
+        start = end + delimiter.length();
     }
-    if (str.empty())
-        return res;
-    res.push_back(str);
-    return res;
+    parts.push_back(s.substr(start));
+    return parts;
 }
 
-std::string tools::trim(std::string str, std::string del) {
-    size_t i = 0;
-    while (i < str.length() - 1 && (del.find(str[i]) != std::string::npos)) {
-        ++i;
-    }
-    size_t j = str.length() - 1;
-    while (j && i != j && (del.find(str[j]) != std::string::npos)) {
-        --j;
-    }
-    if (i == j)
+std::string tools::trim(std::string s, std::string delimiters) {
+    std::string::size_type first = s.find_first_not_of(delimiters);
+    if (first == std::string::npos) {
         return "";
-    if (j == str.length() - 1)
-        return str.substr(i, j + 1);
-    str = str.substr(i, j);
-    return str;
+    }
+    std::string::size_type last = s.find_last_not_of(delimiters);
+    return s.substr(first, last - first + 1);
 }
+
+// std::string tools::trim(std::string str, std::string del) {
+//     size_t i = 0;
+//     while (i < str.length() - 1 && (del.find(str[i]) != std::string::npos)) {
+//         ++i;
+//     }
+//     size_t j = str.length() - 1;
+//     while (j && i != j && (del.find(str[j]) != std::string::npos)) {
+//         --j;
+//     }
+//     if (i == j)
+//         return "";
+//     if (j == str.length() - 1)
+//         return str.substr(i, j + 1);
+//     str = str.substr(i, j);
+//     return str;
+// }
 
 std::vector<std::string> tools::open_to_serve(std::ifstream& file) {
     std::string line;
@@ -221,4 +242,24 @@ std::string tools::dealwithchuncked_buff(std::string primary,
         limit = limit - (primary.length() - hexdel);
     }
     return ret;
+}
+
+std::string tools::get_expires_time_in_sec(int seconds) {
+    time_t current_time = time(NULL);
+    current_time += seconds;
+    tm* time_info = gmtime(&current_time);
+    char expires_string[64];
+    strftime(expires_string, sizeof(expires_string), "%a, %d %b %Y %H:%M:%S %Z",
+             time_info);
+    return expires_string;
+}
+
+std::string tools::get_expires_time_in_hour(int hours) {
+    time_t current_time = time(nullptr);
+    current_time += hours * 60 * 60;  // Convert hours to seconds
+    tm* time_info = gmtime(&current_time);
+    char expires_string[64];
+    strftime(expires_string, sizeof(expires_string), "%a, %d %b %Y %H:%M:%S %Z",
+             time_info);
+    return expires_string;
 }

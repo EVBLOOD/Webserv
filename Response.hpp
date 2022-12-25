@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "Request.hpp"
 
 class HttpResponse {
    private:
@@ -22,7 +23,14 @@ class HttpResponse {
    public:
     HttpResponse(int status, std::string version, std::string action);
 
+    HttpResponse(int status,
+                 std::string version,
+                 std::string action,
+                 HttpRequest request);
+
     HttpResponse& add_header(std::string key, std::string value);
+
+    std::string getHeaderValue(std::string key);
 
     HttpResponse& add_to_body(std::string line);
 
@@ -33,6 +41,8 @@ class HttpResponse {
     size_t get_body_size();
 
     std::string build();
+
+    std::string build(HttpRequest& request);
 
     void dump();
 

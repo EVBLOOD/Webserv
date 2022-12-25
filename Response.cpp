@@ -3,6 +3,7 @@
 //
 
 #include "Response.hpp"
+#include <iostream>
 #include <string>
 #include "tools.hpp"
 
@@ -32,9 +33,48 @@ HttpResponse::HttpResponse(int status, std::string version, std::string action)
       _headers(),
       _body(){};
 
+HttpResponse::HttpResponse(int status,
+                           std::string version,
+                           std::string action,
+                           HttpRequest request)
+    : _status(status),
+      _content_length(0),
+      _version(version),
+      _action(action),
+      _headers(),
+      _body() {
+    if (request.getHeaderValue("cookie") != "")
+        add_header("set-cookie: ", request.getHeaderValue("cookie"));
+}
+
+std::string HttpResponse::build(HttpRequest& request) {
+    std::cout << "**********************************************\n";
+    std::cout << request.getHeaderValue("Cookie") << '\n';
+    std::cout << this->getHeaderValue("Set-Cookie") << '\n';
+    std::cout << "**********************************************\n";
+    if (request.getHeaderValue("Cookie") != "" ||
+        this->getHeaderValue("Set-Cookie") != "")
+        add_header("Set-Cookie",
+                   (request.getHeaderValue("Cookie") == ""
+                        ? ""
+                        : (request.getHeaderValue("Cookie") + ";")) +
+                       this->getHeaderValue("Set-Cookie"));
+    std::cout << "**********************************************\n";
+    std::cout << this->getHeaderValue("Set-Cookie") << '\n';
+    std::cout << "**********************************************\n";
+    return build();
+};
+
 HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
     _headers[key] = value;
     return *this;
+};
+
+std::string HttpResponse::getHeaderValue(std::string key) {
+    std::map<std::string, std::string>::iterator it = _headers.find(key);
+    if (it == _headers.end())
+        return "";
+    return it->second;
 };
 
 HttpResponse& HttpResponse::add_to_body(std::string line) {

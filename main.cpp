@@ -479,7 +479,7 @@ std::string get_response(HttpRequest request,
         return HttpResponse(403, "1.1", "Forbiden")
             .add_content_type(".html")
             .add_to_body("<h>404</h>")
-            .build();
+            .build(request);
     }
     string HostHeader = request.getHeaderValue("Host");
     serverInfo info =
@@ -504,9 +504,10 @@ std::string get_response(HttpRequest request,
     if (it == locations.end()) {
         if (method == "GET") {
             return HttpResponse::send_file(loc, info.root, info.error_page)
-                .build();
+                .build(request);
         }
-        return HttpResponse::error_response(405, info.error_page[405]).build();
+        return HttpResponse::error_response(405, info.error_page[405])
+            .build(request);
     }
     Location route = it->second;
     std::cout << route.fastcgi_pass << "\n";
@@ -517,6 +518,7 @@ std::string get_response(HttpRequest request,
         // {
 
         // }
+
         char c;
         std::string x = tools::url_path_correction(root, loc);
         std::string body;
@@ -526,6 +528,7 @@ std::string get_response(HttpRequest request,
             std::find(route.allow_methods.begin(), route.allow_methods.end(),
                       "POST") != route.allow_methods.end()) {
             pipe(fd);
+
             int pid = fork();
             if (pid < 0)
                 assert(false);
@@ -534,6 +537,10 @@ std::string get_response(HttpRequest request,
                 request.dump();
                 cout << request.getBody() << '\n';
                 cout << "REQUEST END**********************\n";
+
+                if (!request.getHeaderValue("Cookie").empty())
+                    setenv("HTTP_COOKIE",
+                           request.getHeaderValue("Cookie").c_str(), 1);
                 setenv("REQUEST_METHOD", "POST", 1);
                 setenv("CONTENT_LENGTH",
                        request.getHeaderValue("Content-Length").c_str(), 1);
@@ -570,16 +577,21 @@ std::string get_response(HttpRequest request,
             if (pid < 0)
                 assert(false);
             if (pid == 0) {
+                if (request.getHeaderValue("Cookie") != "")
+                    setenv("HTTP_COOKIE",
+                           request.getHeaderValue("Cookie").c_str(), 1);
                 setenv("REQUEST_METHOD", "GET", 1);
                 setenv("PATH_INFO", root.c_str(), 1);
                 setenv("SCRIPT_FILENAME",
                        tools::url_path_correction(root, loc).c_str(), 1);
                 setenv("REDIRECT_STATUS", "", 1);
+                extern char** environ;
+                char** env = environ;
                 char* args[] = {(char*)path, (char*)x.c_str(), NULL};
                 close(fd[0]);
                 dup2(fd[1], 1);
                 close(fd[1]);
-                execve(path, args, NULL);
+                execve(path, args, env);
                 exit(1);
             }
         }
@@ -590,25 +602,37 @@ std::string get_response(HttpRequest request,
             body.push_back(c);
         }
         close(fd[0]);
-        std::cout << "[" << body << "]"
-                  << "\n";
         std::vector<std::string> the_hole = tools::split_(body, "\r\n\r\n");
         body = the_hole[the_hole.size() - 1];
-        return HttpResponse(200, "1.1", "OK")
-            .add_to_body(body)
-            .add_content_type(".html")
-            .build();
+        cout << the_hole[0] << '\n';
+        // parse additional headers
+
+        HttpResponse http_response =
+            HttpResponse(200, "1.1", "OK").add_to_body(body);
+        std::vector<string> headers = split(the_hole[0], "\n");
+        for (size_t i = 0; i < headers.size(); ++i) {
+            std::vector<string> key_header = split_(headers[i], ":");
+            cout << "key " << key_header[0] << " value " << key_header[1]
+                 << '\n';
+            if (key_header.size() == 1)
+                http_response.add_header(key_header[0], "");
+            else
+                http_response.add_header(key_header[0], key_header[1]);
+        }
+
+        //////////////////////////
+        return http_response.build(request);
     } else if (request.getHeaderValue("Content-Length") != "") {
         if (request.getMethod() == "POST" && route.upload_enable) {
             if (find(route.allow_methods.begin(), route.allow_methods.end(),
                      method) == route.allow_methods.end()) {
                 return HttpResponse::error_response(405, info.error_page[405])
-                    .build();
+                    .build(request);
             } else {
                 if (request.getHeaderValue("Content-Type").empty()) {
                     return HttpResponse::error_response(400,
                                                         info.error_page[405])
-                        .build();
+                        .build(request);
                 }
                 vector<string> content_type =
                     split(request.getHeaderValue("Content-Type"), ";");
@@ -631,7 +655,7 @@ std::string get_response(HttpRequest request,
                         assert(false);
                     }
                     return HttpResponse::redirect_moved_response("upload.html")
-                        .build();
+                        .build(request);
                 }
             }
         }
@@ -639,14 +663,15 @@ std::string get_response(HttpRequest request,
 
     if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
         route.allow_methods.end()) {
-        return HttpResponse::error_response(405, info.error_page[405]).build();
+        return HttpResponse::error_response(405, info.error_page[405])
+            .build(request);
     }
 
     if (is_part_of_root(root, loc) &&
         is_dir(tools::url_path_correction(root, loc)) && route.autoindex) {
         return HttpResponse::generate_indexing(
                    tools::url_path_correction(root, loc), loc)
-            .build();
+            .build(request);
     }
 
     if (method == "GET") {
@@ -654,14 +679,15 @@ std::string get_response(HttpRequest request,
             cout << G(DEBUG) << "handle indexes\n";
             return HttpResponse::index_response(route.index, info.root,
                                                 info.error_page)
-                .build();
+                .build(request);
         } else if (route.index.empty() && route.ret_rn.size() == 1) {
             assert(route.ret_rn.size() == 1);
             pair<int, string> redirect = *route.ret_rn.begin();
             cout << G(DEBUG) << "redirect " << redirect.first << " "
                  << redirect.second << '\n';
 
-            return handle_redirection(redirect.first, redirect.second).build();
+            return handle_redirection(redirect.first, redirect.second)
+                .build(request);
         }
     }
     if (method == "DELETE") {
@@ -673,14 +699,15 @@ std::string get_response(HttpRequest request,
             return HttpResponse(200, "1.1", "OK")
                 .add_to_body("<h1>The file was deleted.</h1>")
                 .add_content_type(".html")
-                .build();
+                .build(request);
             ;
         }
         if (is_dir(url_path_correction(root, loc)) ||
             is_file(url_path_correction(root, loc)))
             return HttpResponse::error_response(405, info.error_page[405])
-                .build();
-        return HttpResponse::error_response(404, info.error_page[404]).build();
+                .build(request);
+        return HttpResponse::error_response(404, info.error_page[404])
+            .build(request);
     }
     cerr << G(ERROR) << " no index + no return\n ";
     exit(1);
@@ -703,18 +730,20 @@ void handle_requests(Kqueue& event_queue,
     cout << G(INFO) << " parsing request..." << endl;
     HttpRequest request(client.get_buffer_request());
 
+    request.dump();
     cout << "ABC " << request.getHeaderValue("Content-Length") << '\n';
-    cout << "ABC " << request.getBody().length() << '\n';
+    // cout << "ABC " << request.getBody().length() << '\n';
     // std::cout << "[" << request.getBody() << "]\n";
     // cout << G(INFO) << " " << request.getBody().length() << " "
     //      << std::stoul((request.getHeaderValue("Content-Length"))) << '\n';
     if (!request.error() && request.getHeaderValue("Content-Length") != "" &&
-        request.getBody().length() + 4 <
+        request.getBody().length() <
             std::stoul((request.getHeaderValue("Content-Length")))) {
         return;
     }
-    if (client.get_buffer_request().size() <= 1024)
+    if (client.get_buffer_request().size() <= 1024) {
         std::cout << client.get_buffer_request() << std::endl;
+    }
     client.clear_buffer();
     string response = get_response(request, client, infos);
 

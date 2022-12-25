@@ -23,15 +23,6 @@
 // std::map<std::string, std::string> _headers;
 // std::vector<std::string> _body;
 
-std::vector<std::string> split_(std::string request, std::string lims) {
-    std::vector<std::string> end;
-    size_t x = request.find(lims);
-    if (x == std::string::npos)
-        return (end.push_back(request), end);
-    end.push_back(request.substr(0, x));
-    end.push_back(request.substr(x, request.length() - x));
-    return end;
-}
 HttpRequest::HttpRequest(std::string request)
     : _raw(),
       _method(),
@@ -46,9 +37,11 @@ HttpRequest::HttpRequest(std::string request)
         _error = true;
         return;
     }
-
-    std::vector<std::string> header_and_body = split_(request, "\r\n\r\n");
-    std::cout << "split: " << header_and_body.size() << "\n";
+    std::cout << "-------------------------------\n";
+    std::cout << request << "\n";
+    std::cout << "-------------------------------\n";
+    std::vector<std::string> header_and_body =
+        tools::split_(request, "\r\n\r\n");
     assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[0] == "abcd");
     assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[1] == "wxyz");
     assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n").size() == 2);

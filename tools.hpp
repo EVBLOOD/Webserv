@@ -49,4 +49,6 @@ std::string dealwithchuncked_buff(std::string primary,
                                   ssize_t& limit,
                                   bool x = false);
 std::vector<std::string> split_(std::string request, std::string lims);
+std::string get_expires_time_in_sec(int seconds);
+std::string get_expires_time_in_hour(int hours);
 };  // namespace tools
