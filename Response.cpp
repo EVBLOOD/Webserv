@@ -47,7 +47,7 @@ HttpResponse::HttpResponse(int status,
       _headers(),
       _body() {
     if (request.getHeaderValue("cookie") != "")
-        add_header("set-cookie: ", request.getHeaderValue("cookie"));
+        add_header("Set-Cookie: ", request.getHeaderValue("cookie"));
 }
 
 // key
@@ -56,9 +56,8 @@ HttpResponse::HttpResponse(int status,
 
 std::string HttpResponse::build(HttpRequest& request) {
     std::pair<multi_iter, multi_iter> p = request.getHeaderValues("cookie");
-  
+
     for (multi_iter iter = p.first; iter != p.second; ++iter) {
-   
         add_header("set-cookie", iter->second);
     }
 
@@ -104,6 +103,9 @@ std::string HttpResponse::build() {
 
     _headers.insert(make_pair("Content-Length",
                               std::to_string(_content_length + _body.size())));
+
+    _headers.insert(make_pair("Date", tools::date_http(time(NULL))));
+    _headers.insert(std::make_pair("Server", "1337_webserv"));
     {
         multi_iter iter = _headers.begin();
         while (iter != _headers.end()) {

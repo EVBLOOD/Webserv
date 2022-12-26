@@ -1,6 +1,7 @@
 #include "tools.hpp"
 #include <sys/_types/_ssize_t.h>
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <iterator>
 #include <ostream>
@@ -268,4 +269,15 @@ std::string tools::toUppercase(const std::string& s) {
     std::string result = s;
     std::transform(result.begin(), result.end(), result.begin(), toupper);
     return result;
+}
+
+std::string tools::date_http(time_t timestamp) {
+    char buffer[32];
+    std::strftime(buffer, 32, "%Y-%m-%d %H:%M:%S", std::localtime(&timestamp));
+    return buffer;
+}
+
+std::string tools::generateRandomTempFileName() {
+    srand(time(NULL));
+    return "/tmp/.web_server_" + std::to_string(rand());
 }

@@ -54,4 +54,6 @@ std::vector<std::string> split_(std::string request, std::string lims);
 std::string get_expires_time_in_sec(int seconds);
 std::string get_expires_time_in_hour(int hours);
 std::string toUppercase(const std::string& s);
+std::string date_http(time_t timestamp);
+std::string generateRandomTempFileName();
 };  // namespace tools

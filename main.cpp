@@ -413,6 +413,7 @@ std::string get_response(HttpRequest request,
         std::string body;
         const char* cgi_path = route.fastcgi_pass.c_str();
         int fd[2];
+        std::string tmpfile_name = tools::generateRandomTempFileName();
         if (request.getMethod() == "POST" &&
             std::find(route.allow_methods.begin(), route.allow_methods.end(),
                       "POST") != route.allow_methods.end()) {
@@ -431,7 +432,6 @@ std::string get_response(HttpRequest request,
                 return HttpResponse::error_response(503, info.error_page[503])
                     .build();
             }
-
             if (pid == 0) {
                 if (!request.getHeaderValue("Cookie").empty())
                     setenv("HTTP_COOKIE",
@@ -447,15 +447,14 @@ std::string get_response(HttpRequest request,
                        request.getHeaderValue("Content-Type").c_str(), 1);
                 char* args[] = {(char*)cgi_path, (char*)script_path.c_str(),
                                 NULL};
-                unlink("/tmp/.Webcgi");
-                std::ofstream tmpfile("/tmp/.Webcgi");
+                std::ofstream tmpfile(tmpfile_name);
                 if (!tmpfile.is_open() || tmpfile.fail()) {
                     exit(1);
                 }
                 tmpfile << tools::trim(request.getBody(), "\r\n\r\n");
                 tmpfile.close();
                 int fdf;
-                fdf = open("/tmp/.Webcgi", O_RDWR);
+                fdf = open(tmpfile_name.c_str(), O_RDWR);
                 dup2(fdf, 0);
                 extern char** environ;
                 char** env = environ;
@@ -501,7 +500,7 @@ std::string get_response(HttpRequest request,
             }
         }
         close(fd[1]);
-        unlink("/tmp/.Webcgi");
+        unlink(tmpfile_name.c_str());
         pid_t error_status = 0;
         wait(&error_status);
         if (error_status != 0) {
