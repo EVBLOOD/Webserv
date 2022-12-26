@@ -1,6 +1,5 @@
 #include "tools.hpp"
 #include <sys/_types/_ssize_t.h>
-#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
@@ -33,13 +32,9 @@ std::string tools::G(int level) {
 }
 
 std::vector<std::string> tools::list_files_in_dir(std::string path) {
-    assert(is_dir(path));
     DIR* dir = opendir(path.c_str());
 
     if (dir == NULL) {
-        // TODO think about it
-        std::cerr << G(ERROR) << " open dir function failed\n";
-        assert(false);
         return std::vector<std::string>();
     }
 
@@ -77,7 +72,6 @@ std::string tools::url_path_correction(std::string a, std::string b) {
 }
 
 bool tools::is_part_of_root(std::string root, std::string location) {
-    assert(root.size() < PATH_MAX && location.size() < PATH_MAX);
     char actualpath[PATH_MAX + 1];
     std::cout << "[SAADX] " << tools::url_path_correction(root, location)
               << '\n';
@@ -85,11 +79,6 @@ bool tools::is_part_of_root(std::string root, std::string location) {
         realpath(url_path_correction(root, location).c_str(), actualpath);
     if (ptr == NULL) {
         return false;
-        // TODO besure
-        std::cerr << "[ERROR] realpath function failed\n";
-        std::cerr << "[ERROR] root == " << root << '\n';
-        std::cerr << "[ERROR] location == " << location << '\n';
-        assert(false);
     }
     std::string actual_path(actualpath);
     if (actual_path.length() < root.length()) {
@@ -164,21 +153,26 @@ std::string tools::trim(std::string s, std::string delimiters) {
 //     return str;
 // }
 
-std::vector<std::string> tools::open_to_serve(std::ifstream& file) {
-    std::string line;
-    std::vector<std::string> res;
-    while (std::getline(file, line)) {
-        res.push_back(line);
+std::string tools::open_to_serve(std::ifstream& file) {
+    if (!file.is_open()) {
+        return "";
     }
-    return res;
+
+    // Read the file into a stringstream
+    std::stringstream stream;
+    stream << file.rdbuf();
+
+    // Close the file
+    file.close();
+
+    // Return the contents of the stringstream as a string
+    return stream.str();
 };
 
 bool tools::is_file_readable(const std::string& path) {
-    errno = 0;
     return access(path.c_str(), R_OK) != -1;
 }
 bool tools::is_file_exists(const std::string& path) {
-    errno = 0;
     return access(path.c_str(), F_OK) != -1;
 }
 
@@ -189,22 +183,12 @@ std::string tools::dealwithchuncked_buff(std::string primary,
     std::string number = "";
     ssize_t header_end = 0;
     ssize_t hexdel = 0;
-    // std::cout << "start\n";
-    // for (std::string::iterator b = primary.begin(); b != primary.end(); b++)
-    // {
-    //     if (*b == '\r')
-    //         std::cout << "[R]";
-    //     else if (*b == '\n')
-    //         std::cout << "[N]\n";
-    //     else
-    //         std::cout << *b;
-    // }
-    // std::cout << "\nend\n";
+
     if (limit == 0) {
         if (x) {
             header_end = primary.find("\r\n\r\n");
             if (static_cast<size_t>(header_end) == std::string::npos)
-                assert(false);
+                return "";
             header_end += 4;
             ret = primary.substr(0, header_end);
             if (ret == primary)
@@ -215,7 +199,7 @@ std::string tools::dealwithchuncked_buff(std::string primary,
         }
         hexdel = primary.find("\r\n", header_end);
         if (static_cast<size_t>(hexdel) == std::string::npos)
-            assert(false);
+            return "";
         number = primary.substr(header_end, hexdel - header_end);
         std::stringstream StringStream;
         StringStream << std::hex << number;

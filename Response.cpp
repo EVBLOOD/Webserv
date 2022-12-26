@@ -15,10 +15,7 @@ HttpResponse HttpResponse::generate_indexing(std::string dir,
     std::vector<std::string> body;
     std::vector<std::string> files = tools::list_files_in_dir(dir);
 
-    std::cout << "[OUSSAMA] " << files.size() << '\n';
     for (size_t i = 0; i < files.size(); ++i) {
-        std::cout << "[SAAD] " << location << " " << files[i] << " "
-                  << tools::url_path_correction(location, files[i]) << '\n';
         body.push_back("<a href='" +
                        tools::url_path_correction(location, files[i]) +
                        "'><h1>" + files[i] + "</h1></a>");
@@ -342,16 +339,16 @@ HttpResponse HttpResponse::send_file(std::string path,
                                      std::string root,
                                      std::map<int, std::string> error_pages) {
     std::string full_path = tools::url_path_correction(root, path);
-    std::cout << "[DEBUG] location " << path << '\n';
-    std::cout << "[DEBUG] full path " << full_path << '\n';
+
     if (!tools::is_dir(full_path) && !tools::is_file(full_path)) {
         return error_response(404, root + error_pages[404]);
     }
+
     if (!tools::is_part_of_root(root, path) ||
         (tools::is_file_readable(full_path) == false)) {
         return error_response(403, root + error_pages[403]);
     }
-    errno = 0;
+
     std::ifstream file(full_path);
     if (!file.is_open() || file.fail()) {
         return HttpResponse::error_response(500, error_pages[500]);
@@ -375,18 +372,15 @@ HttpResponse HttpResponse::index_response(
     std::vector<std::string> index,
     std::string root,
     std::map<int, std::string> error_pages) {
-    if (index.size() == 0) {
-        return error_response(404, error_pages[404]);
-    }
     std::vector<std::string>::iterator it = index.begin();
-    std::vector<std::string>::iterator it_nd = index.end();
-    while (it != it_nd) {
+    
+    while (it != index.end()) {
         std::string path = tools::url_path_correction(root, *it);
         if (tools::is_file_exists(path) && tools::is_file_readable(path))
             break;
         it++;
     }
-    if (it == it_nd)
-        it = index.begin();
+    if (it == index.end())
+        return error_response(404, error_pages[404]);
     return HttpResponse::send_file(*it, root, error_pages);
 }

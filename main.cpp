@@ -55,14 +55,10 @@ void handle_requests(Kqueue& event_queue,
 HttpResponse handle_redirection(int status, string location) {
     if (status == 302)
         return HttpResponse::redirect_found_response(location);
-    else if (status == 301)
-        return HttpResponse::redirect_moved_response(location);
-    cerr << "[ERROR] invalid status for "
-            "redirection\n";
-    exit(1);
+    return HttpResponse::redirect_moved_response(location);
 }
 
-/// args getting
+/// files getting
 
 std::vector<std::string> linespliting(std::string line) {
     size_t x;
@@ -129,8 +125,6 @@ std::string args_handling(std::string part) {
         get_fileinfo(part.substr(0, x));
     std::string key = trim(fileinfo["name"], "\"");
     std::string value = part.substr(x + 4, (part.length() - 2) - (x + 4));
-    std::cout << "["
-              << "$" + key + "=" + value << "]\n";
     return ("$" + key + "=" + value);
 }
 
@@ -168,19 +162,18 @@ int file_handling(std::string part, std::string location) {
     std::string filename =
         tools::url_path_correction(location, trim(fileinfo["filename"], "\""));
     std::ofstream outfile(filename.c_str());
-    // size_t y = part.find("\r\n", x + 4);
     outfile << part.substr(x + 4, (part.length() - 2) - (x + 4));
     outfile.close();
 
     return (0);
 }
 
-int extract_files(std::string body, std::string limit, std::string location) {
+void extract_files(std::string body, std::string limit, std::string location) {
     size_t y;
     string part;
     size_t x = body.find(limit);
     if (x == std::string::npos)
-        return (1);
+        return;
     size_t position = x + limit.length();
     while (1) {
         y = body.find(limit, position);  // end of text
@@ -194,7 +187,6 @@ int extract_files(std::string body, std::string limit, std::string location) {
         if (file_handling(part, location))
             break;
     }
-    return (0);
 }
 
 serverInfo get_the_server_info_for_the_client(
@@ -376,13 +368,16 @@ std::string get_response(HttpRequest request,
     } else if (request.getVersion() != "HTTP/1.1") {
         return HttpResponse::error_response(505, "").build(request);
     }
+
     string HostHeader = request.getHeaderValue("Host");
     serverInfo info =
         get_the_server_info_for_the_client(HostHeader, client, infos);
 
     string const& root = info.root;
     string const& loc = request.getLocation();
+
     map<string, Location>& locations = info.locations;
+
     size_t _find;
     std::string _loc = loc;
     if ((_find = loc.find(".php")) != std::string::npos ||
@@ -392,20 +387,28 @@ std::string get_response(HttpRequest request,
         else if (loc.length() - _find == 3)
             _loc = "*.py";
     }
+
     map<string, Location>::const_iterator it = locations.find(_loc);
     const string& method = request.getMethod();
 
     if (it == locations.end()) {
         if (method == "GET") {
-            return HttpResponse::send_file(loc, info.root,
-                                           info.error_page)  /// cout
+            return HttpResponse::send_file(loc, info.root, info.error_page)
                 .build(request);
         }
         return HttpResponse::error_response(405, info.error_page[405])
             .build(request);
     }
+
     Location route = it->second;
-    if (route.fastcgi_pass != "") {
+
+    if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
+        route.allow_methods.end()) {
+        return HttpResponse::error_response(405, info.error_page[405])
+            .build(request);
+    }
+
+    if (!route.fastcgi_pass.empty()) {
         char c;
         std::string script_path = tools::url_path_correction(root, loc);
         std::string body;
@@ -530,54 +533,47 @@ std::string get_response(HttpRequest request,
         }
 
         return http_response.build(request);
-    } else if (request.getHeaderValue("Content-Length") != "") {
-        if (request.getMethod() == "POST" && route.upload_enable) {
-            if ((info.client_max_body_size * 1024) <
-                std::stoull(request.getHeaderValue("Content-Length"))) {
-                return HttpResponse::error_response(413, info.error_page[413])
-                    .build();
-            }
-            if (find(route.allow_methods.begin(), route.allow_methods.end(),
-                     method) == route.allow_methods.end()) {
-                return HttpResponse::error_response(405, info.error_page[405])
-                    .build(request);
-            } else {
-                if (request.getHeaderValue("Content-Type").empty()) {
-                    return HttpResponse::error_response(400,
-                                                        info.error_page[400])
-                        .build(request);
-                }
-                vector<string> content_type =
-                    split(request.getHeaderValue("Content-Type"), ";");
-                if (content_type.size() != 2) {
-                    cerr << "[ERROR] no boundry in content "
-                            "type !!\n";
-                    assert(false);
-                } else {
-                    string multi_part = content_type.at(0);
-                    string boundry = content_type.at(1);
-                    cout << "[INFO] " << multi_part << " " << boundry << '\n';
-                    string boundry_value = split(boundry, "=").at(1);
-                    cout << "[INFO] "
-                         << "boundry key " << boundry << '\n';
-                    if ("multipart/form-data" == multi_part)
-                        extract_files(
-                            request.getBody(), boundry_value,
-                            tools::url_path_correction(root, it->first));
-                    else {
-                        assert(false);
-                    }
-                    return HttpResponse::redirect_moved_response("upload.html")
-                        .build(request);
-                }
-            }
-        }
     }
 
-    if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
-        route.allow_methods.end()) {
-        return HttpResponse::error_response(405, info.error_page[405])
-            .build(request);
+    if (!request.getHeaderValue("Content-Length").empty() &&
+        request.getMethod() == "POST" && route.upload_enable) {
+        if ((info.client_max_body_size * 1024) <
+            std::stoull(request.getHeaderValue("Content-Length"))) {
+            return HttpResponse::error_response(413, info.error_page[413])
+                .build();
+        }
+
+        if (request.getHeaderValue("Content-Type").empty()) {
+            return HttpResponse::error_response(400, info.error_page[400])
+                .build(request);
+        }
+
+        vector<string> content_type =
+            split(request.getHeaderValue("Content-Type"), ";");
+        if (content_type.size() != 2) {
+            return HttpResponse::error_response(400, info.error_page[400])
+                .build(request);
+        } else {
+            string multi_part = content_type[0];
+            string boundry = content_type[1];
+            vector<string> key_value_boundry = split(boundry, "=");
+            if (key_value_boundry.size() != 2) {
+                return HttpResponse::error_response(400, info.error_page[400])
+                    .build(request);
+            }
+            string boundry_value = key_value_boundry[1];
+            if ("multipart/form-data" == multi_part) {
+                extract_files(request.getBody(), boundry_value,
+                              tools::url_path_correction(root, it->first));
+                return HttpResponse(201, "1.1", "Created")
+                    .add_to_body("<h1>The file was uploaded.</h1>")
+                    .add_content_type(".html")
+                    .build(request);
+            }
+
+            return HttpResponse::error_response(400, info.error_page[400])
+                .build(request);
+        }
     }
 
     if (is_part_of_root(root, loc) &&
@@ -588,21 +584,22 @@ std::string get_response(HttpRequest request,
     }
 
     if (method == "GET") {
-        if (route.index.size() >= 1) {
-            cout << G(DEBUG) << "handle indexes\n";
+        if (!route.index.empty()) {
             return HttpResponse::index_response(route.index, info.root,
                                                 info.error_page)
                 .build(request);
-        } else if (route.index.empty() && route.ret_rn.size() == 1) {
-            assert(route.ret_rn.size() == 1);
-            pair<int, string> redirect = *route.ret_rn.begin();
-            cout << G(DEBUG) << "redirect " << redirect.first << " "
-                 << redirect.second << '\n';
+        }
 
+        if (!route.ret_rn.empty()) {
+            pair<int, string> redirect = *route.ret_rn.begin();
             return handle_redirection(redirect.first, redirect.second)
                 .build(request);
         }
+
+        return HttpResponse::error_response(404, info.error_page[404])
+            .build(request);
     }
+
     if (method == "DELETE") {
         if (is_part_of_root(root, loc)) {
             char actualpath[PATH_MAX + 1];
@@ -613,7 +610,6 @@ std::string get_response(HttpRequest request,
                 .add_to_body("<h1>The file was deleted.</h1>")
                 .add_content_type(".html")
                 .build(request);
-            ;
         }
         if (is_dir(url_path_correction(root, loc)) ||
             is_file(url_path_correction(root, loc)))
