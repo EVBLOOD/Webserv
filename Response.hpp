@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "Request.hpp"
@@ -47,6 +48,8 @@ class HttpResponse {
     void dump();
 
    public:
+    static std::string generateErrorPage(int statusCode,
+                                         const std::string& statusMessage);
     static std::string get_content_type(std::string location);
     static HttpResponse error_response(int status, std::string file);
     static HttpResponse send_file(std::string file,

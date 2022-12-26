@@ -4,25 +4,12 @@
 #include <exception>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "parsing/tokengen.hpp"
 #include "tools.hpp"
-
-// char resp[] =
-//         "HTTP/1.0 200 OK\r\n"
-//         "Server: webserver-c\r\n"
-//         "Content-type: text/html\r\n\r\n"
-//         "<h1>hello, world</1>\r\n"
-//         "<ul><li>13</li>\r\n"
-//         "<li>37</li></ul>\r\n";
-
-// std::string _raw;
-// std::string _method;
-// std::string _location;
-// std::string _version;
-// std::map<std::string, std::string> _headers;
-// std::vector<std::string> _body;
 
 HttpRequest::HttpRequest(std::string request)
     : _raw(request),
@@ -36,9 +23,6 @@ HttpRequest::HttpRequest(std::string request)
         _error = true;
         return;
     }
-    // std::cout << "-------------------------------\n";
-    // std::cout << request << "\n";
-    // std::cout << "-------------------------------\n";
     std::vector<std::string> header_and_body =
         tools::split_(request, "\r\n\r\n");
 
@@ -47,7 +31,8 @@ HttpRequest::HttpRequest(std::string request)
         return;
     }
 
-    std::vector<std::string> splited = split(header_and_body[0], "\n");
+    std::string& headers = header_and_body[0];
+    std::vector<std::string> splited = split(headers, "\r\n");
 
     if (splited.size() == 0) {
         _error = true;
@@ -65,12 +50,15 @@ HttpRequest::HttpRequest(std::string request)
     _location = first_line[1];
     _version = first_line[2];
 
-    // if (_version != "HTTP/1.1") {
+    std::cout << "[" << _version << "]" << '\n';
+
+    // TODO: write a check in response place
+    // if (_version != "HTTP/1.1"HTTP/1.1) {
     //     _error = true;
     //     return;
     // }
 
-    for (size_t i = 1; i < splited.size() && splited[i] != "\r"; ++i) {
+    for (size_t i = 1; i < splited.size(); ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
         // TODO: make key lower case
         std::string key = trim(tmp[0], "\n\r ");
@@ -83,7 +71,7 @@ HttpRequest::HttpRequest(std::string request)
             value = trim(tmp[1], "\n\r ");
         }
 
-        _headers[key] = value;
+        _headers.insert(make_pair(key, value));
     }
 
     if (getHeaderValue("Host").empty() ||
@@ -110,18 +98,15 @@ HttpRequest::HttpRequest(std::string request)
         _body += header_and_body[i];
 }
 
-void HttpRequest::dump() {
-    std::cout << _method << " " << _location << " " << _version << "\n";
-    for (std::map<std::string, std::string>::iterator iter = _headers.begin();
-         iter != _headers.end(); ++iter) {
-        std::cout << "[" << iter->first << "]"
-                  << " : [" << iter->second << "]" << '\n';
-    }
-    // for (std::vector<std::string>::iterator iter = _body.begin();
-    //      iter != _body.end(); ++iter) {
-    //     std::cout << *iter << "\n";
-    // }
-}
+// void HttpRequest::dump() {
+//     std::cout << _method << " " << _location << " " << _version << "\n";
+//     for (multi_iter iter = _headers.begin();
+//          iter != _headers.end(); ++iter) {
+//         std::cout << "[" << iter->first << "]"
+//                   << " : [" << iter->second << "]" << '\n';
+//     }
+//     // for (std::vector<std::string>::iterator iter = _body.begin();
+// }
 
 bool HttpRequest::error() {
     return _error;
@@ -136,9 +121,15 @@ std::string HttpRequest::getBody() {
 }
 
 std::string HttpRequest::getHeaderValue(std::string key) {
-    // TODO: make key lowercase
-    // struct cmp {}
-    return _headers[key];
+    multi_iter iter = _headers.find(key.data());
+    if (iter == _headers.end())
+        return "";
+    return std::string(iter->second.data());
+}
+
+std::pair<multi_iter, multi_iter> HttpRequest::getHeaderValues(
+    std::string key) {
+    return _headers.equal_range(key.data());
 }
 
 std::string HttpRequest::getVersion() {
@@ -152,14 +143,3 @@ std::string HttpRequest::getLocation() {
 std::string HttpRequest::getMethod() {
     return _method;
 }
-
-// int main() {
-//     HttpRequest(
-//         "HTTP/1.0 200 OK\r\n"
-//         "Server: webserver-c\r\n"
-//         "Content-type: text/html\r\n\r\n"
-//         "<h1>hello, world</1>\r\n"
-//         "<ul><li>13</li>\r\n"
-//         "<li>37</li></ul>\r\n")
-//         .dump();
-// }

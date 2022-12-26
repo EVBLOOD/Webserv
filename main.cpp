@@ -320,7 +320,7 @@ int main() {
                     delete &client;
                     continue;
                 }
-                if (static_cast<size_t>(ret) < response.size()) {
+                if (static_cast<size_t>(ret) <= response.size()) {
                     client.set_reponse_buffer(
                         response.substr(ret, response.size()));
                 } else {
@@ -375,10 +375,7 @@ std::string get_response(HttpRequest request,
                          map<pair<string, string>, serverInfo>& infos) {
     if (request.error()) {
         // TODO:
-        return HttpResponse(403, "1.1", "Forbiden")
-            .add_content_type(".html")
-            .add_to_body("<h>404</h>")
-            .build(request);
+        return HttpResponse::error_response(403, "").build(request);
     }
     string HostHeader = request.getHeaderValue("Host");
     serverInfo info =
@@ -401,7 +398,8 @@ std::string get_response(HttpRequest request,
 
     if (it == locations.end()) {
         if (method == "GET") {
-            return HttpResponse::send_file(loc, info.root, info.error_page) /// cout
+            return HttpResponse::send_file(loc, info.root,
+                                           info.error_page)  /// cout
                 .build(request);
         }
         return HttpResponse::error_response(405, info.error_page[405])
@@ -419,20 +417,17 @@ std::string get_response(HttpRequest request,
                       "POST") != route.allow_methods.end()) {
             if ((info.client_max_body_size * 1024) <
                 std::stoull(request.getHeaderValue("Content-Length"))) {
-                // TODO:
-                return HttpResponse::error_response(413, info.error_page[405])
+                return HttpResponse::error_response(413, info.error_page[413])
                     .build();
             }
             if (pipe(fd) < 0) {
-                // TODO:
-                return HttpResponse::error_response(503, info.error_page[405])
+                return HttpResponse::error_response(503, info.error_page[503])
                     .build();
             }
 
             int pid = fork();
             if (pid < 0) {
-                // TODO:
-                return HttpResponse::error_response(503, info.error_page[405])
+                return HttpResponse::error_response(503, info.error_page[503])
                     .build();
             }
 
@@ -476,14 +471,12 @@ std::string get_response(HttpRequest request,
                              route.allow_methods.end(),
                              "GET") != route.allow_methods.end()) {
             if (pipe(fd) < 0) {
-                //TODO:
-                return HttpResponse::error_response(503, info.error_page[405])
+                return HttpResponse::error_response(503, info.error_page[503])
                     .build();
             }
             int pid = fork();
             if (pid < 0) {
-                //TODO:
-                return HttpResponse::error_response(503, info.error_page[405])
+                return HttpResponse::error_response(503, info.error_page[503])
                     .build();
             }
             if (pid == 0) {
@@ -513,7 +506,7 @@ std::string get_response(HttpRequest request,
         if (error_status != 0) {
             close(fd[0]);
             // TODO:
-            return HttpResponse::error_response(409, info.error_page[405])
+            return HttpResponse::error_response(409, info.error_page[409])
                 .build();
         }
         while (read(fd[0], &c, 1) > 0) {
@@ -523,7 +516,7 @@ std::string get_response(HttpRequest request,
         std::vector<std::string> cgi_result = tools::split_(body, "\r\n\r\n");
         if (cgi_result.size() != 2) {
             // TODO:
-            return HttpResponse::error_response(502, info.error_page[405])
+            return HttpResponse::error_response(502, info.error_page[502])
                 .build();
         }
         body = cgi_result[cgi_result.size() - 1];
@@ -546,7 +539,7 @@ std::string get_response(HttpRequest request,
             if ((info.client_max_body_size * 1024) <
                 std::stoull(request.getHeaderValue("Content-Length"))) {
                 // TODO:
-                return HttpResponse::error_response(413, info.error_page[405])
+                return HttpResponse::error_response(413, info.error_page[413])
                     .build();
             }
             if (find(route.allow_methods.begin(), route.allow_methods.end(),
@@ -556,7 +549,7 @@ std::string get_response(HttpRequest request,
             } else {
                 if (request.getHeaderValue("Content-Type").empty()) {
                     return HttpResponse::error_response(400,
-                                                        info.error_page[405])
+                                                        info.error_page[400])
                         .build(request);
                 }
                 vector<string> content_type =

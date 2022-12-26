@@ -4,22 +4,15 @@
 #include "socket_header.hpp"
 #include "tools.hpp"
 
+#include <functional>
 #include <string>
+#include <string_view>
+#include <unordered_map>
 #include <vector>
 
 using namespace tools;
-
-// char resp[] =
-//     "HTTP/1.0 200 OK\r\n"
-//     "Server: webserver-c\r\n"
-//     "Content-type: text/html\r\n\r\n"
-//     "<h1>hello, world</1>\r\n"
-//     "<ul><li>13</li>\r\n"
-//     "<li>37</li></ul>\r\n";
-
-// enum Method {
-//     GET, POST, PUT, DELETE
-// };
+typedef std::unordered_multimap<std::string, std::string> multimap;
+typedef multimap::iterator multi_iter;
 
 class HttpRequest {
    private:
@@ -27,7 +20,7 @@ class HttpRequest {
     std::string _method;
     std::string _location;
     std::string _version;
-    std::map<std::string, std::string> _headers;
+    multimap _headers;
     std::string _body;
     bool _error;
 
@@ -41,6 +34,8 @@ class HttpRequest {
     std::string getVersion();
 
     std::string getHeaderValue(std::string key);
+
+    std::pair<multi_iter, multi_iter> getHeaderValues(std::string key);
 
     std::string getBody();
 
