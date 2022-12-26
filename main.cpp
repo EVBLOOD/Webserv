@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <cassert>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -16,6 +17,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include "Request.hpp"
 #include "Response.hpp"
@@ -31,7 +33,7 @@
 #include "tools.hpp"
 
 #define loop for (;;)
-#define IF_NOT(cond) if (!(cond))
+
 using namespace tools;
 using std::array;
 using std::cerr;
@@ -233,15 +235,12 @@ pair<string, ssize_t> read_request(const TcpStream& client) {
     return make_pair(tmp, ret);
 }
 
-#include <csignal>
-// #include <sys/signal.h>
-
-// void handler(int sig) {
-//     cout << G(ERROR) << " " << sig << " fuck tou pipe\n";
-// }
-
 int main() {
+    // Ignore the SIGPIPE, SIGCHLD, SIGQUIT, and SIGTERM signals
     signal(SIGPIPE, SIG_IGN);
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGTERM, SIG_IGN);
 #ifdef FAST
     cout.rdbuf(NULL);
     cerr.rdbuf(NULL);
@@ -289,7 +288,6 @@ int main() {
     loop {
         cout << G(INFO) << " waiting for events ....\n";
         IListener& listener = event_queue.get_event();
-        cout << G(INFO) << " event fired\n";
         Kevent kv = listener.get_kevent();
 
         if (kv.filter == EVFILT_EXCEPT) {

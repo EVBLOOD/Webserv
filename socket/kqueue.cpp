@@ -15,7 +15,7 @@ Kqueue::Kqueue() : _kdata(kqueue()), _listeners() {
     }
 };
 
-int Kqueue::get_kdata() {
+int Kqueue::get_kdata() const {
     return _kdata;
 };
 
@@ -58,11 +58,7 @@ size_t Kqueue::size() const {
     return _listeners.size();
 };
 
-IListener& Kqueue::get_listener(int ident) {
-    return *_listeners.at(ident);
-};
-
-IListener& Kqueue::get_event() {
+IListener& Kqueue::get_event() const {
     Kevent kv;
     bzero(&kv, sizeof(Kevent));
 

@@ -1,6 +1,80 @@
 server
 {
 	listen          8080;
+	listen          8090;
+
+
+	host localhost;
+
+	server_name google.com;
+	server_name     example.com;
+
+	client_max_body_size    16384;
+
+	error_page 403 /errors/403.html;
+	error_page 500 /errors/500.html;
+	error_page 502 /errors/502.html;
+
+
+	root /Users/sakllam/1/public;
+
+	location /
+	{
+
+		index hi index.html;
+
+		autoindex off;
+		allow_methods GET;
+	}
+
+	location /delete
+	{
+		allow_methods DELETE;
+	}
+
+    location /dir {
+        autoindex on;
+        allow_methods GET;
+    }
+
+    location /dir/dir {
+        autoindex on;
+        allow_methods GET;
+    }
+
+
+	location /return
+	{
+		allow_methods GET;
+		return 302 /;
+	}
+
+	location *.php
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /Users/sakllam/.brew/opt/php@8.1/bin/php-cgi;
+	}
+
+	location *.py
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /usr/local/bin/python3;
+	}
+
+	location /upload
+	{
+		allow_methods POST;
+		upload_enable on;
+		upload_store /upload;
+	}
+}
+
+server
+{
+	listen          8080;
+	listen          9090;
 
 	host localhost;
 
@@ -9,9 +83,6 @@ server
 
 	client_max_body_size    1024;
 
-	error_page 403 /errors/403.html;
-	error_page 500 /errors/500.html;
-	error_page 502 /errors/502.html;
 
 
 	root /Users/sakllam/1/public;
