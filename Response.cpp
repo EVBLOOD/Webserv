@@ -50,21 +50,28 @@ HttpResponse::HttpResponse(int status,
         add_header("set-cookie: ", request.getHeaderValue("cookie"));
 }
 
+// key
+// end end
+// first -- last + 1
+
 std::string HttpResponse::build(HttpRequest& request) {
     std::pair<multi_iter, multi_iter> p = request.getHeaderValues("cookie");
-    for (multi_iter iter = p.first;iter != p.second;++iter) {
+  
+    for (multi_iter iter = p.first; iter != p.second; ++iter) {
+   
         add_header("set-cookie", iter->second);
     }
+
     return build();
 };
 
 HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
-    _headers[key] = value;
+    _headers.insert(make_pair(key, value));
     return *this;
 };
 
 std::string HttpResponse::getHeaderValue(std::string key) {
-    std::map<std::string, std::string>::iterator it = _headers.find(key);
+    multi_iter it = _headers.find(key);
     if (it == _headers.end())
         return "";
     return it->second;
@@ -95,9 +102,10 @@ std::string HttpResponse::build() {
     res += "HTTP/" + _version + " " + std::to_string(_status) + " " + _action +
            "\r\n";
 
-    _headers["Content-Length"] = std::to_string(_content_length + _body.size());
+    _headers.insert(make_pair("Content-Length",
+                              std::to_string(_content_length + _body.size())));
     {
-        std::map<std::string, std::string>::iterator iter = _headers.begin();
+        multi_iter iter = _headers.begin();
         while (iter != _headers.end()) {
             res += iter->first + ": " + iter->second + "\r\n";
             iter++;
@@ -116,11 +124,9 @@ std::string HttpResponse::build() {
 }
 
 void HttpResponse::dump() {
-    _headers["Content-Length"] = std::to_string(_content_length);
     std::cout << "HTTP/" + _version + " " + std::to_string(_status) + " " +
                      _action + "\n";
-    for (std::map<std::string, std::string>::iterator iter = _headers.begin();
-         iter != _headers.end(); ++iter) {
+    for (multi_iter iter = _headers.begin(); iter != _headers.end(); ++iter) {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }

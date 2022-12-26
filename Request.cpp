@@ -110,15 +110,15 @@ std::string HttpRequest::getBody() {
 }
 
 std::string HttpRequest::getHeaderValue(std::string key) {
-    multi_iter iter = _headers.find(toUppercase(key.data()));
+    multi_iter iter = _headers.find(toUppercase(key));
     if (iter == _headers.end())
         return "";
-    return std::string(iter->second.data());
+    return std::string(iter->second);
 }
 
 std::pair<multi_iter, multi_iter> HttpRequest::getHeaderValues(
     std::string key) {
-    return _headers.equal_range(key.data());
+    return _headers.equal_range(tools::toUppercase(key));
 }
 
 std::string HttpRequest::getVersion() {
