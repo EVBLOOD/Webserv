@@ -33,17 +33,24 @@ SRCS_TEST =  tests.cpp\
 			parsing/tokengen.cpp\
 
 
+HEADERS = socket/kqueue.hpp\
+			socket/tcpListener.hpp\
+			socket/TcpStream.hpp\
+			Request.hpp\
+			Response.hpp\
+			tools.hpp
+
 all: $(NAME)
 
-extra: 
+extra: $(SRCS) $(HEADERS)
 	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra &&./$(NAME)_extra 
 
-test: $(TEST)
+test: $(TEST) $(HEADERS)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
 	./$(NAME)_test 
 
 
-fast: $(NAME) $(SRCS)
+fast: $(NAME) $(SRCS) $(HEADERS)
 	c++ $(CXXFLAGS) $(SRCS) -O3 -DFAST -o $(NAME)_fast
 	./$(NAME)_fast 
 
@@ -51,7 +58,7 @@ fast: $(NAME) $(SRCS)
 run:  all 
 	@./$(NAME)
 
-$(NAME) : $(OBJS)
+$(NAME) : $(HEADERS) $(SRCS) $(OBJS) 
 	c++ -Wall -Wextra -Wshadow -std=c++98 -o $(NAME) $(OBJS)
 
 clean:
