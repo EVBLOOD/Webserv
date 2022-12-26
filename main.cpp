@@ -374,8 +374,9 @@ std::string get_response(HttpRequest request,
                          TcpStream& client,
                          map<pair<string, string>, serverInfo>& infos) {
     if (request.error()) {
-        // TODO:
         return HttpResponse::error_response(403, "").build(request);
+    } else if (request.getVersion() != "HTTP/1.1") {
+        return HttpResponse::error_response(505, "").build(request);
     }
     string HostHeader = request.getHeaderValue("Host");
     serverInfo info =
@@ -505,7 +506,6 @@ std::string get_response(HttpRequest request,
         wait(&error_status);
         if (error_status != 0) {
             close(fd[0]);
-            // TODO:
             return HttpResponse::error_response(409, info.error_page[409])
                 .build();
         }
@@ -515,7 +515,6 @@ std::string get_response(HttpRequest request,
         close(fd[0]);
         std::vector<std::string> cgi_result = tools::split_(body, "\r\n\r\n");
         if (cgi_result.size() != 2) {
-            // TODO:
             return HttpResponse::error_response(502, info.error_page[502])
                 .build();
         }
@@ -538,7 +537,6 @@ std::string get_response(HttpRequest request,
         if (request.getMethod() == "POST" && route.upload_enable) {
             if ((info.client_max_body_size * 1024) <
                 std::stoull(request.getHeaderValue("Content-Length"))) {
-                // TODO:
                 return HttpResponse::error_response(413, info.error_page[413])
                     .build();
             }

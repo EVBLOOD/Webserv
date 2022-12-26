@@ -7,6 +7,7 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include "Request.hpp"
 #include "tools.hpp"
 
 HttpResponse HttpResponse::generate_indexing(std::string dir,
@@ -50,13 +51,10 @@ HttpResponse::HttpResponse(int status,
 }
 
 std::string HttpResponse::build(HttpRequest& request) {
-    if (request.getHeaderValue("Cookie") != "" ||
-        this->getHeaderValue("Set-Cookie") != "")
-        add_header("Set-Cookie",
-                   (request.getHeaderValue("Cookie") == ""
-                        ? ""
-                        : (request.getHeaderValue("Cookie") + ";")) +
-                       this->getHeaderValue("Set-Cookie"));
+    std::pair<multi_iter, multi_iter> p = request.getHeaderValues("cookie");
+    for (multi_iter iter = p.first;iter != p.second;++iter) {
+        add_header("set-cookie", iter->second);
+    }
     return build();
 };
 

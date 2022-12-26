@@ -263,3 +263,9 @@ std::string tools::get_expires_time_in_hour(int hours) {
              time_info);
     return expires_string;
 }
+
+std::string tools::toUppercase(const std::string& s) {
+    std::string result = s;
+    std::transform(result.begin(), result.end(), result.begin(), toupper);
+    return result;
+}

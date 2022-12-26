@@ -6,9 +6,9 @@
 
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include "Request.hpp"
 
@@ -18,7 +18,7 @@ class HttpResponse {
     size_t _content_length;
     std::string _version;
     std::string _action;
-    std::map<std::string, std::string> _headers;
+    std::unordered_multimap<std::string, std::string> _headers;
     std::vector<std::string> _body;
 
    public:

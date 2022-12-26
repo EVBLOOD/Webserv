@@ -50,18 +50,9 @@ HttpRequest::HttpRequest(std::string request)
     _location = first_line[1];
     _version = first_line[2];
 
-    std::cout << "[" << _version << "]" << '\n';
-
-    // TODO: write a check in response place
-    // if (_version != "HTTP/1.1"HTTP/1.1) {
-    //     _error = true;
-    //     return;
-    // }
-
     for (size_t i = 1; i < splited.size(); ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
-        // TODO: make key lower case
-        std::string key = trim(tmp[0], "\n\r ");
+        std::string key = toUppercase(trim(tmp[0], "\n\r "));
         std::string value;
         if (tmp.size() > 2) {
             for (size_t j = 1; j < tmp.size(); ++j)
@@ -98,15 +89,13 @@ HttpRequest::HttpRequest(std::string request)
         _body += header_and_body[i];
 }
 
-// void HttpRequest::dump() {
-//     std::cout << _method << " " << _location << " " << _version << "\n";
-//     for (multi_iter iter = _headers.begin();
-//          iter != _headers.end(); ++iter) {
-//         std::cout << "[" << iter->first << "]"
-//                   << " : [" << iter->second << "]" << '\n';
-//     }
-//     // for (std::vector<std::string>::iterator iter = _body.begin();
-// }
+void HttpRequest::dump() {
+    std::cout << _method << " " << _location << " " << _version << "\n";
+    for (multi_iter iter = _headers.begin(); iter != _headers.end(); ++iter) {
+        std::cout << "[" << iter->first << "]"
+                  << " : [" << iter->second << "]" << '\n';
+    }
+}
 
 bool HttpRequest::error() {
     return _error;
@@ -121,7 +110,7 @@ std::string HttpRequest::getBody() {
 }
 
 std::string HttpRequest::getHeaderValue(std::string key) {
-    multi_iter iter = _headers.find(key.data());
+    multi_iter iter = _headers.find(toUppercase(key.data()));
     if (iter == _headers.end())
         return "";
     return std::string(iter->second.data());
