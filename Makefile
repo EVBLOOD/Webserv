@@ -43,16 +43,11 @@ HEADERS = socket/kqueue.hpp\
 all: $(NAME)
 
 extra: $(SRCS) $(HEADERS)
-	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra &&./$(NAME)_extra 
+	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra 
 
 test: $(TEST) $(HEADERS)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
 	./$(NAME)_test 
-
-
-fast: $(NAME) $(SRCS) $(HEADERS)
-	c++ $(CXXFLAGS) $(SRCS) -O3 -DFAST -o $(NAME)_fast
-	./$(NAME)_fast 
 
 
 run:  all 

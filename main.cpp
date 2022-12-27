@@ -139,8 +139,8 @@ std::vector<std::string> extract_args(std::string body, std::string limit) {
             break;
         part = body.substr(
             position + 2,
-            y - 4 - position);  // + 4 for the /r/n.. in the end of file! and +
-                                // 2 for /r/n in the end of line
+            y - 4 - position);  // + 4 for the /r/n.. in the end of file!
+                                // and + 2 for /r/n in the end of line
         position = y + limit.length();
         part = args_handling(part);
         if (part == "")
@@ -178,8 +178,8 @@ void extract_files(std::string body, std::string limit, std::string location) {
             break;
         part = body.substr(
             position + 2,
-            y - 4 - position);  // + 4 for the /r/n.. in the end of file! and +
-                                // 2 for /r/n in the end of line
+            y - 4 - position);  // + 4 for the /r/n.. in the end of file!
+                                // and + 2 for /r/n in the end of line
         position = y + limit.length();
         if (file_handling(part, location))
             break;
@@ -230,10 +230,6 @@ int main() {
     signal(SIGCHLD, SIG_IGN);
     signal(SIGQUIT, SIG_IGN);
     signal(SIGTERM, SIG_IGN);
-#ifdef FAST
-    cout.rdbuf(NULL);
-    cerr.rdbuf(NULL);
-#endif
 
     cout << G(INFO) << " parsing\n";
     parser file("config");
