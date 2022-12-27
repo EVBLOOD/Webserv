@@ -1,6 +1,3 @@
-//
-// Created by Oussama Rahmouni on 11/23/22.
-//
 
 #include "Response.hpp"
 #include <sys/syslimits.h>
@@ -45,20 +42,6 @@ HttpResponse::HttpResponse(int status,
     if (request.getHeaderValue("cookie") != "")
         add_header("Set-Cookie: ", request.getHeaderValue("cookie"));
 }
-
-// key
-// end end
-// first -- last + 1
-
-std::string HttpResponse::build(HttpRequest& request) {
-    std::pair<multi_iter, multi_iter> p = request.getHeaderValues("cookie");
-
-    for (multi_iter iter = p.first; iter != p.second; ++iter) {
-        add_header("set-cookie", iter->second);
-    }
-
-    return build();
-};
 
 HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
     _headers.insert(make_pair(key, value));

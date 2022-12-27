@@ -1,6 +1,3 @@
-//
-// Created by Oussama Rahmouni on 11/23/22.
-//
 
 #pragma once
 
@@ -42,8 +39,6 @@ class HttpResponse {
     size_t get_body_size();
 
     std::string build();
-
-    std::string build(HttpRequest& request);
 
     void dump();
 

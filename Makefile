@@ -1,6 +1,6 @@
 NAME = Webserver
 
-CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 CXXFLAGS_EXTRA = -Wall -Wextra -Wshadow -std=c++98 -Wuninitialized -fsanitize=address,undefined
 
 CXX = c++

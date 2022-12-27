@@ -1,6 +1,4 @@
-//
-// Created by Oussama Rahmouni on 11/23/22.
-//
+
 
 #pragma once
 #include <dirent.h>

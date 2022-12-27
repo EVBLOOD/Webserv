@@ -354,9 +354,9 @@ std::string get_response(HttpRequest request,
                          TcpStream& client,
                          map<pair<string, string>, serverInfo>& infos) {
     if (request.error()) {
-        return HttpResponse::error_response(403, "").build(request);
+        return HttpResponse::error_response(403, "").build();
     } else if (request.getVersion() != "HTTP/1.1") {
-        return HttpResponse::error_response(505, "").build(request);
+        return HttpResponse::error_response(505, "").build();
     }
 
     string HostHeader = request.getHeaderValue("Host");
@@ -384,18 +384,16 @@ std::string get_response(HttpRequest request,
     if (it == locations.end()) {
         if (method == "GET") {
             return HttpResponse::send_file(loc, info.root, info.error_page)
-                .build(request);
+                .build();
         }
-        return HttpResponse::error_response(405, info.error_page[405])
-            .build(request);
+        return HttpResponse::error_response(405, info.error_page[405]).build();
     }
 
     Location route = it->second;
 
     if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
         route.allow_methods.end()) {
-        return HttpResponse::error_response(405, info.error_page[405])
-            .build(request);
+        return HttpResponse::error_response(405, info.error_page[405]).build();
     }
 
     if (!route.fastcgi_pass.empty()) {
@@ -522,7 +520,7 @@ std::string get_response(HttpRequest request,
                 http_response.add_header(key_header[0], key_header[1]);
         }
 
-        return http_response.build(request);
+        return http_response.build();
     }
 
     if (!request.getHeaderValue("Content-Length").empty() &&
@@ -535,21 +533,21 @@ std::string get_response(HttpRequest request,
 
         if (request.getHeaderValue("Content-Type").empty()) {
             return HttpResponse::error_response(400, info.error_page[400])
-                .build(request);
+                .build();
         }
 
         vector<string> content_type =
             split(request.getHeaderValue("Content-Type"), ";");
         if (content_type.size() != 2) {
             return HttpResponse::error_response(400, info.error_page[400])
-                .build(request);
+                .build();
         } else {
             string multi_part = content_type[0];
             string boundry = content_type[1];
             vector<string> key_value_boundry = split(boundry, "=");
             if (key_value_boundry.size() != 2) {
                 return HttpResponse::error_response(400, info.error_page[400])
-                    .build(request);
+                    .build();
             }
             string boundry_value = key_value_boundry[1];
             if ("multipart/form-data" == multi_part) {
@@ -558,11 +556,11 @@ std::string get_response(HttpRequest request,
                 return HttpResponse(201, "1.1", "Created")
                     .add_to_body("<h1>The file was uploaded.</h1>")
                     .add_content_type(".html")
-                    .build(request);
+                    .build();
             }
 
             return HttpResponse::error_response(400, info.error_page[400])
-                .build(request);
+                .build();
         }
     }
 
@@ -570,24 +568,22 @@ std::string get_response(HttpRequest request,
         is_dir(tools::url_path_correction(root, loc)) && route.autoindex) {
         return HttpResponse::generate_indexing(
                    tools::url_path_correction(root, loc), loc)
-            .build(request);
+            .build();
     }
 
     if (method == "GET") {
         if (!route.index.empty()) {
             return HttpResponse::index_response(route.index, info.root,
                                                 info.error_page)
-                .build(request);
+                .build();
         }
 
         if (!route.ret_rn.empty()) {
             pair<int, string> redirect = *route.ret_rn.begin();
-            return handle_redirection(redirect.first, redirect.second)
-                .build(request);
+            return handle_redirection(redirect.first, redirect.second).build();
         }
 
-        return HttpResponse::error_response(404, info.error_page[404])
-            .build(request);
+        return HttpResponse::error_response(404, info.error_page[404]).build();
     }
 
     if (method == "DELETE") {
@@ -597,23 +593,22 @@ std::string get_response(HttpRequest request,
 
             if (std::remove(actualpath) != 0) {
                 return HttpResponse::error_response(412, info.error_page[412])
-                    .build(request);
+                    .build();
             }
             return HttpResponse(200, "1.1", "OK")
                 .add_to_body("<h1>The file was deleted.</h1>")
                 .add_content_type(".html")
-                .build(request);
+                .build();
         }
 
         if (is_dir(url_path_correction(root, loc)) ||
             is_file(url_path_correction(root, loc))) {
             return HttpResponse::error_response(405, info.error_page[405])
-                .build(request);
+                .build();
         }
     }
 
-    return HttpResponse::error_response(404, info.error_page[404])
-        .build(request);
+    return HttpResponse::error_response(404, info.error_page[404]).build();
 };
 
 void handle_requests(Kqueue& event_queue,
