@@ -17,7 +17,7 @@ server
 	error_page 502 /errors/502.html;
 
 
-	root /Users/sakllam/1/public;
+	root /Users/sakllam/Desktop/final/public;
 
 	location /
 	{
@@ -89,7 +89,7 @@ server
 
 
 
-	root /Users/sakllam/1/public;
+	root /Users/sakllam/Desktop/final/public;
 
 	location /
 	{

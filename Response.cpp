@@ -214,6 +214,8 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
         action = "Not Found";
     } else if (status == 405) {
         action = "Method Not Allowed";
+    } else if (status == 403) {
+        action = "Forbidden";
     } else if (status == 406) {
         action = "Not Acceptable";
     } else if (status == 407) {

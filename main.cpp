@@ -4,7 +4,9 @@
 #include <sys/_types/_ssize_t.h>
 #include <sys/event.h>
 #include <sys/fcntl.h>
+#include <sys/resource.h>
 #include <sys/signal.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <algorithm>
 #include <csignal>
@@ -42,6 +44,11 @@ using std::pair;
 using std::set;
 using std::string;
 using std::vector;
+
+void signal_handl(int sig) {
+    (void)sig;
+    exit(1);
+}
 
 void handle_new_connection(Kqueue& kq, TcpListener* server);
 
@@ -224,7 +231,11 @@ pair<string, ssize_t> read_request(const TcpStream& client) {
     return make_pair(tmp, ret);
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);
+    }
     // Ignore the SIGPIPE, SIGCHLD, SIGQUIT, and SIGTERM signals
     signal(SIGPIPE, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
@@ -232,7 +243,8 @@ int main() {
     signal(SIGTERM, SIG_IGN);
 
     cout << G(INFO) << " parsing\n";
-    parser file("config");
+    std::string file_name = std::string(argv[1]);
+    parser file(file_name);
     list<tokengen> tokens = file.generate();
     vector<serverInfo> servers_info = file.lexer_to_data(tokens);
     ////////////////////////////////////////////////////////////////////////
@@ -403,6 +415,7 @@ std::string get_response(HttpRequest request,
         const char* cgi_path = route.fastcgi_pass.c_str();
         int fd[2];
         std::string tmpfile_name = tools::generateRandomTempFileName();
+
         if (request.getMethod() == "POST" &&
             std::find(route.allow_methods.begin(), route.allow_methods.end(),
                       "POST") != route.allow_methods.end()) {
@@ -422,6 +435,8 @@ std::string get_response(HttpRequest request,
                     .build();
             }
             if (pid == 0) {
+                signal(SIGALRM, signal_handl);
+                alarm(2);
                 if (!request.getHeaderValue("Cookie").empty())
                     setenv("HTTP_COOKIE",
                            request.getHeaderValue("Cookie").c_str(), 1);
@@ -453,6 +468,7 @@ std::string get_response(HttpRequest request,
                 close(fd[1]);
                 if (execve(cgi_path, args, env) == -1)
                     std::cerr << "ERROR EXECUTING CGI!\n";
+                alarm(0);
                 exit(1);
             }
         } else if (request.getMethod() == "GET" &&
@@ -469,6 +485,8 @@ std::string get_response(HttpRequest request,
                     .build();
             }
             if (pid == 0) {
+                signal(SIGALRM, signal_handl);
+                alarm(2);
                 if (request.getHeaderValue("Cookie") != "")
                     setenv("HTTP_COOKIE",
                            request.getHeaderValue("Cookie").c_str(), 1);
@@ -484,7 +502,9 @@ std::string get_response(HttpRequest request,
                 close(fd[0]);
                 dup2(fd[1], 1);
                 close(fd[1]);
-                execve(cgi_path, args, env);
+                if (execve(cgi_path, args, env) == -1)
+                    std::cerr << "ERROR EXECUTING CGI!\n";
+                alarm(0);
                 exit(1);
             }
         }
@@ -538,7 +558,7 @@ std::string get_response(HttpRequest request,
 
         vector<string> content_type =
             split(request.getHeaderValue("Content-Type"), ";");
-        if (content_type.size() != 2) {
+        if (content_type.size() != 2 || route.upload_store == "") {
             return HttpResponse::error_response(400, info.error_page[400])
                 .build();
         } else {
@@ -550,9 +570,17 @@ std::string get_response(HttpRequest request,
                     .build();
             }
             string boundry_value = key_value_boundry[1];
+            std::string path_where_to =
+                tools::url_path_correction(root, it->first);
+            if (!tools::is_dir(path_where_to) ||
+                !tools::is_part_of_root(root, route.upload_store)) {
+                return HttpResponse::error_response(400, info.error_page[400])
+                    .build();
+            }
+
             if ("multipart/form-data" == multi_part) {
                 extract_files(request.getBody(), boundry_value,
-                              tools::url_path_correction(root, it->first));
+                              path_where_to);
                 return HttpResponse(201, "1.1", "Created")
                     .add_to_body("<h1>The file was uploaded.</h1>")
                     .add_content_type(".html")

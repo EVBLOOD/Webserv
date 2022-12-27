@@ -43,15 +43,15 @@ HEADERS = socket/kqueue.hpp\
 all: $(NAME)
 
 extra: $(SRCS) $(HEADERS)
-	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra 
+	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra config
 
 test: $(TEST) $(HEADERS)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
-	./$(NAME)_test 
+	./$(NAME)_test
 
 
 run:  all 
-	@./$(NAME)
+	@./$(NAME) config
 
 $(NAME) : $(HEADERS) $(SRCS) $(OBJS) 
 	c++ -Wall -Wextra -Wshadow -std=c++98 -o $(NAME) $(OBJS)
