@@ -7,7 +7,6 @@
 #include <sys/signal.h>
 #include <unistd.h>
 #include <algorithm>
-#include <cassert>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
@@ -36,9 +35,7 @@
 
 using namespace tools;
 using std::array;
-using std::cerr;
 using std::cout;
-using std::endl;
 using std::list;
 using std::map;
 using std::pair;
@@ -255,8 +252,6 @@ int main() {
             string& host = ser.host;
             string& port = ser.port[j];
             if (already_bounded.insert(make_pair(host, port)).second) {
-                cout << G(INFO) << " binding and attaching {host, port} == {"
-                     << host << "," << port << "}" << '\n';
                 IListener* server = new TcpListener(host, port);
                 event_queue.attach(server);
             }
@@ -277,8 +272,10 @@ int main() {
     ////////////////////////////////////////////////////////////////////////
 
     cout << G(INFO) << " start the main loop\n";
+    cout << G(INFO)
+         << "-------------------- handling for events ....  "
+            "--------------------\n";
     loop {
-        cout << G(INFO) << " waiting for events ....\n";
         IListener& listener = event_queue.get_event();
         Kevent kv = listener.get_kevent();
 
@@ -300,7 +297,6 @@ int main() {
             TcpStream& client = dynamic_cast<TcpStream&>(listener);
 
             if (kv.filter == EVFILT_WRITE) {
-                cerr << G(INFO) << " handling big write\n";
                 std::string response = client.get_response_buffer();
                 size_t towrite = BUFFER_SIZE;
                 if (towrite > response.size())
@@ -335,7 +331,6 @@ int main() {
                 continue;
             }
             if (kv.data != 0) {
-                cout << G(INFO) << " client is ready for IO " << endl;
                 pair<string, ssize_t> p = read_request(client);
                 ret = p.second;
                 if (ret <= 0) {
@@ -356,7 +351,6 @@ int main() {
 
 void handle_new_connection(Kqueue& event_queue, TcpListener* server) {
     TcpStream& client = server->accept();
-    cout << G(INFO) << "accepting a new connection\n";
     event_queue.attach(&client);
 }
 

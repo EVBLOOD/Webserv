@@ -1,6 +1,5 @@
 #include "Request.hpp"
 #include <sys/_types/_size_t.h>
-#include <cassert>
 #include <exception>
 #include <iostream>
 #include <iterator>

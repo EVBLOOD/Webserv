@@ -73,8 +73,6 @@ std::string tools::url_path_correction(std::string a, std::string b) {
 
 bool tools::is_part_of_root(std::string root, std::string location) {
     char actualpath[PATH_MAX + 1];
-    std::cout << "[SAADX] " << tools::url_path_correction(root, location)
-              << '\n';
     char* ptr =
         realpath(url_path_correction(root, location).c_str(), actualpath);
     if (ptr == NULL) {

@@ -4,7 +4,6 @@
 
 #include "Response.hpp"
 #include <sys/syslimits.h>
-#include <cassert>
 #include <iostream>
 #include <string>
 #include "Request.hpp"
@@ -129,10 +128,6 @@ void HttpResponse::dump() {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
-    // for (std::vector<std::string>::iterator iter = _body.begin();
-    //      iter != _body.end(); ++iter) {
-    //     std::cout << *iter << "\n";
-    // }
 }
 
 std::string HttpResponse::get_content_type(std::string file_name) {
@@ -302,10 +297,8 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
         action = "Network Authentication Required";
     } else {
         status = 404;
-        std::cerr << "[ERROR] unknown status code\n";
         action = "Not Found";
     }
-    std::cout << path << "\n";
     if (!path.empty() && is_file(path) && is_file_exists(path) &&
         is_file_readable(path)) {
         std::ifstream file(path);
@@ -373,7 +366,7 @@ HttpResponse HttpResponse::index_response(
     std::string root,
     std::map<int, std::string> error_pages) {
     std::vector<std::string>::iterator it = index.begin();
-    
+
     while (it != index.end()) {
         std::string path = tools::url_path_correction(root, *it);
         if (tools::is_file_exists(path) && tools::is_file_readable(path))

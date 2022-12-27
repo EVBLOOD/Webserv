@@ -3,7 +3,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <array>
-#include <cassert>
 #include <iostream>
 #include <map>
 #include <vector>

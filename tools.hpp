@@ -3,8 +3,6 @@
 //
 
 #pragma once
-
-#include <assert.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <sys/stat.h>

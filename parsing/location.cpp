@@ -6,7 +6,7 @@
 /*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/13 13:33:40 by sakllam           #+#    #+#             */
-/*   Updated: 2022/12/25 18:52:18 by sakllam          ###   ########.fr       */
+/*   Updated: 2022/12/27 01:44:11 by sakllam          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,7 +215,6 @@ void Location::execute(int i,
         &Location::set<setindex>,         &Location::set<setreturn>,
         &Location::set<setautoindex>,     &Location::set<setupload_enable>,
         &Location::set<setupload_store>};
-    //    std::cout << i  << "\n";
     (this->*funs[i])(big, end);
 }
 
@@ -236,7 +235,6 @@ Location::Location(const Location& lc) {
 
 Location& Location::operator=(const Location& lc) {
     if (this == &lc) {
-        std::cerr << "wait what??? \n";
         exit(1);
     }
     index = lc.index;

@@ -1,6 +1,7 @@
 server
 {
 	listen          8080;
+	#listen          80;
 	listen          8090;
 
 
