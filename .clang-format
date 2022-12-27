@@ -1,0 +1,16 @@
+---
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
+BasedOnStyle: Chromium
+IndentWidth: 4
+---
+Language: Cpp
+Standard: Cpp03
+# Force pointers to the type for C++.
+# DerivePointerAlignment: false
+PointerAlignment: Left
+
+# AlignConsecutiveMacros: AcrossEmptyLines
+
+# AlignConsecutiveMacros:
+#   Enabled: true
+# #   AcrossEmptyLines: true
