@@ -604,22 +604,26 @@ std::string get_response(HttpRequest request,
         if (is_part_of_root(root, loc)) {
             char actualpath[PATH_MAX + 1];
             realpath(url_path_correction(root, loc).c_str(), actualpath);
-            string cmd = "rm -rf " + string(actualpath);
-            system(cmd.c_str());
+
+            if (std::remove(actualpath) != 0) {
+                return HttpResponse::error_response(412, info.error_page[412])
+                    .build(request);
+            }
             return HttpResponse(200, "1.1", "OK")
                 .add_to_body("<h1>The file was deleted.</h1>")
                 .add_content_type(".html")
                 .build(request);
         }
+
         if (is_dir(url_path_correction(root, loc)) ||
-            is_file(url_path_correction(root, loc)))
+            is_file(url_path_correction(root, loc))) {
             return HttpResponse::error_response(405, info.error_page[405])
                 .build(request);
-        return HttpResponse::error_response(404, info.error_page[404])
-            .build(request);
+        }
     }
-    cerr << G(ERROR) << " no index + no return\n ";
-    exit(1);
+
+    return HttpResponse::error_response(404, info.error_page[404])
+        .build(request);
 };
 
 void handle_requests(Kqueue& event_queue,

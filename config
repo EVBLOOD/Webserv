@@ -62,10 +62,13 @@ server
 
 		fastcgi_pass /usr/local/bin/python3;
 	}
-
+	location /upload/simple1
+	{
+		allow_methods DELETE;
+	}
 	location /upload
 	{
-		allow_methods POST;
+		allow_methods POST DELETE;
 		upload_enable on;
 		upload_store /upload;
 	}
