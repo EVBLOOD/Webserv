@@ -28,22 +28,22 @@ TcpListener::TcpListener(std::string host, std::string port)
     hints.ai_flags = AI_PASSIVE;
     int ireturn = ::getaddrinfo(host.c_str(), port.c_str(), &hints, &addr);
     if (ireturn == -1) {
-        std::cerr << "get info is joking!\n";
+        std::cerr << G(ERROR) << " getaddrinfo : " << strerror(errno) << '\n';
         exit(1);
     }
     _fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
     int enable = 1;
     if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) ==
         -1) {
-        std::cerr << "Setsockopt failed" << strerror(errno) << std::endl;
-        exit(-1);
+        std::cerr << G(ERROR) << " setsockopt : " << strerror(errno) << '\n';
+        exit(1);
     }
     if (bind(_fd, addr->ai_addr, addr->ai_addrlen) == -1) {
-        std::cerr << "bind is joking!\n";
+        std::cerr << G(ERROR) << " bind : " << strerror(errno) << '\n';
         exit(1);
     }
     if (listen(_fd, backlog) == -1) {
-        std::cerr << "listen is joking!\n";
+        std::cerr << G(ERROR) << " listen : " << strerror(errno) << '\n';
         exit(1);
     }
     freeaddrinfo(addr);
@@ -69,7 +69,7 @@ int accept_helper(int fd) {
 TcpStream& TcpListener::accept() const {
     int client_sockfd = accept_helper(_fd);
     if (client_sockfd == -1) {
-        std::cerr << G(ERROR) << " accept function failed : " << strerror(errno)
+        std::cerr << G(ERROR) << " accept : " << strerror(errno)
                   << '\n';
         exit(1);
     }

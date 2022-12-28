@@ -1,23 +1,23 @@
 server
 {
 	listen          8080;
-	#listen          9090;
-	#listen          9091;
+	#listen          80;
+	listen          8090;
+
 
 	host localhost;
 
 	server_name google.com;
 	server_name     example.com;
 
-	client_max_body_size    1024;
+	client_max_body_size    16384;
 
 	error_page 403 /errors/403.html;
-	error_page 404 /errors/404.html;
 	error_page 500 /errors/500.html;
 	error_page 502 /errors/502.html;
 
 
-	root /Users/sakllam/1/public;
+	root /Users/sakllam/Desktop/final/public;
 
 	location /
 	{
@@ -43,11 +43,78 @@ server
         allow_methods GET;
     }
 
-	# location post.html
-	# {
-	# 	allow_methods GET POST;
-	# 	return 200 get.php;
-	# }
+
+	location /return
+	{
+		allow_methods GET;
+		return 302 /;
+	}
+
+	location *.php
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /Users/sakllam/.brew/opt/php@8.1/bin/php-cgi;
+	}
+
+	location *.py
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /usr/local/bin/python3;
+	}
+	location /upload/simple1
+	{
+		allow_methods DELETE;
+	}
+	location /upload
+	{
+		allow_methods POST DELETE;
+		upload_enable on;
+		upload_store /upload;
+	}
+}
+
+server
+{
+	listen          8080;
+	listen          9090;
+
+	host localhost;
+
+	server_name google.com;
+	server_name     example.com;
+
+	client_max_body_size    1024;
+
+
+
+	root /Users/sakllam/Desktop/final/public;
+
+	location /
+	{
+
+		index hi index.html;
+
+		autoindex off;
+		allow_methods GET;
+	}
+
+	location /delete
+	{
+		allow_methods DELETE;
+	}
+
+    location /dir {
+        autoindex on;
+        allow_methods GET;
+    }
+
+    location /dir/dir {
+        autoindex on;
+        allow_methods GET;
+    }
+
 
 	location /return
 	{
@@ -76,61 +143,3 @@ server
 		upload_store /upload;
 	}
 }
-
-#server
-#{
-#	listen          8080;
-#	listen          8081;
-#	listen          9999;
-#	listen          2565;
-#
-#	host localhost;
-#
-#	server_name youtube.com;
-#	server_name     example.com;
-#
-#	client_max_body_size    1024;
-#
-#	error_page 403 /public/errors/403.html;
-#	error_page 404 /public/errors/404.html;
-#	error_page 405 /public/errors/404.html;
-#	error_page 500 /public/errors/500.html;
-#	error_page 502 /public/errors/502.html;
-#
-#	root /Users/sakllam/Webserv;
-#
-#	location /
-#	{
-#		index main.cpp;
-#
-#		autoindex off;
-#		allow_methods GET POST DELETE;
-#	}
-#
-#	location /saad
-#	{
-#		return 301 public/app.css;
-#	}
-#
-#	location *.php
-#	{
-#		allow_methods GET POST;
-#
-#		fastcgi_pass /Users/orahmoun/.brew/bin/php-cgi;
-#	}
-#
-#	location *.py
-#	{
-#		allow_methods GET POST;
-#
-#		fastcgi_pass /usr/bin/python;
-#	}
-#
-#	location /upload
-#	{
-#		allow_methods POST GET;
-#		upload_enable on;
-#		upload_store /upload;
-#	}
-#}
-#

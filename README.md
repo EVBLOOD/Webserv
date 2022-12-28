@@ -7,8 +7,6 @@ This project is about writing an HTTP server.
 - [X]  auto index
 - [X]  multiple ports
 - [X]  multiple index file
-- [ ]  changing root
 - [X]  adding content - length
-- [ ]  URL - correction should take one string (ex : "/url//test///" => "/url/test")
-- [ ]  make everything in request and response (headers) case insensitive
+- [X]  make everything in request and response (headers) case insensitive
 

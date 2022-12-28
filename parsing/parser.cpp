@@ -1,53 +1,34 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   parser.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/09 18:04:48 by sakllam           #+#    #+#             */
-/*   Updated: 2022/12/16 14:05:16 by sakllam          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+
 
 #include "parser.hpp"
 #include <iterator>
 #include <list>
-#include "location.hpp"
-#include "tokengen.hpp"
-// #include <sys/_types/_size_t.h>
 #include <vector>
+#include "location.hpp"
 #include "serverInfo.hpp"
+#include "tokengen.hpp"
 
 enum KEYEGN { context_server, context_location, simpledir };
-#define A "server"                // if no server no run
-#define B "location"              // in no location no place to go
-#define C "listen"                // if no listen no feedback
-#define D "root"                  // if no root I'll be checking "/var/www/html"
-#define E "client_max_body_size"  // if no size one is the size
-#define F "error_page"            // if no error default I'll use mine
-#define G "autoindex"             // if no autoindex then yes
-#define H "index"                 // you wanna travel dicide a place
-#define I "allow_methods"         // if not the everything
-#define J "return"                // you need to change path?
-#define K "fastcgi_pass"          // why speaking english if u only know arabic
-#define L "upload_enable"         // let's download not apload default == nope!
-#define M "upload_store"          // place to put your stuff in
-#define N "server_name"           // place to put your stuff in
+#define A "server"
+#define B "location"
+#define C "listen"
+#define D "root"
+#define E "client_max_body_size"
+#define F "error_page"
+#define G "autoindex"
+#define H "index"
+#define I "allow_methods"
+#define J "return"
+#define K "fastcgi_pass"
+#define L "upload_enable"
+#define M "upload_store"
+#define N "server_name"
 #include <stdio.h>
-parser::parser(const std::string& filename) {
-    config.open(filename);          // open file
-    if (config.is_open() == false)  // protection mode: file opened?
-    {                               // no ? okey
-        //        std::cout << "Some respect please ! \n";
+parser::parser(const std::string& filename)
+    : config(filename), servers(), tmploc(), tmpserv() {
+    if (config.is_open() == false || config.fail() || config.peek() == EOF) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
-        // else throw an error;
-    }
-    if (config.peek() == EOF)  // protection mode: nothing in the file
-    {                          // EOF > okey
-                               //        std::cout << "Empty ---> \n";
-        exit(1);
-        // else throw an error;
     }
 }
 
@@ -130,20 +111,18 @@ std::vector<std::pair<bool, std::string> > generatestring(bool server) {
 }
 
 template <>
-void parser::separating<simpledir>(
-    std::list<tokengen>::iterator& begin,
-    std::list<tokengen>::iterator& end,
-    bool server)  // I may need somewhere to store this data!
-{
-    //    std::cout << "simpledir\n";
+void parser::separating<simpledir>(std::list<tokengen>::iterator& begin,
+                                   std::list<tokengen>::iterator& end,
+                                   bool server) {
     std::string tmp;
     size_t i;
 
     CURLWAIT(begin, end, true);
-    if (begin == end || (begin->type != WORD && begin->type != QUOTES))
+    if (begin == end || (begin->type != WORD && begin->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
-    std::vector<std::pair<bool, std::string> > cond =
-        generatestring(server);  // TODO : add it as a pointer (size) !
+    }
+    std::vector<std::pair<bool, std::string> > cond = generatestring(server);
     size_t size = cond.size();
     if (begin->type == QUOTES)
         tmp = begin->content.substr(1, begin->content.length() - 2);
@@ -156,16 +135,15 @@ void parser::separating<simpledir>(
                 tmpserv.execute(i, begin, end);
             } else {
                 begin++;
-                //                std::cout << "--------- start ---------\n";
                 tmploc.execute(i - 6, begin, end);
-                //                std::cout << "---------  end  ---------\n";
             }
             break;
         }
     }
-    if (begin == end || i == size)
+    if (begin == end || i == size) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
-    // begin++;
+    }
     CURLWAIT(begin, end, true);
 }
 
@@ -173,14 +151,15 @@ template <>
 void parser::separating<context_location>(std::list<tokengen>::iterator& begin,
                                           std::list<tokengen>::iterator& end,
                                           bool serv) {
-    //    std::cout << "context location\n";
     (void)serv;
     tmploc = Location();
     std::string name;
     begin++;
     CURLWAIT(begin, end, true);
-    if (begin == end || (begin->type != WORD && begin->type != QUOTES))
-        exit(1);
+    if (begin == end || (begin->type != WORD && begin->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);  // not closed
+    }
     if (begin->type == QUOTES)
         name = begin->content.substr(1, begin->content.length() - 2);
     else
@@ -189,8 +168,10 @@ void parser::separating<context_location>(std::list<tokengen>::iterator& begin,
     CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL)
         separating<simpledir>(begin, end, false);
-    if (begin == end)
-        exit(0);  // not closed
+    if (begin == end) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);  // not closed
+    }
     begin++;
     CURLWAIT(begin, end, true);
     tmpserv.setlocation(name, tmploc);
@@ -200,11 +181,12 @@ template <>
 void parser::separating<context_server>(std::list<tokengen>::iterator& begin,
                                         std::list<tokengen>::iterator& end,
                                         bool serv) {
-    //    std::cout << "context server \n";
     tmpserv = serverInfo();
     CURLWAIT(begin, end, true);
-    if (begin == end || (begin->type != WORD && begin->content != A))
+    if (begin == end || (begin->type != WORD && begin->content != A)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     begin++;
     CURLWAIT(begin, end);
     while (begin != end && begin->type != CLOSECURL) {
@@ -214,25 +196,28 @@ void parser::separating<context_server>(std::list<tokengen>::iterator& begin,
         else if (begin->type == WORD)
             separating<simpledir>(begin, end, serv);
         else {
-            //            std::cout << "well if it's here then shit\n";
+            std::cerr << "[ERROR] parsing error\n";
             exit(1);
         }
     }
-    if (begin == end)
-        exit(0);
+    if (begin == end) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);
+    }
     begin++;
     CURLWAIT(begin, end, true);
     servers.push_back(tmpserv);
 }
 
 std::vector<serverInfo> parser::lexer_to_data(std::list<tokengen> lexer) {
-    //    std::cout << "lexer+to+data()\n";
     std::list<tokengen>::iterator begin = lexer.begin();
     std::list<tokengen>::iterator end = lexer.end();
     while (begin != end)
         separating<context_server>(begin, end);
-    if (servers.size() == 0)
+    if (servers.size() == 0) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     return servers;
 }
 

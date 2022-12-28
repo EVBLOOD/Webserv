@@ -1,6 +1,5 @@
 #include "TcpStream.hpp"
 #include <sys/socket.h>
-#include <cassert>
 
 TcpStream::TcpStream(int fd, const TcpListener& owner)
     : _fd(fd),
@@ -13,13 +12,14 @@ TcpStream::TcpStream(int fd, const TcpListener& owner)
 };
 
 size_t TcpStream::read(char* buff, size_t size) const {
-    assert(_fd != -1);
-    // MSG_TRUNC | MSG_DONTWAIT
+    if (_fd < 0)
+        return 0;
     return recv(_fd, buff, size, 0);
 };
 
 size_t TcpStream::write(const char* const buff, size_t size) const {
-    assert(_fd != -1);
+    if (_fd < 0)
+        return 0;
     return send(_fd, buff, size, 0);
 };
 
@@ -43,7 +43,7 @@ std::string TcpStream::get_buffer_request() const {
 void TcpStream::set_reponse_buffer(std::string buffer) {
     _response_buffer = buffer;
 };
-bool TcpStream::is_response_not_finished() {
+bool TcpStream::is_response_not_finished() const {
     return _response_buffer.size() != 0;
 };
 
@@ -61,7 +61,7 @@ void TcpStream::add_to_request_buffer(std::string tail) {
     _request_buffer = _request_buffer + tail;
 };
 
-std::string TcpStream::get_response_buffer() {
+std::string TcpStream::get_response_buffer() const {
     return _response_buffer;
 };
 

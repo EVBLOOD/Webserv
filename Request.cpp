@@ -1,58 +1,37 @@
 #include "Request.hpp"
 #include <sys/_types/_size_t.h>
-#include <cassert>
+#include <exception>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "parsing/tokengen.hpp"
 #include "tools.hpp"
 
-// char resp[] =
-//         "HTTP/1.0 200 OK\r\n"
-//         "Server: webserver-c\r\n"
-//         "Content-type: text/html\r\n\r\n"
-//         "<h1>hello, world</1>\r\n"
-//         "<ul><li>13</li>\r\n"
-//         "<li>37</li></ul>\r\n";
-
-// std::string _raw;
-// std::string _method;
-// std::string _location;
-// std::string _version;
-// std::map<std::string, std::string> _headers;
-// std::vector<std::string> _body;
-
 HttpRequest::HttpRequest(std::string request)
-    : _raw(),
+    : _raw(request),
       _method(),
       _location(),
       _version(),
       _headers(),
       _body(),
       _error(false) {
-    _raw = request;
-    // std::cout << "[" << request << "]" << std::endl;
-    if (request[0] == '\0' || request.size() == 0) {
+    if (request.empty() || request[0] == '\0') {
         _error = true;
         return;
     }
-    std::cout << "-------------------------------\n";
-    std::cout << request << "\n";
-    std::cout << "-------------------------------\n";
     std::vector<std::string> header_and_body =
         tools::split_(request, "\r\n\r\n");
-    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[0] == "abcd");
-    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n")[1] == "wxyz");
-    assert(split("abcd\r\n\r\nwxyz", "\r\n\r\n").size() == 2);
 
     if (header_and_body.size() == 0) {
         _error = true;
         return;
     }
 
-    std::vector<std::string> splited = split(header_and_body[0], "\n");
-    // std::vector<std::string> splited = split(request, "\n");
+    std::string& headers = header_and_body[0];
+    std::vector<std::string> splited = split(headers, "\r\n");
 
     if (splited.size() == 0) {
         _error = true;
@@ -70,10 +49,9 @@ HttpRequest::HttpRequest(std::string request)
     _location = first_line[1];
     _version = first_line[2];
 
-    for (size_t i = 1; i < splited.size() && splited[i] != "\r"; ++i) {
+    for (size_t i = 1; i < splited.size(); ++i) {
         std::vector<std::string> tmp = split(splited[i], ":");
-        // TODO: make key lower case
-        std::string key = trim(tmp[0], "\n\r ");
+        std::string key = toUppercase(trim(tmp[0], "\n\r "));
         std::string value;
         if (tmp.size() > 2) {
             for (size_t j = 1; j < tmp.size(); ++j)
@@ -83,7 +61,27 @@ HttpRequest::HttpRequest(std::string request)
             value = trim(tmp[1], "\n\r ");
         }
 
-        _headers[key] = value;
+        _headers.insert(make_pair(key, value));
+    }
+
+    if (getHeaderValue("Host").empty() ||
+        getHeaderValue("User-Agent").empty()) {
+        _error = true;
+        return;
+    }
+
+    if (getMethod() == "POST") {
+        if (getHeaderValue("Content-Type").empty() ||
+            getHeaderValue("Content-Length").empty()) {
+            _error = true;
+            return;
+        }
+        try {
+            std::stoull(getHeaderValue("Content-Length"));
+        } catch (std::exception& e) {
+            _error = true;
+            return;
+        }
     }
 
     for (size_t i = 1; i < header_and_body.size(); i++)
@@ -92,15 +90,10 @@ HttpRequest::HttpRequest(std::string request)
 
 void HttpRequest::dump() {
     std::cout << _method << " " << _location << " " << _version << "\n";
-    for (std::map<std::string, std::string>::iterator iter = _headers.begin();
-         iter != _headers.end(); ++iter) {
+    for (multi_iter iter = _headers.begin(); iter != _headers.end(); ++iter) {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
-    // for (std::vector<std::string>::iterator iter = _body.begin();
-    //      iter != _body.end(); ++iter) {
-    //     std::cout << *iter << "\n";
-    // }
 }
 
 bool HttpRequest::error() {
@@ -116,9 +109,15 @@ std::string HttpRequest::getBody() {
 }
 
 std::string HttpRequest::getHeaderValue(std::string key) {
-    // TODO: make key lowercase
-    // struct cmp {}
-    return _headers[key];
+    multi_iter iter = _headers.find(toUppercase(key));
+    if (iter == _headers.end())
+        return "";
+    return std::string(iter->second);
+}
+
+std::pair<multi_iter, multi_iter> HttpRequest::getHeaderValues(
+    std::string key) {
+    return _headers.equal_range(tools::toUppercase(key));
 }
 
 std::string HttpRequest::getVersion() {
@@ -132,14 +131,3 @@ std::string HttpRequest::getLocation() {
 std::string HttpRequest::getMethod() {
     return _method;
 }
-
-// int main() {
-//     HttpRequest(
-//         "HTTP/1.0 200 OK\r\n"
-//         "Server: webserver-c\r\n"
-//         "Content-type: text/html\r\n\r\n"
-//         "<h1>hello, world</1>\r\n"
-//         "<ul><li>13</li>\r\n"
-//         "<li>37</li></ul>\r\n")
-//         .dump();
-// }

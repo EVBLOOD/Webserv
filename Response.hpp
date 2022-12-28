@@ -1,13 +1,11 @@
-//
-// Created by Oussama Rahmouni on 11/23/22.
-//
 
 #pragma once
 
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include "Request.hpp"
 
@@ -17,7 +15,7 @@ class HttpResponse {
     size_t _content_length;
     std::string _version;
     std::string _action;
-    std::map<std::string, std::string> _headers;
+    std::unordered_multimap<std::string, std::string> _headers;
     std::vector<std::string> _body;
 
    public:
@@ -42,11 +40,11 @@ class HttpResponse {
 
     std::string build();
 
-    std::string build(HttpRequest& request);
-
     void dump();
 
    public:
+    static std::string generateErrorPage(int statusCode,
+                                         const std::string& statusMessage);
     static std::string get_content_type(std::string location);
     static HttpResponse error_response(int status, std::string file);
     static HttpResponse send_file(std::string file,

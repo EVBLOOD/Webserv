@@ -1,6 +1,6 @@
 NAME = Webserver
 
-CXXFLAGS = -Wall -Wextra -Wshadow -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 CXXFLAGS_EXTRA = -Wall -Wextra -Wshadow -std=c++98 -Wuninitialized -fsanitize=address,undefined
 
 CXX = c++
@@ -33,25 +33,27 @@ SRCS_TEST =  tests.cpp\
 			parsing/tokengen.cpp\
 
 
+HEADERS = socket/kqueue.hpp\
+			socket/tcpListener.hpp\
+			socket/TcpStream.hpp\
+			Request.hpp\
+			Response.hpp\
+			tools.hpp
+
 all: $(NAME)
 
-extra: 
-	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra &&./$(NAME)_extra 
+extra: $(SRCS) $(HEADERS)
+	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra config
 
-test: $(TEST)
+test: $(TEST) $(HEADERS)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test
-	./$(NAME)_test 
-
-
-fast: $(NAME) $(SRCS)
-	c++ $(CXXFLAGS) $(SRCS) -O3 -DFAST -o $(NAME)_fast
-	./$(NAME)_fast 
+	./$(NAME)_test
 
 
 run:  all 
-	@./$(NAME)
+	@./$(NAME) config
 
-$(NAME) : $(OBJS)
+$(NAME) : $(HEADERS) $(SRCS) $(OBJS) 
 	c++ -Wall -Wextra -Wshadow -std=c++98 -o $(NAME) $(OBJS)
 
 clean:

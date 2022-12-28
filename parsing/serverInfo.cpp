@@ -1,20 +1,9 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   serverInfo.cpp                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sakllam <sakllam@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/13 13:33:03 by sakllam           #+#    #+#             */
-/*   Updated: 2022/11/30 15:38:10 by sakllam          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+
 
 #include "serverInfo.hpp"
 
 void serverInfo::setlocation(std::string x, Location y) {
-    locations.insert(
-        std::make_pair(x, y));  // don't forget the path in the other side plz
+    locations.insert(std::make_pair(x, y));
 }
 
 template <>
@@ -23,21 +12,27 @@ void serverInfo::setters<setport>(std::list<tokengen>::iterator& big,
     std::string tmp;
 
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1);  // alo alo
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);
+    }
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
-        if (isdigit(tmp[i]) == false)  // TODO: check this
+        if (isdigit(tmp[i]) == false) {
+            std::cerr << "[ERROR] parsing error\n";
             exit(1);
+        }
     port.push_back(tmp);
     big++;
     CURLWAIT(big, end, true);
-    if (big == end || big->type != SEMICOLONS)
+    if (big == end || big->type != SEMICOLONS) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
-    big++;  // TODO: check if it's the end in the other side;
+    }
+    big++;
 }
 
 template <>
@@ -46,9 +41,11 @@ void serverInfo::setters<setservername>(std::list<tokengen>::iterator& big,
     std::string tmp;
 
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
-        exit(1);              // alo alo
-    if (big->type == QUOTES)  // TODO: check if the double quotes are double
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);
+    }
+    if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
@@ -57,8 +54,10 @@ void serverInfo::setters<setservername>(std::list<tokengen>::iterator& big,
     CURLWAIT(big, end, true);
     if (big != end && big->type != SEMICOLONS)
         setters<setservername>(big, end);
-    if (big == end)
-        exit(1);  // TODO: check in the other side!
+    if (big == end) {
+        std::cerr << "[ERROR] parsing error\n";
+        exit(1);
+    }
     big++;
 }
 
@@ -70,22 +69,27 @@ void serverInfo::setters<setmap>(std::list<tokengen>::iterator& big,
     std::stringstream x;
 
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
-        if (isdigit(tmp[i]) ==
-            false)  // TODO: for the port the number is limited and status
+        if (isdigit(tmp[i]) == false) {
+            std::cerr << "[ERROR] parsing error\n";
             exit(1);
+        }
     x << tmp;
     x >> status;
     big++;
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -93,8 +97,10 @@ void serverInfo::setters<setmap>(std::list<tokengen>::iterator& big,
     error_page.insert(std::make_pair(status, tmp));
     big++;
     CURLWAIT(big, end, true);
-    if (big == end || big->type != SEMICOLONS)
+    if (big == end || big->type != SEMICOLONS) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     big++;
 }
 
@@ -104,8 +110,10 @@ void serverInfo::setters<setroot>(std::list<tokengen>::iterator& big,
     std::string tmp;
 
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -113,8 +121,10 @@ void serverInfo::setters<setroot>(std::list<tokengen>::iterator& big,
     root = tmp;
     big++;
     CURLWAIT(big, end, true);
-    if (big == end || big->type != SEMICOLONS)
+    if (big == end || big->type != SEMICOLONS) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     big++;
 }
 
@@ -127,23 +137,28 @@ void serverInfo::setters<setclient_max_body_size>(
     std::stringstream x;
 
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
         tmp = big->content;
     for (int i = 0; tmp[i]; i++)
-        if (isdigit(tmp[i]) == false)
+        if (isdigit(tmp[i]) == false) {
+            std::cerr << "[ERROR] parsing error\n";
             exit(1);
+        }
     x << tmp;
-    x >> size;  // TODO: maybe I'll make it count by Mb
-    client_max_body_size =
-        size;  // TODO: read about this one and find out the real lims
+    x >> size;
+    client_max_body_size = size;
     big++;
     CURLWAIT(big, end, true);
-    if (big != end && big->type != SEMICOLONS)
+    if (big != end && big->type != SEMICOLONS) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     big++;
 }
 
@@ -153,8 +168,10 @@ void serverInfo::setters<sethost>(std::list<tokengen>::iterator& big,
     std::string tmp;
 
     CURLWAIT(big, end, true);
-    if (big == end || (big->type != WORD && big->type != QUOTES))
+    if (big == end || (big->type != WORD && big->type != QUOTES)) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     if (big->type == QUOTES)
         tmp = big->content.substr(1, big->content.length() - 2);
     else
@@ -162,12 +179,22 @@ void serverInfo::setters<sethost>(std::list<tokengen>::iterator& big,
     host = std::string(tmp);
     big++;
     CURLWAIT(big, end, true);
-    if (big == end || big->type != SEMICOLONS)
+    if (big == end || big->type != SEMICOLONS) {
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
+    }
     big++;
 }
 
-serverInfo::serverInfo() {}
+serverInfo::serverInfo()
+    : index(),
+      host(),
+      port(),
+      server_name(),
+      error_page(),
+      root(),
+      locations(),
+      client_max_body_size(1024) {}
 
 serverInfo::~serverInfo() {}
 
@@ -190,7 +217,7 @@ serverInfo::serverInfo(const serverInfo& sv) {
 
 serverInfo& serverInfo::operator=(const serverInfo& sv) {
     if (this == &sv) {
-        std::cerr << "this was unexpected!";
+        std::cerr << "[ERROR] parsing error\n";
         exit(1);
     }
     host = sv.host;
