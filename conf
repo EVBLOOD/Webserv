@@ -1,0 +1,143 @@
+    ##
+#     # Basic Settings
+#     ##
+
+# server {
+#     listen 443 http2 ssl;
+#     listen [::]:443 http2 ssl;
+
+#     server_name sakllam.42.fr;
+
+#     ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+#     ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+
+#     ssl_protocols TLSv1.3;
+#     root /var/www/html;
+
+#     index index.php;
+
+#     location / {
+#     try_files $uri $uri/ /index.php?$args;
+#     }
+
+#     location ~ .php$ {
+#         try_files $uri =404;
+#         include /etc/nginx/fastcgi_params;
+#         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+#         fastcgi_pass wordpress:9000;
+#             }
+# }
+
+#define A "server" // if no server no run
+#define B "location" // in no location no place to go
+#define C "listen" // if no listen no feedback
+#define D "root" // if no root I'll be checking "/var/www/html"
+#define E "client_max_body_size" // if no size one is the size
+#define F "error_page" // if no error default I'll use mine
+#define G "autoindex" // if no autoindex then yes
+#define H "index" // you wanna travel dicide a place
+#define I "allow_methods" // if not the everything
+#define J "return" // you need to change path?
+#define K "fastcgi_pass" // why speaking english if u only know arabic
+#define L "upload_enable" // let's download not apload default == nope!
+#define M "upload_store" // place to put your stuff in
+#define N "server_name" // place to put your stuff in
+
+# server    {
+
+#     listen 89;
+#     root    /end/ls;
+#     location
+#     {
+
+#     }
+#     location
+#     {
+        
+#     }
+#     location
+#     {
+        
+#     }
+#     location
+#     {
+        
+#     }
+# }
+
+
+server    {
+
+}
+
+
+server    {
+
+}
+
+
+server    {
+
+}
+
+
+server    {
+
+}
+
+
+
+server
+{
+	listen          80;
+	listen          80;
+	listen          80;
+
+	host 0.0.0.0;
+
+	server_name     example.com;
+
+	client_max_body_size    1024;
+
+	error_page 403 /errors/403.html;
+	error_page 404 /errors/404.html;
+	error_page 500 /errors/500.html;
+	error_page 502 /errors/502.html;
+
+	root /Users/arraji/Desktop/webserv/public;
+
+	location /
+	{
+
+		index index.html;
+
+		autoindex off;
+		allow_methods GET POST DELETE;
+	}
+
+	location /return
+	{
+		return 301 /;
+	}
+
+	location *.php
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /Users/arraji/.brew/bin/php-cgi;
+	}
+
+	location *.py
+	{
+		allow_methods GET POST;
+
+		fastcgi_pass /usr/bin/python;
+	}
+
+	location /upload
+	{
+		allow_methods POST GET;
+		upload_enable on;
+		upload_store /upload;
+	}
+}
