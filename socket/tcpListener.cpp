@@ -24,10 +24,10 @@ TcpListener::TcpListener(std::string host, std::string port)
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;  // I think I can remove this one!
+    hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
     int ireturn = ::getaddrinfo(host.c_str(), port.c_str(), &hints, &addr);
-    if (ireturn == -1) {
+    if (ireturn != 0) {
         std::cerr << G(ERROR) << " getaddrinfo : " << strerror(errno) << '\n';
         exit(1);
     }

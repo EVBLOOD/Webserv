@@ -134,6 +134,10 @@ void parser::separating<simpledir>(std::list<tokengen>::iterator& begin,
                 begin++;
                 tmpserv.execute(i, begin, end);
             } else {
+                if (i < 6){
+                    std::cerr << "[ERROR] parsing error\n";
+                    exit(1);
+                }
                 begin++;
                 tmploc.execute(i - 6, begin, end);
             }
