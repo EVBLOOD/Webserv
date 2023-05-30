@@ -5,6 +5,7 @@
 #include <array>
 #include <iostream>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include "listener_interface.hpp"
 
@@ -12,7 +13,7 @@ typedef struct kevent Kevent;
 
 class Kqueue {
     int _kdata;
-    std::map<uintptr_t, IListener*> _listeners;
+    std::unordered_map<uintptr_t, IListener*> _listeners;
 
    public:
     Kqueue();

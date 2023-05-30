@@ -12,7 +12,7 @@
 
 class HttpResponse {
    public:
-    static std::map<std::string, std::string> files_cache;
+    static std::unordered_map<std::string, std::string> files_cache;
 
    private:
     int _status;
@@ -23,46 +23,50 @@ class HttpResponse {
     std::vector<std::string> _body;
 
    public:
-    HttpResponse(int status, std::string version, std::string action);
+    HttpResponse(int status,
+                 const std::string& version,
+                 const std::string& action);
 
     HttpResponse(int status,
-                 std::string version,
-                 std::string action,
-                 HttpRequest request);
+                 const std::string& version,
+                 const std::string& action,
+                 const HttpRequest& request);
 
-    HttpResponse& add_header(std::string key, std::string value);
+    HttpResponse& add_header(const std::string& key, const std::string& value);
 
-    std::string getHeaderValue(std::string key);
+    std::string getHeaderValue(const std::string& key) const;
 
-    HttpResponse& add_to_body(std::string line);
+    HttpResponse& add_to_body(const std::string& line);
 
-    HttpResponse& add_to_body(std::vector<std::string> body);
+    HttpResponse& add_to_body(const std::vector<std::string>& body);
 
-    HttpResponse& add_content_type(std::string path);
+    HttpResponse& add_content_type(const std::string& path);
 
-    size_t get_body_size();
+    size_t get_body_size() const;
 
     std::string build();
 
-    void dump();
+    void dump() const;
 
    public:
     static std::string generateErrorPage(int statusCode,
                                          const std::string& statusMessage);
-    static std::string get_content_type(std::string location);
-    static HttpResponse error_response(int status, std::string file);
-    static HttpResponse send_file(Kqueue& q,
-                                  std::string file,
-                                  std::string root,
-                                  std::map<int, std::string> error_pages);
+    static std::string get_content_type(const std::string& location);
+    static HttpResponse error_response(int status, const std::string& file);
+    static HttpResponse send_file(
+        Kqueue& q,
+        const std::string& file,
+        const std::string& root,
+        std::unordered_map<int, std::string>& error_pages);
 
-    static HttpResponse redirect_moved_response(std::string const& location);
-    static HttpResponse redirect_found_response(std::string const& location);
-    static HttpResponse index_response(Kqueue& q,
-                                       std::vector<std::string> index,
-                                       std::string root,
-                                       std::map<int, std::string> error_pages);
-    static HttpResponse generate_indexing(std::string dir,
-                                          std::string location);
-    static void updateFileCache(std::string full_path);
+    static HttpResponse redirect_moved_response(const std::string& location);
+    static HttpResponse redirect_found_response(const std::string& location);
+    static HttpResponse index_response(
+        Kqueue& q,
+        const std::vector<std::string>& index,
+        const std::string& root,
+        std::unordered_map<int, std::string>& error_pages);
+    static HttpResponse generate_indexing(const std::string& dir,
+                                          const std::string& location);
+    static void updateFileCache(const std::string& full_path);
 };

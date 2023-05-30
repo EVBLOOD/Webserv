@@ -60,7 +60,7 @@ void Kqueue::attach(IListener* listener) {
 void Kqueue::detach(IListener* listener) {
     if (listener == NULL || _listeners.size() == 0)
         return;
-    std::map<uintptr_t, IListener*>::iterator it =
+    std::unordered_map<uintptr_t, IListener*>::iterator it =
         _listeners.find(listener->get_raw_fd());
     if (it == _listeners.end()) {
         return;

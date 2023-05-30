@@ -58,7 +58,7 @@ void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
                      map<pair<string, string>, serverInfo>& infos);
 
-HttpResponse handle_redirection(int status, string location) {
+HttpResponse handle_redirection(int status, string const& location) {
     if (status == 302)
         return HttpResponse::redirect_found_response(location);
     return HttpResponse::redirect_moved_response(location);
@@ -78,8 +78,9 @@ std::vector<std::string> linespliting(std::string line) {
     return data;
 }
 
-std::map<std::string, std::string> grepdata(std::vector<std::string> data) {
-    std::map<std::string, std::string> key_val;
+std::unordered_map<std::string, std::string> grepdata(
+    std::vector<std::string> const& data) {
+    std::unordered_map<std::string, std::string> key_val;
     std::string trimed;
     size_t x;
     for (size_t i = 0; i < data.size(); i++) {
@@ -97,13 +98,13 @@ std::map<std::string, std::string> grepdata(std::vector<std::string> data) {
     return key_val;
 }
 
-std::map<std::string, std::string> get_fileinfo(std::string infos) {
+std::unordered_map<std::string, std::string> get_fileinfo(std::string infos) {
     size_t x = 0;
     size_t pos_start = 0;
-    std::map<std::string, std::string> ret;
-    std::map<std::string, std::string> ret_;
-    std::map<std::string, std::string>::iterator big;
-    std::map<std::string, std::string>::iterator end;
+    std::unordered_map<std::string, std::string> ret;
+    std::unordered_map<std::string, std::string> ret_;
+    std::unordered_map<std::string, std::string>::const_iterator big;
+    std::unordered_map<std::string, std::string>::const_iterator end;
     infos += "\r\n";
     while (1) {
         x = infos.find("\r\n", pos_start);
@@ -123,18 +124,20 @@ std::map<std::string, std::string> get_fileinfo(std::string infos) {
     return (ret);
 }
 
-std::string args_handling(std::string part) {
+std::string args_handling(std::string const& part) {
     size_t x = part.find("\r\n\r\n");
     if (x == std::string::npos)
         return "";
-    std::map<std::string, std::string> fileinfo =
+    std::unordered_map<std::string, std::string> fileinfo =
         get_fileinfo(part.substr(0, x));
-    std::string key = trim(fileinfo["name"], "\"");
-    std::string value = part.substr(x + 4, (part.length() - 2) - (x + 4));
+    std::string const& key = trim(fileinfo["name"], "\"");
+    std::string const& value =
+        part.substr(x + 4, (part.length() - 2) - (x + 4));
     return ("$" + key + "=" + value);
 }
 
-std::vector<std::string> extract_args(std::string body, std::string limit) {
+std::vector<std::string> extract_args(std::string const& body,
+                                      std::string const& limit) {
     size_t y;
     string part;
     std::vector<std::string> res;
@@ -159,13 +162,13 @@ std::vector<std::string> extract_args(std::string body, std::string limit) {
     return res;
 }
 
-int file_handling(std::string part, std::string location) {
+int file_handling(std::string const& part, std::string const& location) {
     size_t x = part.find("\r\n\r\n");
     if (x == std::string::npos)
         return (1);
-    std::map<std::string, std::string> fileinfo =
+    std::unordered_map<std::string, std::string> fileinfo =
         get_fileinfo(part.substr(0, x));
-    std::string filename =
+    std::string const& filename =
         tools::url_path_correction(location, trim(fileinfo["filename"], "\""));
     std::ofstream outfile(filename.c_str());
     outfile << part.substr(x + 4, (part.length() - 2) - (x + 4));
@@ -174,7 +177,9 @@ int file_handling(std::string part, std::string location) {
     return (0);
 }
 
-void extract_files(std::string body, std::string limit, std::string location) {
+void extract_files(std::string const& body,
+                   std::string const& limit,
+                   std::string const& location) {
     size_t y;
     string part;
     size_t x = body.find(limit);
@@ -196,10 +201,10 @@ void extract_files(std::string body, std::string limit, std::string location) {
 }
 
 serverInfo get_the_server_info_for_the_client(
-    string HostHeader,
+    string const& HostHeader,
     TcpStream& client,
-    map<pair<string, string>, serverInfo>& server_infos) {
-    vector<string> host_header = split_(HostHeader, ":");
+    const map<pair<string, string>, serverInfo>& server_infos) {
+    vector<string> const& host_header = split_(HostHeader, ":");
 
     string host = trim(host_header[0], " ");
     string port;
@@ -213,7 +218,7 @@ serverInfo get_the_server_info_for_the_client(
         host = HostHeader;
     }
 
-    map<pair<string, string>, serverInfo>::iterator it =
+    map<pair<string, string>, serverInfo>::const_iterator it =
         server_infos.find(make_pair(port, host));
     if (it == server_infos.end())
         return server_infos.at(make_pair(port, ""));
@@ -255,8 +260,8 @@ int main(int argc, char** argv) {
     cout << G(INFO) << " creating the servers\n";
     Kqueue event_queue;
 
-    set<pair<string, string> > already_bounded;
-    map<pair<string, string>, serverInfo> infos;
+    std::set<pair<string, string> > already_bounded;
+    std::map<pair<string, string>, serverInfo> infos;
     for (size_t i = 0; i < servers_info.size(); ++i) {
         for (size_t j = 0; j < servers_info[i].port.size(); ++j) {
             serverInfo& ser = servers_info[i];
@@ -271,10 +276,10 @@ int main(int argc, char** argv) {
 
     for (size_t i = 0; i < servers_info.size(); ++i) {
         for (size_t j = 0; j < servers_info[i].port.size(); ++j) {
-            string port = servers_info[i].port[j];
+            const string& port = servers_info[i].port[j];
             infos.insert(make_pair(make_pair(port, ""), servers_info[i]));
             for (size_t k = 0; k < servers_info[i].server_name.size(); ++k) {
-                string host = servers_info[i].server_name[k];
+                const string& host = servers_info[i].server_name[k];
                 infos.insert(make_pair(make_pair(port, host), servers_info[i]));
             }
         }
@@ -288,7 +293,7 @@ int main(int argc, char** argv) {
             "--------------------\n";
     loop {
         IListener& listener = event_queue.get_event();
-        Kevent kv = listener.get_kevent();
+        const Kevent& kv = listener.get_kevent();
 
         if (kv.filter == EVFILT_EXCEPT) {
             event_queue.detach(&listener);
@@ -303,18 +308,14 @@ int main(int argc, char** argv) {
         }
 
         ssize_t ret = 0;
-        if (dynamic_cast<File*>(&listener)) {
-            File& file = *dynamic_cast<File*>(&listener);
-            cout << G(DEBUG) << "validating cache !!\n";
-            HttpResponse::updateFileCache(file.get_path());
-        } else if (dynamic_cast<TcpListener*>(&listener)) {
+        if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
                                   dynamic_cast<TcpListener*>(&listener));
-        } else {
+        } else if (dynamic_cast<TcpStream*>(&listener)) {
             TcpStream& client = dynamic_cast<TcpStream&>(listener);
 
             if (kv.filter == EVFILT_WRITE) {
-                std::string response = client.get_response_buffer();
+                std::string const& response = client.get_response_buffer();
                 size_t towrite = BUFFER_SIZE;
                 if (towrite > response.size())
                     towrite = response.size();
@@ -348,7 +349,7 @@ int main(int argc, char** argv) {
                 continue;
             }
             if (kv.data != 0) {
-                pair<string, ssize_t> p = read_request(client);
+                const pair<string, ssize_t>& p = read_request(client);
                 ret = p.second;
                 if (ret <= 0) {
                     event_queue.detach(&client);
@@ -362,6 +363,10 @@ int main(int argc, char** argv) {
                 handle_requests(event_queue,
                                 *dynamic_cast<TcpStream*>(&listener), infos);
             }
+        } else {
+            File& f = *dynamic_cast<File*>(&listener);
+            cout << G(DEBUG) << "validating cache !!\n";
+            HttpResponse::updateFileCache(f.get_path());
         }
     }
 }
@@ -372,7 +377,7 @@ void handle_new_connection(Kqueue& event_queue, TcpListener* server) {
 }
 
 std::string get_response(Kqueue& q,
-                         HttpRequest request,
+                         const HttpRequest& request,
                          TcpStream& client,
                          map<pair<string, string>, serverInfo>& infos) {
     if (request.error()) {
@@ -381,14 +386,14 @@ std::string get_response(Kqueue& q,
         return HttpResponse::error_response(505, "").build();
     }
 
-    string HostHeader = request.getHeaderValue("Host");
+    const string HostHeader = request.getHeaderValue("Host");
     serverInfo info =
         get_the_server_info_for_the_client(HostHeader, client, infos);
 
     string const& root = info.root;
     string const& loc = request.getLocation();
 
-    map<string, Location>& locations = info.locations;
+    map<string, Location> const& locations = info.locations;
 
     size_t _find;
     std::string _loc = loc;
@@ -413,22 +418,20 @@ std::string get_response(Kqueue& q,
 
     Location route = it->second;
 
-    if (find(route.allow_methods.begin(), route.allow_methods.end(), method) ==
-        route.allow_methods.end()) {
+    if (route.allow_methods.find(method) == route.allow_methods.end()) {
         return HttpResponse::error_response(405, info.error_page[405]).build();
     }
 
     if (!route.fastcgi_pass.empty()) {
         char c;
-        std::string script_path = tools::url_path_correction(root, loc);
+        std::string const& script_path = tools::url_path_correction(root, loc);
         std::string body;
         const char* cgi_path = route.fastcgi_pass.c_str();
         int fd[2];
-        std::string tmpfile_name = tools::generateRandomTempFileName();
+        std::string const& tmpfile_name = tools::generateRandomTempFileName();
 
         if (request.getMethod() == "POST" &&
-            std::find(route.allow_methods.begin(), route.allow_methods.end(),
-                      "POST") != route.allow_methods.end()) {
+            route.allow_methods.find(method) != route.allow_methods.end()) {
             if ((info.client_max_body_size * 1024) <
                 std::stoull(request.getHeaderValue("Content-Length"))) {
                 return HttpResponse::error_response(413, info.error_page[413])
@@ -482,9 +485,8 @@ std::string get_response(Kqueue& q,
                 exit(1);
             }
         } else if (request.getMethod() == "GET" &&
-                   std::find(route.allow_methods.begin(),
-                             route.allow_methods.end(),
-                             "GET") != route.allow_methods.end()) {
+                   route.allow_methods.find(method) !=
+                       route.allow_methods.end()) {
             if (pipe(fd) < 0) {
                 return HttpResponse::error_response(503, info.error_page[503])
                     .build();
@@ -566,21 +568,21 @@ std::string get_response(Kqueue& q,
                 .build();
         }
 
-        vector<string> content_type =
+        const vector<string>& content_type =
             split(request.getHeaderValue("Content-Type"), ";");
         if (content_type.size() != 2 || route.upload_store == "") {
             return HttpResponse::error_response(400, info.error_page[400])
                 .build();
         } else {
-            string multi_part = content_type[0];
-            string boundry = content_type[1];
+            string const& multi_part = content_type[0];
+            string const& boundry = content_type[1];
             vector<string> key_value_boundry = split(boundry, "=");
             if (key_value_boundry.size() != 2) {
                 return HttpResponse::error_response(400, info.error_page[400])
                     .build();
             }
             string boundry_value = key_value_boundry[1];
-            std::string path_where_to =
+            std::string const& path_where_to =
                 tools::url_path_correction(root, it->first);
             if (!tools::is_dir(path_where_to) ||
                 !tools::is_part_of_root(root, route.upload_store)) {
@@ -665,7 +667,7 @@ void handle_requests(Kqueue& event_queue,
         return;
     }
     client.clear_buffer();
-    string response = get_response(event_queue, request, client, infos);
+    string const& response = get_response(event_queue, request, client, infos);
 
     ssize_t ret = 0;
     size_t towrite = BUFFER_SIZE;

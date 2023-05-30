@@ -8,11 +8,11 @@
 #include "socket/File.hpp"
 #include "tools.hpp"
 
-std::map<std::string, std::string> HttpResponse::files_cache =
-    std::map<std::string, std::string>();
+std::unordered_map<std::string, std::string> HttpResponse::files_cache =
+    std::unordered_map<std::string, std::string>();
 
-HttpResponse HttpResponse::generate_indexing(std::string dir,
-                                             std::string location) {
+HttpResponse HttpResponse::generate_indexing(const std::string& dir,
+                                             const std::string& location) {
     std::vector<std::string> body;
     std::vector<std::string> files = tools::list_files_in_dir(dir);
 
@@ -26,7 +26,9 @@ HttpResponse HttpResponse::generate_indexing(std::string dir,
         .add_content_type(".html");
 }
 
-HttpResponse::HttpResponse(int status, std::string version, std::string action)
+HttpResponse::HttpResponse(int status,
+                           const std::string& version,
+                           const std::string& action)
     : _status(status),
       _content_length(0),
       _version(version),
@@ -35,9 +37,9 @@ HttpResponse::HttpResponse(int status, std::string version, std::string action)
       _body(){};
 
 HttpResponse::HttpResponse(int status,
-                           std::string version,
-                           std::string action,
-                           HttpRequest request)
+                           const std::string& version,
+                           const std::string& action,
+                           const HttpRequest& request)
     : _status(status),
       _content_length(0),
       _version(version),
@@ -48,26 +50,27 @@ HttpResponse::HttpResponse(int status,
         add_header("Set-Cookie: ", request.getHeaderValue("cookie"));
 }
 
-HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
+HttpResponse& HttpResponse::add_header(const std::string& key,
+                                       const std::string& value) {
     _headers.insert(make_pair(key, value));
     return *this;
 };
 
-std::string HttpResponse::getHeaderValue(std::string key) {
-    multi_iter it = _headers.find(key);
+std::string HttpResponse::getHeaderValue(const std::string& key) const {
+    const_multi_iter it = _headers.find(key);
     if (it == _headers.end())
         return "";
     return it->second;
 };
 
-HttpResponse& HttpResponse::add_to_body(std::string line) {
+HttpResponse& HttpResponse::add_to_body(const std::string& line) {
     _body.push_back(line);
     _content_length += line.length();
     return *this;
 };
 
-HttpResponse& HttpResponse::add_to_body(std::vector<std::string> body) {
-    std::vector<std::string>::iterator iter = body.begin();
+HttpResponse& HttpResponse::add_to_body(const std::vector<std::string>& body) {
+    std::vector<std::string>::const_iterator iter = body.begin();
     while (iter != body.end()) {
         add_to_body(*iter);
         ++iter;
@@ -75,7 +78,7 @@ HttpResponse& HttpResponse::add_to_body(std::vector<std::string> body) {
     return *this;
 };
 
-size_t HttpResponse::get_body_size() {
+size_t HttpResponse::get_body_size() const {
     return _content_length;
 };
 
@@ -91,7 +94,7 @@ std::string HttpResponse::build() {
     _headers.insert(make_pair("Date", tools::date_http(time(NULL))));
     _headers.insert(std::make_pair("Server", "1337_webserv"));
     {
-        multi_iter iter = _headers.begin();
+        const_multi_iter iter = _headers.begin();
         while (iter != _headers.end()) {
             res += iter->first + ": " + iter->second + "\r\n";
             iter++;
@@ -109,16 +112,17 @@ std::string HttpResponse::build() {
     return res;
 }
 
-void HttpResponse::dump() {
+void HttpResponse::dump() const {
     std::cout << "HTTP/" + _version + " " + std::to_string(_status) + " " +
                      _action + "\n";
-    for (multi_iter iter = _headers.begin(); iter != _headers.end(); ++iter) {
+    for (const_multi_iter iter = _headers.begin(); iter != _headers.end();
+         ++iter) {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
 }
 
-std::string HttpResponse::get_content_type(std::string file_name) {
+std::string HttpResponse::get_content_type(const std::string& file_name) {
     std::string content_type = "text/plain";
     if (file_name.rfind('.') != std::string::npos) {
         std::string ext =
@@ -159,6 +163,10 @@ std::string HttpResponse::get_content_type(std::string file_name) {
             content_type = "audio/x-wav";
         } else if (ext == ".mpeg") {
             content_type = "video/mpeg";
+        } else if (ext == ".mov") {
+            content_type = "video/quicktime";
+        } else if (ext == ".m4v") {
+            content_type = "video/x-m4v";
         } else if (ext == ".qt") {
             content_type = "video/quicktime";
         } else if (ext == ".wmv") {
@@ -207,7 +215,7 @@ std::string HttpResponse::get_content_type(std::string file_name) {
     return content_type;
 };
 
-HttpResponse HttpResponse::error_response(int status, std::string path) {
+HttpResponse HttpResponse::error_response(int status, const std::string& path) {
     std::string action;
     if (status == 400) {
         action = "Bad Request";
@@ -328,14 +336,15 @@ std::string HttpResponse::generateErrorPage(int statusCode,
     return pageStream.str();
 }
 
-HttpResponse& HttpResponse::add_content_type(std::string path) {
+HttpResponse& HttpResponse::add_content_type(const std::string& path) {
     return add_header("Content-Type", get_content_type(path));
 };
 
-HttpResponse HttpResponse::send_file(Kqueue& q,
-                                     std::string path,
-                                     std::string root,
-                                     std::map<int, std::string> error_pages) {
+HttpResponse HttpResponse::send_file(
+    Kqueue& q,
+    const std::string& path,
+    const std::string& root,
+    std::unordered_map<int, std::string>& error_pages) {
     std::string full_path = tools::url_path_correction(root, path);
 
     if (!tools::is_dir(full_path) && !tools::is_file(full_path)) {
@@ -370,7 +379,7 @@ HttpResponse HttpResponse::send_file(Kqueue& q,
         .add_content_type(full_path);
 }
 
-void HttpResponse::updateFileCache(std::string path) {
+void HttpResponse::updateFileCache(const std::string& path) {
     if (files_cache.find(path) == files_cache.end())
         return;
     std::ifstream file(path);
@@ -389,10 +398,10 @@ HttpResponse HttpResponse::redirect_found_response(
 
 HttpResponse HttpResponse::index_response(
     Kqueue& q,
-    std::vector<std::string> index,
-    std::string root,
-    std::map<int, std::string> error_pages) {
-    std::vector<std::string>::iterator it = index.begin();
+    const std::vector<std::string>& index,
+    const std::string& root,
+    std::unordered_map<int, std::string>& error_pages) {
+    std::vector<std::string>::const_iterator it = index.begin();
 
     while (it != index.end()) {
         std::string path = tools::url_path_correction(root, *it);

@@ -7,7 +7,8 @@
 #include <sstream>
 #include <string>
 
-std::vector<std::string> tools::split_(std::string request, std::string lims) {
+std::vector<std::string> tools::split_(std::string const& request,
+                                       std::string const& lims) {
     std::vector<std::string> end;
     size_t x = request.find(lims);
     if (x == std::string::npos)
@@ -31,7 +32,7 @@ std::string tools::G(int level) {
     return "\033[1;32m[DEBUG]\033[0m";
 }
 
-std::vector<std::string> tools::list_files_in_dir(std::string path) {
+std::vector<std::string> tools::list_files_in_dir(std::string const& path) {
     DIR* dir = opendir(path.c_str());
 
     if (dir == NULL) {
@@ -49,9 +50,10 @@ std::vector<std::string> tools::list_files_in_dir(std::string path) {
     return (files);
 }
 
-std::string tools::url_path_correction(std::string a, std::string b) {
-    std::string::iterator it = a.begin();
-    std::string::iterator ite = a.end();
+std::string tools::url_path_correction(std::string const& a,
+                                       std::string const& b) {
+    std::string::const_iterator it = a.begin();
+    std::string::const_iterator ite = a.end();
     std::string result = std::string();
     while (it != ite) {
         if (result.empty() || result.back() != '/' || result.back() != *it)
@@ -71,7 +73,8 @@ std::string tools::url_path_correction(std::string a, std::string b) {
     return result;
 }
 
-bool tools::is_part_of_root(std::string root, std::string location) {
+bool tools::is_part_of_root(std::string const& root,
+                            std::string const& location) {
     char actualpath[PATH_MAX + 1];
     char* ptr =
         realpath(url_path_correction(root, location).c_str(), actualpath);
@@ -88,13 +91,13 @@ bool tools::is_part_of_root(std::string root, std::string location) {
     return true;
 }
 
-bool tools::is_dir(std::string path) {
+bool tools::is_dir(std::string const& path) {
     struct stat path_stat;
     stat(path.c_str(), &path_stat);
     return S_ISDIR(path_stat.st_mode);
 }
 
-bool tools::is_file(std::string path) {
+bool tools::is_file(std::string const& path) {
     struct stat path_stat;
     stat(path.c_str(), &path_stat);
     return S_ISREG(path_stat.st_mode);
@@ -113,7 +116,8 @@ bool tools::is_file(std::string path) {
 //     return res;
 // }
 
-std::vector<std::string> tools::split(std::string s, std::string delimiter) {
+std::vector<std::string> tools::split(std::string const& s,
+                                      std::string const& delimiter) {
     std::vector<std::string> parts;
     std::string::size_type start = 0;
     std::string::size_type end = 0;
@@ -125,7 +129,7 @@ std::vector<std::string> tools::split(std::string s, std::string delimiter) {
     return parts;
 }
 
-std::string tools::trim(std::string s, std::string delimiters) {
+std::string tools::trim(std::string const& s, std::string const& delimiters) {
     std::string::size_type first = s.find_first_not_of(delimiters);
     if (first == std::string::npos) {
         return "";
@@ -174,7 +178,7 @@ bool tools::is_file_exists(const std::string& path) {
     return access(path.c_str(), F_OK) != -1;
 }
 
-std::string tools::dealwithchuncked_buff(std::string primary,
+std::string tools::dealwithchuncked_buff(std::string const& primary,
                                          ssize_t& limit,
                                          bool x) {
     std::string ret;

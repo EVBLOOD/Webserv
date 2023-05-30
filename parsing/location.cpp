@@ -40,7 +40,7 @@ void Location::set<setallow_methods>(std::list<tokengen>::iterator& big,
     else
         tmp = big->content;
     if (tmp == "GET" || tmp == "POST" || tmp == "DELETE")
-        allow_methods.push_back(tmp);
+        allow_methods.insert(tmp);
     else {
         std::cerr << "[ERROR] parsing error\n";
         exit(1);

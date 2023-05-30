@@ -36,32 +36,35 @@ void TcpStream::set_kevent(Kevent kv) {
     _event = kv;
 }
 
-std::string TcpStream::get_buffer_request() const {
+const std::string& TcpStream::get_buffer_request() const {
     return _request_buffer;
 };
 
-void TcpStream::set_reponse_buffer(std::string buffer) {
+void TcpStream::set_reponse_buffer(const std::string& buffer) {
     _response_buffer = buffer;
 };
+
 bool TcpStream::is_response_not_finished() const {
     return _response_buffer.size() != 0;
 };
 
-void TcpStream::add_to_request_buffer(std::string tail) {
+void TcpStream::add_to_request_buffer(const std::string& tail) {
+    std::string tail_tmp = tail;
     if (chunked == -1) {
-        if (tail.find("Transfer-Encoding: chunked") != std::string::npos) {
-            tail = tools::dealwithchuncked_buff(tail, len_chunked, true);
+        if (tail_tmp.find("Transfer-Encoding: chunked") != std::string::npos) {
+            tail_tmp =
+                tools::dealwithchuncked_buff(tail_tmp, len_chunked, true);
             chunked = 1;
         }
-        if (tail.find("Transfer-Encoding: chunked") == std::string::npos &&
-            tail.find("\r\n\r\n") != std::string::npos)
+        if (tail_tmp.find("Transfer-Encoding: chunked") == std::string::npos &&
+            tail_tmp.find("\r\n\r\n") != std::string::npos)
             chunked = 0;
     } else if (chunked == 1)
-        tail = tools::dealwithchuncked_buff(tail, len_chunked);
-    _request_buffer = _request_buffer + tail;
+        tail_tmp = tools::dealwithchuncked_buff(tail_tmp, len_chunked);
+    _request_buffer = _request_buffer + tail_tmp;
 };
 
-std::string TcpStream::get_response_buffer() const {
+const std::string& TcpStream::get_response_buffer() const {
     return _response_buffer;
 };
 
@@ -79,9 +82,9 @@ TcpStream::~TcpStream() {
     shutdown_helper(_fd);
 }
 
-std::string TcpStream::get_port() const {
+const std::string& TcpStream::get_port() const {
     return _owner.get_port();
 };
-std::string TcpStream::get_host() const {
+const std::string& TcpStream::get_host() const {
     return _owner.get_host();
 };

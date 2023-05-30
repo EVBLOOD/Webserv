@@ -12,7 +12,8 @@
 
 using namespace tools;
 typedef std::unordered_multimap<std::string, std::string> multimap;
-typedef multimap::iterator multi_iter;
+typedef multimap::const_iterator const_multi_iter;
+// typedef multimap::iterator multi_iter;
 
 class HttpRequest {
    private:
@@ -25,23 +26,24 @@ class HttpRequest {
     bool _error;
 
    public:
-    explicit HttpRequest(std::string request);
+    explicit HttpRequest(const std::string& request);
 
-    std::string getMethod();
+    const std::string& getMethod() const;
 
-    std::string getLocation();
+    const std::string& getLocation() const;
 
-    std::string getVersion();
+    const std::string& getVersion() const;
 
-    std::string getHeaderValue(std::string key);
+    std::string getHeaderValue(const std::string& key) const;
 
-    std::pair<multi_iter, multi_iter> getHeaderValues(std::string key);
+    std::pair<const_multi_iter, const_multi_iter> getHeaderValues(
+        const std::string& key) const;
 
-    std::string getBody();
+    const std::string& getBody() const;
 
-    std::string getRawData();
+    const std::string& getRawData() const;
 
-    bool error();
+    bool error() const;
 
-    void dump();
+    void dump() const;
 };
