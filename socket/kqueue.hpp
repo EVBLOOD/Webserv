@@ -19,6 +19,7 @@ class Kqueue {
     int get_kdata() const;
     IListener& get_event() const;
     void attach(IListener* listener);
+    void monitor(IListener* listener);
     void detach(IListener* listener);
     size_t size() const;
 };

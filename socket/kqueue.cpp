@@ -23,6 +23,23 @@ int Kqueue::get_kdata() const {
     return _kdata;
 };
 
+void Kqueue::monitor(IListener* listener) {
+    int fd = listener->get_raw_fd();
+    if (fd < 0)
+        return;
+    if (_listeners.find(fd) != _listeners.end()) {
+        return;
+    }
+    struct kevent evSet;
+    bzero(&evSet, sizeof(struct kevent));
+    EV_SET(&evSet, fd, EVFILT_VNODE, EV_ADD | EV_ENABLE | EV_CLEAR, NOTE_WRITE,
+           0, nullptr);
+    if (kevent(_kdata, &evSet, 1, NULL, 0, NULL) == -1) {
+        return;
+    }
+    _listeners[fd] = listener;
+}
+
 void Kqueue::attach(IListener* listener) {
     int fd = listener->get_raw_fd();
     if (fd < 0)
