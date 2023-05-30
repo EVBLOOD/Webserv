@@ -309,12 +309,8 @@ HttpResponse HttpResponse::error_response(int status, const std::string& path) {
             }
             HttpResponse::files_cache[path] = to_serve =
                 tools::open_to_serve(file);
-            std::cout << G(DEBUG) << "not cached !\n";
-            std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
         } else {
             to_serve = HttpResponse::files_cache[path];
-            std::cout << G(DEBUG) << "cached !\n";
-            std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
         }
         // :: cache
         return HttpResponse(status, "1.1", action)
@@ -356,7 +352,6 @@ HttpResponse HttpResponse::send_file(
         return error_response(403, root + error_pages[403]);
     }
     // cache ::
-    std::cout << "HERE :: \n";
     std::string to_serve;
     if (files_cache.find(full_path) == files_cache.end()) {
         std::ifstream file(full_path);
@@ -365,13 +360,9 @@ HttpResponse HttpResponse::send_file(
         }
         HttpResponse::files_cache[full_path] = to_serve =
             tools::open_to_serve(file);
-        std::cout << G(DEBUG) << "not cached !\n";
-        std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
         q.monitor(new File(full_path));
     } else {
         to_serve = HttpResponse::files_cache[full_path];
-        std::cout << G(DEBUG) << "cached !\n";
-        std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
     }
     // :: cache
     return HttpResponse(200, "1.1", "OK")

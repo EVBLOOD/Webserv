@@ -295,23 +295,20 @@ int main(int argc, char** argv) {
         IListener& listener = event_queue.get_event();
         const Kevent& kv = listener.get_kevent();
 
-        if (kv.filter == EVFILT_EXCEPT) {
-            event_queue.detach(&listener);
-            if (dynamic_cast<TcpListener*>(&listener)) {
-                delete dynamic_cast<TcpListener*>(&listener);
-            } else if (dynamic_cast<TcpStream*>(&listener)) {
-                delete dynamic_cast<TcpStream*>(&listener);
-            } else if (dynamic_cast<File*>(&listener)) {
-                delete dynamic_cast<File*>(&listener);
-            }
-            continue;
-        }
+        // if (kv.filter == EVFILT_EXCEPT) {
+        //     event_queue.detach(&listener);
+        //     if (dynamic_cast<TcpListener*>(&listener)) {
+        //         delete dynamic_cast<TcpListener*>(&listener);
+        //     } else if (dynamic_cast<TcpStream*>(&listener)) {
+        //         delete dynamic_cast<TcpStream*>(&listener);
+        //     } else if (dynamic_cast<File*>(&listener)) {
+        //         delete dynamic_cast<File*>(&listener);
+        //     }
+        //     continue;
+        // }
 
         ssize_t ret = 0;
-        if (dynamic_cast<TcpListener*>(&listener)) {
-            handle_new_connection(event_queue,
-                                  dynamic_cast<TcpListener*>(&listener));
-        } else if (dynamic_cast<TcpStream*>(&listener)) {
+        if (dynamic_cast<TcpStream*>(&listener)) {
             TcpStream& client = dynamic_cast<TcpStream&>(listener);
 
             if (kv.filter == EVFILT_WRITE) {
@@ -330,9 +327,8 @@ int main(int argc, char** argv) {
                 } else {
                     struct kevent evSet;
                     bzero(&evSet, sizeof(struct kevent));
-                    EV_SET(&evSet, client.get_raw_fd(),
-                           EVFILT_READ | EVFILT_WRITE | EVFILT_EXCEPT, EV_ADD,
-                           0, 0, NULL);
+                    EV_SET(&evSet, client.get_raw_fd(), EVFILT_READ, EV_ADD, 0,
+                           0, NULL);
                     if (kevent(event_queue.get_kdata(), &evSet, 1, NULL, 0,
                                NULL) == -1) {
                         event_queue.detach(&client);
@@ -363,9 +359,11 @@ int main(int argc, char** argv) {
                 handle_requests(event_queue,
                                 *dynamic_cast<TcpStream*>(&listener), infos);
             }
+        } else if (dynamic_cast<TcpListener*>(&listener)) {
+            handle_new_connection(event_queue,
+                                  dynamic_cast<TcpListener*>(&listener));
         } else {
             File& f = *dynamic_cast<File*>(&listener);
-            cout << G(DEBUG) << "validating cache !!\n";
             HttpResponse::updateFileCache(f.get_path());
         }
     }

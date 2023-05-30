@@ -49,8 +49,7 @@ void Kqueue::attach(IListener* listener) {
     }
     struct kevent evSet;
     bzero(&evSet, sizeof(struct kevent));
-    EV_SET(&evSet, fd, EVFILT_READ | EVFILT_WRITE | EVFILT_EXCEPT, EV_ADD, 0, 0,
-           NULL);
+    EV_SET(&evSet, fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
     if (kevent(_kdata, &evSet, 1, NULL, 0, NULL) == -1) {
         return;
     }
@@ -67,8 +66,7 @@ void Kqueue::detach(IListener* listener) {
     }
     struct kevent evSet;
     bzero(&evSet, sizeof(struct kevent));
-    EV_SET(&evSet, listener->get_raw_fd(),
-           EVFILT_READ | EVFILT_WRITE | EVFILT_EXCEPT, EV_DELETE, 0, 0, 0);
+    EV_SET(&evSet, listener->get_raw_fd(), EVFILT_READ, EV_DELETE, 0, 0, 0);
     if (kevent(_kdata, &evSet, 1, NULL, 0, 0) == -1)
         return;
     _listeners.size();
