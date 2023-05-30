@@ -3,8 +3,6 @@
 #include <sys/socket.h>
 
 File::File(std::string path) : _fd(open(path.data(), O_RDONLY)), _path(path) {
-    if (_fd == -1)
-        exit(11);
     memset(&_event, 0, sizeof(Kevent));
 };
 

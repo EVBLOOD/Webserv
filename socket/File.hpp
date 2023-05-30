@@ -13,8 +13,6 @@ class File : public IListener {
    public:
     File(std::string path);
     std::string get_path();
-    std::string get_port() const;
-    std::string get_host() const;
     virtual ~File();
     int get_raw_fd() const;
     Kevent get_kevent() const;

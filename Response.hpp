@@ -8,8 +8,12 @@
 #include <unordered_map>
 #include <vector>
 #include "Request.hpp"
+#include "socket/kqueue.hpp"
 
 class HttpResponse {
+   public:
+    static std::map<std::string, std::string> files_cache;
+
    private:
     int _status;
     size_t _content_length;
@@ -47,15 +51,18 @@ class HttpResponse {
                                          const std::string& statusMessage);
     static std::string get_content_type(std::string location);
     static HttpResponse error_response(int status, std::string file);
-    static HttpResponse send_file(std::string file,
+    static HttpResponse send_file(Kqueue& q,
+                                  std::string file,
                                   std::string root,
                                   std::map<int, std::string> error_pages);
 
     static HttpResponse redirect_moved_response(std::string const& location);
     static HttpResponse redirect_found_response(std::string const& location);
-    static HttpResponse index_response(std::vector<std::string> index,
+    static HttpResponse index_response(Kqueue& q,
+                                       std::vector<std::string> index,
                                        std::string root,
                                        std::map<int, std::string> error_pages);
     static HttpResponse generate_indexing(std::string dir,
                                           std::string location);
+    static void updateFileCache(std::string full_path);
 };

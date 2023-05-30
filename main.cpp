@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <ostream>
 #include <set>
 #include <sstream>
@@ -26,6 +27,7 @@
 #include "parsing/parser.hpp"
 #include "parsing/serverInfo.hpp"
 #include "parsing/tokengen.hpp"
+#include "socket/File.hpp"
 #include "socket/TcpStream.hpp"
 #include "socket/kqueue.hpp"
 #include "socket/listener_interface.hpp"
@@ -247,6 +249,7 @@ int main(int argc, char** argv) {
     parser file(file_name);
     list<tokengen> tokens = file.generate();
     vector<serverInfo> servers_info = file.lexer_to_data(tokens);
+    // HttpResponse::files_cache["test"] = "test";
     ////////////////////////////////////////////////////////////////////////
 
     cout << G(INFO) << " creating the servers\n";
@@ -291,14 +294,20 @@ int main(int argc, char** argv) {
             event_queue.detach(&listener);
             if (dynamic_cast<TcpListener*>(&listener)) {
                 delete dynamic_cast<TcpListener*>(&listener);
-            } else {
+            } else if (dynamic_cast<TcpStream*>(&listener)) {
                 delete dynamic_cast<TcpStream*>(&listener);
+            } else if (dynamic_cast<File*>(&listener)) {
+                delete dynamic_cast<File*>(&listener);
             }
             continue;
         }
 
         ssize_t ret = 0;
-        if (dynamic_cast<TcpListener*>(&listener)) {
+        if (dynamic_cast<File*>(&listener)) {
+            File& file = *dynamic_cast<File*>(&listener);
+            cout << G(DEBUG) << "validating cache !!\n";
+            HttpResponse::updateFileCache(file.get_path());
+        } else if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
                                   dynamic_cast<TcpListener*>(&listener));
         } else {
@@ -362,7 +371,8 @@ void handle_new_connection(Kqueue& event_queue, TcpListener* server) {
     event_queue.attach(&client);
 }
 
-std::string get_response(HttpRequest request,
+std::string get_response(Kqueue& q,
+                         HttpRequest request,
                          TcpStream& client,
                          map<pair<string, string>, serverInfo>& infos) {
     if (request.error()) {
@@ -395,7 +405,7 @@ std::string get_response(HttpRequest request,
 
     if (it == locations.end()) {
         if (method == "GET") {
-            return HttpResponse::send_file(loc, info.root, info.error_page)
+            return HttpResponse::send_file(q, loc, info.root, info.error_page)
                 .build();
         }
         return HttpResponse::error_response(405, info.error_page[405]).build();
@@ -579,8 +589,7 @@ std::string get_response(HttpRequest request,
             }
 
             if ("multipart/form-data" == multi_part) {
-                extract_files(request.getBody(), boundry_value,
-                              path_where_to);
+                extract_files(request.getBody(), boundry_value, path_where_to);
                 return HttpResponse(201, "1.1", "Created")
                     .add_to_body("<h1>The file was uploaded.</h1>")
                     .add_content_type(".html")
@@ -601,7 +610,7 @@ std::string get_response(HttpRequest request,
 
     if (method == "GET") {
         if (!route.index.empty()) {
-            return HttpResponse::index_response(route.index, info.root,
+            return HttpResponse::index_response(q, route.index, info.root,
                                                 info.error_page)
                 .build();
         }
@@ -656,7 +665,7 @@ void handle_requests(Kqueue& event_queue,
         return;
     }
     client.clear_buffer();
-    string response = get_response(request, client, infos);
+    string response = get_response(event_queue, request, client, infos);
 
     ssize_t ret = 0;
     size_t towrite = BUFFER_SIZE;

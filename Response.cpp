@@ -1,10 +1,15 @@
 
 #include "Response.hpp"
 #include <sys/syslimits.h>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include "Request.hpp"
+#include "socket/File.hpp"
 #include "tools.hpp"
+
+std::map<std::string, std::string> HttpResponse::files_cache =
+    std::map<std::string, std::string>();
 
 HttpResponse HttpResponse::generate_indexing(std::string dir,
                                              std::string location) {
@@ -286,12 +291,26 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
     }
     if (!path.empty() && is_file(path) && is_file_exists(path) &&
         is_file_readable(path)) {
-        std::ifstream file(path);
-        if (!file.is_open() || file.fail()) {
-            return HttpResponse::error_response(500, "");
+        // if (TODO)
+        // cache ::
+        std::string to_serve;
+        if (files_cache.find(path) == files_cache.end()) {
+            std::ifstream file(path);
+            if (!file.is_open() || file.fail()) {
+                return HttpResponse::error_response(500, "");
+            }
+            HttpResponse::files_cache[path] = to_serve =
+                tools::open_to_serve(file);
+            std::cout << G(DEBUG) << "not cached !\n";
+            std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
+        } else {
+            to_serve = HttpResponse::files_cache[path];
+            std::cout << G(DEBUG) << "cached !\n";
+            std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
         }
+        // :: cache
         return HttpResponse(status, "1.1", action)
-            .add_to_body(tools::open_to_serve(file))
+            .add_to_body(to_serve)
             .add_content_type(path);
     }
 
@@ -313,7 +332,8 @@ HttpResponse& HttpResponse::add_content_type(std::string path) {
     return add_header("Content-Type", get_content_type(path));
 };
 
-HttpResponse HttpResponse::send_file(std::string path,
+HttpResponse HttpResponse::send_file(Kqueue& q,
+                                     std::string path,
                                      std::string root,
                                      std::map<int, std::string> error_pages) {
     std::string full_path = tools::url_path_correction(root, path);
@@ -326,15 +346,36 @@ HttpResponse HttpResponse::send_file(std::string path,
         (tools::is_file_readable(full_path) == false)) {
         return error_response(403, root + error_pages[403]);
     }
-
-    std::ifstream file(full_path);
-    if (!file.is_open() || file.fail()) {
-        return HttpResponse::error_response(500, error_pages[500]);
+    // cache ::
+    std::cout << "HERE :: \n";
+    std::string to_serve;
+    if (files_cache.find(full_path) == files_cache.end()) {
+        std::ifstream file(full_path);
+        if (!file.is_open() || file.fail()) {
+            return HttpResponse::error_response(500, "");
+        }
+        HttpResponse::files_cache[full_path] = to_serve =
+            tools::open_to_serve(file);
+        std::cout << G(DEBUG) << "not cached !\n";
+        std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
+        q.monitor(new File(full_path));
+    } else {
+        to_serve = HttpResponse::files_cache[full_path];
+        std::cout << G(DEBUG) << "cached !\n";
+        std::cout << G(DEBUG) << "size : " << to_serve.size() << '\n';
     }
+    // :: cache
     return HttpResponse(200, "1.1", "OK")
-        .add_to_body(tools::open_to_serve(file))
+        .add_to_body(to_serve)
         .add_content_type(full_path);
 }
+
+void HttpResponse::updateFileCache(std::string path) {
+    if (files_cache.find(path) == files_cache.end())
+        return;
+    std::ifstream file(path);
+    HttpResponse::files_cache[path] = tools::open_to_serve(file);
+};
 
 HttpResponse HttpResponse::redirect_moved_response(
     std::string const& location) {
@@ -347,6 +388,7 @@ HttpResponse HttpResponse::redirect_found_response(
 };
 
 HttpResponse HttpResponse::index_response(
+    Kqueue& q,
     std::vector<std::string> index,
     std::string root,
     std::map<int, std::string> error_pages) {
@@ -360,5 +402,5 @@ HttpResponse HttpResponse::index_response(
     }
     if (it == index.end())
         return error_response(404, error_pages[404]);
-    return HttpResponse::send_file(*it, root, error_pages);
+    return HttpResponse::send_file(q, *it, root, error_pages);
 }
