@@ -10,15 +10,6 @@ int File::get_raw_fd() const {
     return _fd;
 }
 
-Kevent File::get_kevent() const {
-    return _event;
-};
-
-void File::set_kevent(Kevent kv) {
-    memset(&_event, 0, sizeof(Kevent));
-    _event = kv;
-}
-
 static void shutdown_helper(int fd) {
     shutdown(fd, SHUT_RDWR);
     close(fd);

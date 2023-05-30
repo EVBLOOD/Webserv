@@ -10,4 +10,4 @@
 #include <string>
 #include <vector>
 
-#define BUFFER_SIZE (1024 * 32)
+#define BUFFER_SIZE (1024 * 1024)

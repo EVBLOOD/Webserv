@@ -52,7 +52,7 @@ void signal_handl(int sig) {
     exit(1);
 }
 
-void handle_new_connection(Kqueue& kq, TcpListener* server);
+void handle_new_connection(Kqueue& kq, const TcpListener& server);
 
 void handle_requests(Kqueue& event_queue,
                      TcpStream& client,
@@ -292,8 +292,9 @@ int main(int argc, char** argv) {
          << "-------------------- handling for events ....  "
             "--------------------\n";
     loop {
-        IListener& listener = event_queue.get_event();
-        const Kevent& kv = listener.get_kevent();
+        pair<IListener&, Kevent> event = event_queue.get_event();
+        IListener& listener = event.first;
+        const Kevent& kv = event.second;
 
         // if (kv.filter == EVFILT_EXCEPT) {
         //     event_queue.detach(&listener);
@@ -361,7 +362,7 @@ int main(int argc, char** argv) {
             }
         } else if (dynamic_cast<TcpListener*>(&listener)) {
             handle_new_connection(event_queue,
-                                  dynamic_cast<TcpListener*>(&listener));
+                                  dynamic_cast<TcpListener&>(listener));
         } else {
             File& f = *dynamic_cast<File*>(&listener);
             HttpResponse::updateFileCache(f.get_path());
@@ -369,8 +370,8 @@ int main(int argc, char** argv) {
     }
 }
 
-void handle_new_connection(Kqueue& event_queue, TcpListener* server) {
-    TcpStream& client = server->accept();
+void handle_new_connection(Kqueue& event_queue, const TcpListener& server) {
+    TcpStream& client = server.accept();
     event_queue.attach(&client);
 }
 

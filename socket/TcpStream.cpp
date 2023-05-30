@@ -27,15 +27,6 @@ int TcpStream::get_raw_fd() const {
     return _fd;
 }
 
-Kevent TcpStream::get_kevent() const {
-    return _event;
-};
-
-void TcpStream::set_kevent(Kevent kv) {
-    memset(&_event, 0, sizeof(Kevent));
-    _event = kv;
-}
-
 const std::string& TcpStream::get_buffer_request() const {
     return _request_buffer;
 };

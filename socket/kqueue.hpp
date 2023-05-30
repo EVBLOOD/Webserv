@@ -18,7 +18,7 @@ class Kqueue {
    public:
     Kqueue();
     int get_kdata() const;
-    IListener& get_event() const;
+    std::pair<IListener&, Kevent> get_event() const;
     void attach(IListener* listener);
     void monitor(IListener* listener);
     void detach(IListener* listener);

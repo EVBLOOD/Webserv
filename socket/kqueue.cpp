@@ -1,4 +1,3 @@
-
 #include "kqueue.hpp"
 #include <fcntl.h>
 #include <sys/errno.h>
@@ -77,7 +76,7 @@ size_t Kqueue::size() const {
     return _listeners.size();
 };
 
-IListener& Kqueue::get_event() const {
+std::pair<IListener&, Kevent> Kqueue::get_event() const {
     Kevent kv;
     bzero(&kv, sizeof(Kevent));
 
@@ -88,6 +87,5 @@ IListener& Kqueue::get_event() const {
 
     IListener* ret = _listeners.at(kv.ident);
 
-    ret->set_kevent(kv);
-    return *ret;
+    return std::make_pair<IListener&, Kevent>(*ret, kv);
 };

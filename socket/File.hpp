@@ -15,6 +15,4 @@ class File : public IListener {
     std::string get_path();
     virtual ~File();
     int get_raw_fd() const;
-    Kevent get_kevent() const;
-    void set_kevent(Kevent kv);
 };
