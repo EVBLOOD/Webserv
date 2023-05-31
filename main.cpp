@@ -226,7 +226,7 @@ serverInfo get_the_server_info_for_the_client(
 }
 
 pair<string, ssize_t> read_request(const TcpStream& client) {
-    array<char, BUFFER_SIZE> buffer;
+    array<char, READ_BUFFER_SIZE> buffer;
     ssize_t ret = client.read(buffer.data(), buffer.size());
     if (ret <= 0)
         return make_pair(string(), ret);
@@ -314,7 +314,7 @@ int main(int argc, char** argv) {
 
             if (kv.filter == EVFILT_WRITE) {
                 std::string const& response = client.get_response_buffer();
-                size_t towrite = BUFFER_SIZE;
+                size_t towrite = WRITE_BUFFER_SIZE;
                 if (towrite > response.size())
                     towrite = response.size();
                 if ((ret = client.write(response.data(), towrite)) <= 0) {
@@ -669,7 +669,7 @@ void handle_requests(Kqueue& event_queue,
     string const& response = get_response(event_queue, request, client, infos);
 
     ssize_t ret = 0;
-    size_t towrite = BUFFER_SIZE;
+    size_t towrite = WRITE_BUFFER_SIZE;
 
     if (towrite > response.size())
         towrite = response.size();

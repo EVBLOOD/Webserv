@@ -10,4 +10,7 @@
 #include <string>
 #include <vector>
 
-#define BUFFER_SIZE (1024 * 1024)
+#define WRITE_BUFFER_SIZE 1024 * 1024
+// use for a faster server
+// #define WRITE_BUFFER_SIZE 1024 * 1024 * 32
+#define READ_BUFFER_SIZE 1024 * 32
