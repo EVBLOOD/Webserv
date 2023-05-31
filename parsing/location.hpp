@@ -6,8 +6,10 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "tokengen.hpp"
 
@@ -32,7 +34,7 @@ class Location {
     std::vector<std::string> index;
     std::map<int, std::string> ret_rn;
     bool autoindex;
-    std::vector<std::string> allow_methods;
+    std::unordered_set<std::string> allow_methods;
     std::string fastcgi_pass;
     bool upload_enable;
     std::string upload_store;

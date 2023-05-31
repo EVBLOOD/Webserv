@@ -3,22 +3,11 @@
 #include <sys/socket.h>
 
 File::File(std::string path) : _fd(open(path.data(), O_RDONLY)), _path(path) {
-    if (_fd == -1)
-        exit(11);
     memset(&_event, 0, sizeof(Kevent));
 };
 
 int File::get_raw_fd() const {
     return _fd;
-}
-
-Kevent File::get_kevent() const {
-    return _event;
-};
-
-void File::set_kevent(Kevent kv) {
-    memset(&_event, 0, sizeof(Kevent));
-    _event = kv;
 }
 
 static void shutdown_helper(int fd) {

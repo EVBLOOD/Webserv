@@ -17,18 +17,16 @@ class TcpStream : public IListener {
 
    public:
     TcpStream(int fd, const TcpListener& owner);
-    std::string get_port() const;
-    std::string get_host() const;
+    const std::string& get_port() const;
+    const std::string& get_host() const;
     virtual ~TcpStream();
     int get_raw_fd() const;
-    Kevent get_kevent() const;
-    void set_kevent(Kevent kv);
-    std::string get_buffer_request() const;
+    const std::string& get_buffer_request() const;
     size_t read(char* buff, size_t size) const;
     size_t write(const char* const buff, size_t size) const;
-    void add_to_request_buffer(std::string tail);
-    void set_reponse_buffer(std::string tail);
+    void add_to_request_buffer(const std::string& tail);
+    void set_reponse_buffer(const std::string& tail);
     bool is_response_not_finished() const;
-    std::string get_response_buffer() const;
+    const std::string& get_response_buffer() const;
     void clear_buffer();
 };

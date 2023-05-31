@@ -39,13 +39,11 @@ class TcpListener : public IListener {
     Kevent _event;
 
    public:
-    std::string get_port() const;
-    std::string get_host() const;
-    TcpListener(std::string host, std::string port);
+    const std::string& get_port() const;
+    const std::string& get_host() const;
+    TcpListener(const std::string& host, const std::string& port);
     virtual ~TcpListener();
     int get_raw_fd() const;
-    Kevent get_kevent() const;
-    void set_kevent(Kevent kv);
     TcpStream& accept() const;
     void delete_client(TcpStream* client) const;
 };

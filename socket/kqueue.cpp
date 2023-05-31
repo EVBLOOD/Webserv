@@ -1,4 +1,3 @@
-
 #include "kqueue.hpp"
 #include <fcntl.h>
 #include <sys/errno.h>
@@ -49,8 +48,7 @@ void Kqueue::attach(IListener* listener) {
     }
     struct kevent evSet;
     bzero(&evSet, sizeof(struct kevent));
-    EV_SET(&evSet, fd, EVFILT_READ | EVFILT_WRITE | EVFILT_EXCEPT, EV_ADD, 0, 0,
-           NULL);
+    EV_SET(&evSet, fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
     if (kevent(_kdata, &evSet, 1, NULL, 0, NULL) == -1) {
         return;
     }
@@ -60,15 +58,14 @@ void Kqueue::attach(IListener* listener) {
 void Kqueue::detach(IListener* listener) {
     if (listener == NULL || _listeners.size() == 0)
         return;
-    std::map<uintptr_t, IListener*>::iterator it =
+    std::unordered_map<uintptr_t, IListener*>::iterator it =
         _listeners.find(listener->get_raw_fd());
     if (it == _listeners.end()) {
         return;
     }
     struct kevent evSet;
     bzero(&evSet, sizeof(struct kevent));
-    EV_SET(&evSet, listener->get_raw_fd(),
-           EVFILT_READ | EVFILT_WRITE | EVFILT_EXCEPT, EV_DELETE, 0, 0, 0);
+    EV_SET(&evSet, listener->get_raw_fd(), EVFILT_READ, EV_DELETE, 0, 0, 0);
     if (kevent(_kdata, &evSet, 1, NULL, 0, 0) == -1)
         return;
     _listeners.size();
@@ -79,7 +76,7 @@ size_t Kqueue::size() const {
     return _listeners.size();
 };
 
-IListener& Kqueue::get_event() const {
+std::pair<IListener&, Kevent> Kqueue::get_event() const {
     Kevent kv;
     bzero(&kv, sizeof(Kevent));
 
@@ -90,6 +87,5 @@ IListener& Kqueue::get_event() const {
 
     IListener* ret = _listeners.at(kv.ident);
 
-    ret->set_kevent(kv);
-    return *ret;
+    return std::make_pair<IListener&, Kevent>(*ret, kv);
 };

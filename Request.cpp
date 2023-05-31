@@ -10,7 +10,7 @@
 #include "parsing/tokengen.hpp"
 #include "tools.hpp"
 
-HttpRequest::HttpRequest(std::string request)
+HttpRequest::HttpRequest(const std::string& request)
     : _raw(request),
       _method(),
       _location(),
@@ -88,46 +88,47 @@ HttpRequest::HttpRequest(std::string request)
         _body += header_and_body[i];
 }
 
-void HttpRequest::dump() {
+void HttpRequest::dump() const {
     std::cout << _method << " " << _location << " " << _version << "\n";
-    for (multi_iter iter = _headers.begin(); iter != _headers.end(); ++iter) {
+    for (const_multi_iter iter = _headers.begin(); iter != _headers.end();
+         iter++) {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
 }
 
-bool HttpRequest::error() {
+bool HttpRequest::error() const {
     return _error;
 }
 
-std::string HttpRequest::getRawData() {
+const std::string& HttpRequest::getRawData() const {
     return _raw;
 }
 
-std::string HttpRequest::getBody() {
+const std::string& HttpRequest::getBody() const {
     return _body;
 }
 
-std::string HttpRequest::getHeaderValue(std::string key) {
-    multi_iter iter = _headers.find(toUppercase(key));
+std::string HttpRequest::getHeaderValue(const std::string& key) const {
+    const_multi_iter iter = _headers.find(toUppercase(key));
     if (iter == _headers.end())
         return "";
     return std::string(iter->second);
 }
 
-std::pair<multi_iter, multi_iter> HttpRequest::getHeaderValues(
-    std::string key) {
+std::pair<const_multi_iter, const_multi_iter> HttpRequest::getHeaderValues(
+    const std::string& key) const {
     return _headers.equal_range(tools::toUppercase(key));
 }
 
-std::string HttpRequest::getVersion() {
+const std::string& HttpRequest::getVersion() const {
     return _version;
 }
 
-std::string HttpRequest::getLocation() {
+const std::string& HttpRequest::getLocation() const {
     return _location;
 }
 
-std::string HttpRequest::getMethod() {
+const std::string& HttpRequest::getMethod() const {
     return _method;
 }

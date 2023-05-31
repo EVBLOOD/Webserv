@@ -14,6 +14,7 @@ SRCS =  main.cpp\
 		socket/TcpStream.cpp\
 		socket/kqueue.cpp\
 		socket/tcpListener.cpp\
+		socket/File.cpp\
 		parsing/location.cpp\
 		parsing/parser.cpp\
 		parsing/serverInfo.cpp\
@@ -44,6 +45,9 @@ all: $(NAME)
 
 extra: $(SRCS) $(HEADERS)
 	c++ $(CXXFLAGS_EXTRA) $(SRCS) -o $(NAME)_extra && ./$(NAME)_extra config
+
+debug: $(SRCS) $(HEADERS)
+	g++ -pg $(CXXFLAGS)  $(SRCS) -o $(NAME)_debug
 
 test: $(TEST) $(HEADERS)
 	c++ $(CXXFLAGS) $(SRCS_TEST) -o $(NAME)_test

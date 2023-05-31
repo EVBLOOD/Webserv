@@ -17,7 +17,7 @@ server
 	error_page 502 /errors/502.html;
 
 
-	root /Users/sakllam/Desktop/final/public;
+	root  /Users/orahmoun/projects/Webserv/public;
 
 	location /
 	{
@@ -54,7 +54,7 @@ server
 	{
 		allow_methods GET POST;
 
-		fastcgi_pass /Users/sakllam/.brew/opt/php@8.1/bin/php-cgi;
+		fastcgi_pass /Users/orahmoun/.brew/opt/php@8.1/bin/php-cgi;
 	}
 
 	location *.py
@@ -89,7 +89,7 @@ server
 
 
 
-	root /Users/sakllam/Desktop/final/public;
+	root /Users/orahmoun/projects/Webserv/public;
 
 	location /
 	{
@@ -126,7 +126,7 @@ server
 	{
 		allow_methods GET POST;
 
-		fastcgi_pass /Users/sakllam/.brew/opt/php@8.1/bin/php-cgi;
+		fastcgi_pass /Users/orahmoun/.brew/opt/php@8.1/bin/php-cgi;
 	}
 
 	location *.py

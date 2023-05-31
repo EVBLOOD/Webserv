@@ -1,13 +1,18 @@
 
 #include "Response.hpp"
 #include <sys/syslimits.h>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include "Request.hpp"
+#include "socket/File.hpp"
 #include "tools.hpp"
 
-HttpResponse HttpResponse::generate_indexing(std::string dir,
-                                             std::string location) {
+std::unordered_map<std::string, std::string> HttpResponse::files_cache =
+    std::unordered_map<std::string, std::string>();
+
+HttpResponse HttpResponse::generate_indexing(const std::string& dir,
+                                             const std::string& location) {
     std::vector<std::string> body;
     std::vector<std::string> files = tools::list_files_in_dir(dir);
 
@@ -21,7 +26,9 @@ HttpResponse HttpResponse::generate_indexing(std::string dir,
         .add_content_type(".html");
 }
 
-HttpResponse::HttpResponse(int status, std::string version, std::string action)
+HttpResponse::HttpResponse(int status,
+                           const std::string& version,
+                           const std::string& action)
     : _status(status),
       _content_length(0),
       _version(version),
@@ -30,9 +37,9 @@ HttpResponse::HttpResponse(int status, std::string version, std::string action)
       _body(){};
 
 HttpResponse::HttpResponse(int status,
-                           std::string version,
-                           std::string action,
-                           HttpRequest request)
+                           const std::string& version,
+                           const std::string& action,
+                           const HttpRequest& request)
     : _status(status),
       _content_length(0),
       _version(version),
@@ -43,26 +50,27 @@ HttpResponse::HttpResponse(int status,
         add_header("Set-Cookie: ", request.getHeaderValue("cookie"));
 }
 
-HttpResponse& HttpResponse::add_header(std::string key, std::string value) {
+HttpResponse& HttpResponse::add_header(const std::string& key,
+                                       const std::string& value) {
     _headers.insert(make_pair(key, value));
     return *this;
 };
 
-std::string HttpResponse::getHeaderValue(std::string key) {
-    multi_iter it = _headers.find(key);
+std::string HttpResponse::getHeaderValue(const std::string& key) const {
+    const_multi_iter it = _headers.find(key);
     if (it == _headers.end())
         return "";
     return it->second;
 };
 
-HttpResponse& HttpResponse::add_to_body(std::string line) {
+HttpResponse& HttpResponse::add_to_body(const std::string& line) {
     _body.push_back(line);
     _content_length += line.length();
     return *this;
 };
 
-HttpResponse& HttpResponse::add_to_body(std::vector<std::string> body) {
-    std::vector<std::string>::iterator iter = body.begin();
+HttpResponse& HttpResponse::add_to_body(const std::vector<std::string>& body) {
+    std::vector<std::string>::const_iterator iter = body.begin();
     while (iter != body.end()) {
         add_to_body(*iter);
         ++iter;
@@ -70,7 +78,7 @@ HttpResponse& HttpResponse::add_to_body(std::vector<std::string> body) {
     return *this;
 };
 
-size_t HttpResponse::get_body_size() {
+size_t HttpResponse::get_body_size() const {
     return _content_length;
 };
 
@@ -86,7 +94,7 @@ std::string HttpResponse::build() {
     _headers.insert(make_pair("Date", tools::date_http(time(NULL))));
     _headers.insert(std::make_pair("Server", "1337_webserv"));
     {
-        multi_iter iter = _headers.begin();
+        const_multi_iter iter = _headers.begin();
         while (iter != _headers.end()) {
             res += iter->first + ": " + iter->second + "\r\n";
             iter++;
@@ -104,16 +112,17 @@ std::string HttpResponse::build() {
     return res;
 }
 
-void HttpResponse::dump() {
+void HttpResponse::dump() const {
     std::cout << "HTTP/" + _version + " " + std::to_string(_status) + " " +
                      _action + "\n";
-    for (multi_iter iter = _headers.begin(); iter != _headers.end(); ++iter) {
+    for (const_multi_iter iter = _headers.begin(); iter != _headers.end();
+         ++iter) {
         std::cout << "[" << iter->first << "]"
                   << " : [" << iter->second << "]" << '\n';
     }
 }
 
-std::string HttpResponse::get_content_type(std::string file_name) {
+std::string HttpResponse::get_content_type(const std::string& file_name) {
     std::string content_type = "text/plain";
     if (file_name.rfind('.') != std::string::npos) {
         std::string ext =
@@ -154,6 +163,10 @@ std::string HttpResponse::get_content_type(std::string file_name) {
             content_type = "audio/x-wav";
         } else if (ext == ".mpeg") {
             content_type = "video/mpeg";
+        } else if (ext == ".mov") {
+            content_type = "video/quicktime";
+        } else if (ext == ".m4v") {
+            content_type = "video/x-m4v";
         } else if (ext == ".qt") {
             content_type = "video/quicktime";
         } else if (ext == ".wmv") {
@@ -202,7 +215,7 @@ std::string HttpResponse::get_content_type(std::string file_name) {
     return content_type;
 };
 
-HttpResponse HttpResponse::error_response(int status, std::string path) {
+HttpResponse HttpResponse::error_response(int status, const std::string& path) {
     std::string action;
     if (status == 400) {
         action = "Bad Request";
@@ -286,12 +299,22 @@ HttpResponse HttpResponse::error_response(int status, std::string path) {
     }
     if (!path.empty() && is_file(path) && is_file_exists(path) &&
         is_file_readable(path)) {
-        std::ifstream file(path);
-        if (!file.is_open() || file.fail()) {
-            return HttpResponse::error_response(500, "");
+        // if (TODO)
+        // cache ::
+        std::string to_serve;
+        if (files_cache.find(path) == files_cache.end()) {
+            std::ifstream file(path);
+            if (!file.is_open() || file.fail()) {
+                return HttpResponse::error_response(500, "");
+            }
+            HttpResponse::files_cache[path] = to_serve =
+                tools::open_to_serve(file);
+        } else {
+            to_serve = HttpResponse::files_cache[path];
         }
+        // :: cache
         return HttpResponse(status, "1.1", action)
-            .add_to_body(tools::open_to_serve(file))
+            .add_to_body(to_serve)
             .add_content_type(path);
     }
 
@@ -309,13 +332,15 @@ std::string HttpResponse::generateErrorPage(int statusCode,
     return pageStream.str();
 }
 
-HttpResponse& HttpResponse::add_content_type(std::string path) {
+HttpResponse& HttpResponse::add_content_type(const std::string& path) {
     return add_header("Content-Type", get_content_type(path));
 };
 
-HttpResponse HttpResponse::send_file(std::string path,
-                                     std::string root,
-                                     std::map<int, std::string> error_pages) {
+HttpResponse HttpResponse::send_file(
+    Kqueue& q,
+    const std::string& path,
+    const std::string& root,
+    std::unordered_map<int, std::string>& error_pages) {
     std::string full_path = tools::url_path_correction(root, path);
 
     if (!tools::is_dir(full_path) && !tools::is_file(full_path)) {
@@ -326,15 +351,31 @@ HttpResponse HttpResponse::send_file(std::string path,
         (tools::is_file_readable(full_path) == false)) {
         return error_response(403, root + error_pages[403]);
     }
-
-    std::ifstream file(full_path);
-    if (!file.is_open() || file.fail()) {
-        return HttpResponse::error_response(500, error_pages[500]);
+    // cache ::
+    std::string to_serve;
+    if (files_cache.find(full_path) == files_cache.end()) {
+        std::ifstream file(full_path);
+        if (!file.is_open() || file.fail()) {
+            return HttpResponse::error_response(500, "");
+        }
+        HttpResponse::files_cache[full_path] = to_serve =
+            tools::open_to_serve(file);
+        q.monitor(new File(full_path));
+    } else {
+        to_serve = HttpResponse::files_cache[full_path];
     }
+    // :: cache
     return HttpResponse(200, "1.1", "OK")
-        .add_to_body(tools::open_to_serve(file))
+        .add_to_body(to_serve)
         .add_content_type(full_path);
 }
+
+void HttpResponse::updateFileCache(const std::string& path) {
+    if (files_cache.find(path) == files_cache.end())
+        return;
+    std::ifstream file(path);
+    HttpResponse::files_cache[path] = tools::open_to_serve(file);
+};
 
 HttpResponse HttpResponse::redirect_moved_response(
     std::string const& location) {
@@ -347,10 +388,11 @@ HttpResponse HttpResponse::redirect_found_response(
 };
 
 HttpResponse HttpResponse::index_response(
-    std::vector<std::string> index,
-    std::string root,
-    std::map<int, std::string> error_pages) {
-    std::vector<std::string>::iterator it = index.begin();
+    Kqueue& q,
+    const std::vector<std::string>& index,
+    const std::string& root,
+    std::unordered_map<int, std::string>& error_pages) {
+    std::vector<std::string>::const_iterator it = index.begin();
 
     while (it != index.end()) {
         std::string path = tools::url_path_correction(root, *it);
@@ -360,5 +402,5 @@ HttpResponse HttpResponse::index_response(
     }
     if (it == index.end())
         return error_response(404, error_pages[404]);
-    return HttpResponse::send_file(*it, root, error_pages);
+    return HttpResponse::send_file(q, *it, root, error_pages);
 }

@@ -15,7 +15,7 @@ TcpListener::~TcpListener() {
 }
 
 // EX :: TcpListener("localhost", "8080")
-TcpListener::TcpListener(std::string host, std::string port)
+TcpListener::TcpListener(const std::string& host, const std::string& port)
     : _port(port), _host(host) {
     int backlog = SOMAXCONN;
     infos* addr;
@@ -53,15 +53,6 @@ int TcpListener::get_raw_fd() const {
     return _fd;
 };
 
-Kevent TcpListener::get_kevent() const {
-    return _event;
-};
-
-void TcpListener::set_kevent(Kevent kv) {
-    memset(&_event, 0, sizeof(Kevent));
-    _event = kv;
-}
-
 int accept_helper(int fd) {
     return accept(fd, NULL, NULL);
 }
@@ -69,17 +60,16 @@ int accept_helper(int fd) {
 TcpStream& TcpListener::accept() const {
     int client_sockfd = accept_helper(_fd);
     if (client_sockfd == -1) {
-        std::cerr << G(ERROR) << " accept : " << strerror(errno)
-                  << '\n';
+        std::cerr << G(ERROR) << " accept : " << strerror(errno) << '\n';
         exit(1);
     }
     TcpStream* new_client = new TcpStream(client_sockfd, *this);
     return *(new_client);
 };
 
-std::string TcpListener::get_port() const {
+const std::string& TcpListener::get_port() const {
     return _port;
 };
-std::string TcpListener::get_host() const {
+const std::string& TcpListener::get_host() const {
     return _host;
 };
